@@ -1,0 +1,48 @@
+<?php
+
+return [
+    'dashboard' => 'Dashboard',
+    'users' => 'Users',
+    'customers' => 'Customers',
+    'providers' => 'Service Providers',
+    'orders' => 'Orders',
+    'services' => 'Services',
+    'home' => 'Home',
+    'menu' => 'Menu',
+    'order_list' => 'Order List',
+    'customer' => 'Customer',
+    'provider' => 'Provider',
+    'location' => 'Location',
+    'status' => 'Status',
+    'date' => 'Date',
+    'pending' => 'Pending',
+    'accepted' => 'Accepted',
+    'in_progress' => 'In Progress',
+    'completed' => 'Completed',
+    'cancelled' => 'Cancelled',
+    'no_orders' => 'No orders available',
+    'add_service' => 'Add New Service',
+    'name' => 'Name',
+    'description' => 'Description',
+    'price' => 'Price',
+    'save' => 'Save',
+    'edit_service' => 'Edit Service',
+'update' => 'Update',
+'actions' => 'Actions',
+'edit' => 'Edit',
+'delete' => 'Delete',
+'confirm_delete' => 'Are you sure you want to delete?',
+'user_list' => 'User List',
+'all' => 'All',
+'email' => 'Email',
+'phone' => 'Phone',
+'role' => 'Role',
+'registration_date' => 'Registration Date',
+'admin' => 'Admin',
+'no_users' => 'No users found',
+
+
+
+
+
+];
