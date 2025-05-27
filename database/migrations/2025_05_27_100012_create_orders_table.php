@@ -13,14 +13,25 @@ return new class extends Migration
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
+
+            // العلاقات
             $table->foreignId('customer_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('provider_id')->nullable()->constrained('users')->onDelete('set null');
+
+            // الحالة
             $table->enum('status', ['pending', 'accepted', 'in_progress', 'completed', 'cancelled'])->default('pending');
-            $table->string('location');
+
+            // الموقع الجغرافي
+            $table->decimal('latitude', 10, 7);
+            $table->decimal('longitude', 10, 7);
+            $table->string('address')->nullable();
+
+            // الوقت المجدول
             $table->timestamp('scheduled_at')->nullable();
+
             $table->timestamps();
         });
-    }
+    }   
 
     /**
      * Reverse the migrations.

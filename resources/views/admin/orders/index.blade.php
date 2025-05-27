@@ -22,7 +22,7 @@
                     <td>{{ $order->id }}</td>
                     <td>{{ $order->customer->name ?? '-' }}</td>
                     <td>{{ $order->provider->name ?? '-' }}</td>
-                    <td>{{ $order->location }}</td>
+                    <td>{{ $order->address ?? 'غير محدد' }}</td>
                     <td>
                         <ul class="list-unstyled m-0">
                             @foreach($order->services as $service)

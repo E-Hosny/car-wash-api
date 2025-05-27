@@ -11,25 +11,30 @@ class OrderController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'location' => 'required',
+            'latitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
+            'address' => 'nullable|string',
             'scheduled_at' => 'nullable|date',
             'services' => 'required|array',
             'services.*' => 'exists:services,id',
         ]);
-
+    
         $order = Order::create([
             'customer_id' => Auth::id(),
-            'location' => $request->location,
+            'latitude' => $request->latitude,
+            'longitude' => $request->longitude,
+            'address' => $request->address,
             'scheduled_at' => $request->scheduled_at,
         ]);
-
+    
         $order->services()->attach($request->services);
-
+    
         return response()->json([
             'message' => 'تم إنشاء الطلب بنجاح',
             'order' => $order->load('services')
         ]);
     }
+    
 
     // ✅ عرض كل الطلبات الخاصة بالعميل الحالي
     public function myOrders()

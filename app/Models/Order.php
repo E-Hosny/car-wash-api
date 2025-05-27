@@ -13,8 +13,11 @@ class Order extends Model
         'customer_id',
         'provider_id',
         'status',
-        'location',
         'scheduled_at',
+        'latitude',
+        'longitude',
+        'address',
+
     ];
 
     public function customer()
