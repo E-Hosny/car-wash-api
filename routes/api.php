@@ -3,7 +3,7 @@
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\OrderController;
 use App\Http\Controllers\API\ServiceController;
-use App\Http\Controllers\CarController;
+use App\Http\Controllers\API\CarController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 

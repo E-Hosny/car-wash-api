@@ -1,8 +1,9 @@
 <?php
 namespace App\Http\Controllers\API;
+use App\Http\Controllers\Controller;
+use App\Models\Car;
 use App\Models\Order;
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 
 class OrderController extends Controller
@@ -15,34 +16,37 @@ class OrderController extends Controller
             'longitude' => 'required|numeric',
             'address' => 'nullable|string',
             'scheduled_at' => 'nullable|date',
+            'car_id' => 'required|exists:cars,id',
             'services' => 'required|array',
             'services.*' => 'exists:services,id',
         ]);
     
+        // نتأكد إن السيارة دي تخص المستخدم الحالي
+        $car = Car::where('id', $request->car_id)
+                              ->where('user_id', auth()->id())
+                              ->first();
+    
+        if (! $car) {
+            return response()->json(['message' => 'السيارة غير موجودة أو لا تخصك'], 403);
+        }
+    
         $order = Order::create([
-            'customer_id' => Auth::id(),
+            'customer_id' => auth()->id(),
             'latitude' => $request->latitude,
             'longitude' => $request->longitude,
             'address' => $request->address,
             'scheduled_at' => $request->scheduled_at,
+            'car_id' => $car->id,
         ]);
     
         $order->services()->attach($request->services);
     
         return response()->json([
             'message' => 'تم إنشاء الطلب بنجاح',
-            'order' => $order->load('services')
+            'order' => $order->load('services', 'car')
         ]);
     }
     
-
-    // ✅ عرض كل الطلبات الخاصة بالعميل الحالي
-    public function myOrders()
-    {
-        $orders = Auth::user()->customerOrders()->with('services')->get();
-
-        return response()->json($orders);
-    }
 
     // ✅ عرض طلب مفرد
     public function show($id)

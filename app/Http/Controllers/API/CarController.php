@@ -20,7 +20,7 @@ class CarController extends Controller
     {
         $data = $request->validate([
             'brand_id' => 'required|exists:brands,id',
-            'model_id' => 'required|exists:models,id',
+            'model_id' => 'required|exists:car_models,id',
             'car_year_id' => 'required|exists:car_years,id',
             'color' => 'required|string|max:50',
         ]);
