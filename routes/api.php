@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Admin\BrandController;
+use App\Http\Controllers\API\BrandController;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\CarController;
 use App\Http\Controllers\API\CarYearController;
