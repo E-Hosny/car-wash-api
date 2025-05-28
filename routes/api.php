@@ -3,8 +3,10 @@
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\OrderController;
 use App\Http\Controllers\API\ServiceController;
+use App\Http\Controllers\CarController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
 
 
 
@@ -28,5 +30,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders/{id}', [OrderController::class, 'show']);
     Route::post('/orders/{id}/accept', [OrderController::class, 'accept']);
     Route::post('/orders/{id}/status', [OrderController::class, 'updateStatus']);
+
+    Route::get('/cars', [CarController::class, 'index']);
+    Route::post('/cars', [CarController::class, 'store']);
+    Route::delete('/cars/{car}', [CarController::class, 'destroy']);
 
 });

@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Models\Car;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
 {
@@ -34,4 +35,10 @@ class Order extends Model
     {
         return $this->belongsToMany(Service::class, 'order_service');
     }
+
+    public function car()
+    {
+        return $this->belongsTo(Car::class);
+    }
+
 }

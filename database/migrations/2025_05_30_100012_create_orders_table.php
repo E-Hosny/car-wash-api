@@ -18,6 +18,10 @@ return new class extends Migration
             $table->foreignId('customer_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('provider_id')->nullable()->constrained('users')->onDelete('set null');
 
+            $table->foreignId('car_id')->nullable()->constrained('cars')->onDelete('set null');
+
+
+
             // الحالة
             $table->enum('status', ['pending', 'accepted', 'in_progress', 'completed', 'cancelled'])->default('pending');
 

@@ -47,11 +47,18 @@ class AuthController extends Controller
 
         $user = User::where('phone', $request->phone)->first();
 
-        if (! $user || ! Hash::check($request->password, $user->password)) {
+        if (! $user) {
             throw ValidationException::withMessages([
-                'phone' => ['بيانات الدخول غير صحيحة.'],
+                'phone' => ['Phone number not found.'],
             ]);
         }
+        
+        if (! Hash::check($request->password, $user->password)) {
+            throw ValidationException::withMessages([
+                'password' => ['Incorrect password.'],
+            ]);
+        }
+        
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
