@@ -1,11 +1,15 @@
 <?php
 
+use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\API\AuthController;
+use App\Http\Controllers\API\CarController;
+use App\Http\Controllers\API\CarYearController;
 use App\Http\Controllers\API\OrderController;
 use App\Http\Controllers\API\ServiceController;
-use App\Http\Controllers\API\CarController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+
+
 
 
 
@@ -36,3 +40,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/cars/{car}', [CarController::class, 'destroy']);
 
 });
+
+Route::get('/brands', [BrandController::class, 'index']);
+Route::get('/brands/{brand}/models', [BrandController::class, 'models']);
+Route::get('/car-years', [CarYearController::class, 'index']);
