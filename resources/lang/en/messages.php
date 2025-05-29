@@ -40,6 +40,7 @@ return [
 'registration_date' => 'Registration Date',
 'admin' => 'Admin',
 'no_users' => 'No users found',
+'total' => 'Total Price',
 
 
 

@@ -12,6 +12,7 @@
                 <th>{{ __('messages.provider') }}</th>
                 <th>{{ __('messages.location') }}</th>
                 <th>{{ __('messages.services') }}</th>
+                <th>{{ __('messages.total') }}</th>
                 <th>{{ __('messages.status') }}</th>
                 <th>{{ __('messages.date') }}</th>
             </tr>
@@ -30,6 +31,8 @@
                             @endforeach
                         </ul>
                     </td>
+                    <td>{{ number_format($order->total, 2) }} AED</td>
+
                     <td>
                         @php
                             $badge = match($order->status) {
