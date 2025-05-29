@@ -46,6 +46,18 @@ class OrderController extends Controller
             'order' => $order->load('services', 'car')
         ]);
     }
+
+    public function myOrders()
+{
+    $orders = Order::where('customer_id', auth()->id())
+        ->with(['services', 'car.brand', 'car.model', 'car.year']) // ✅ تأكد من تضمين العلاقات هنا
+        ->latest()
+        ->get();
+
+    return response()->json($orders);
+}
+    
+
     
 
     // ✅ عرض طلب مفرد
