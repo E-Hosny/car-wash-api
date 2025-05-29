@@ -81,8 +81,31 @@ class OrderController extends Controller
                 return response()->json(['message' => 'غير مسموح'], 403);
             }
 
-            $orders = Order::whereNull('provider_id')
-                            ->where('status', 'pending')
+            $orders = Order::where('status', 'pending')
+                            ->with('services', 'customer')
+                            ->get();
+
+            return response()->json($orders);
+        }
+        public function completedOrders()
+        {
+            if (auth()->user()->role !== 'provider') {
+                return response()->json(['message' => 'غير مسموح'], 403);
+            }
+
+            $orders = Order::where('status', 'completed')
+                            ->with('services', 'customer')
+                            ->get();
+
+            return response()->json($orders);
+        }
+        public function acceptedOrders()
+        {
+            if (auth()->user()->role !== 'provider') {
+                return response()->json(['message' => 'غير مسموح'], 403);
+            }
+
+            $orders = Order::where('status', 'accepted')
                             ->with('services', 'customer')
                             ->get();
 
@@ -92,7 +115,7 @@ public function accept($id)
 {
     $order = Order::findOrFail($id);
 
-    if ($order->provider_id !== null || $order->status !== 'pending') {
+    if ($order->status !== 'pending') {
         return response()->json(['message' => 'الطلب غير متاح للقبول.'], 400);
     }
 
