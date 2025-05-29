@@ -3,6 +3,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Car;
 use App\Models\Order;
+use App\Models\Service;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -10,42 +11,48 @@ class OrderController extends Controller
 {
     // ✅ إنشاء طلب
     public function store(Request $request)
-    {
-        $request->validate([
-            'latitude' => 'required|numeric',
-            'longitude' => 'required|numeric',
-            'address' => 'nullable|string',
-            'scheduled_at' => 'nullable|date',
-            'car_id' => 'required|exists:cars,id',
-            'services' => 'required|array',
-            'services.*' => 'exists:services,id',
-        ]);
-    
-        // نتأكد إن السيارة دي تخص المستخدم الحالي
-        $car = Car::where('id', $request->car_id)
-                              ->where('user_id', auth()->id())
-                              ->first();
-    
-        if (! $car) {
-            return response()->json(['message' => 'السيارة غير موجودة أو لا تخصك'], 403);
-        }
-    
-        $order = Order::create([
-            'customer_id' => auth()->id(),
-            'latitude' => $request->latitude,
-            'longitude' => $request->longitude,
-            'address' => $request->address,
-            'scheduled_at' => $request->scheduled_at,
-            'car_id' => $car->id,
-        ]);
-    
-        $order->services()->attach($request->services);
-    
-        return response()->json([
-            'message' => 'تم إنشاء الطلب بنجاح',
-            'order' => $order->load('services', 'car')
-        ]);
+{
+    $request->validate([
+        'latitude' => 'required|numeric',
+        'longitude' => 'required|numeric',
+        'address' => 'nullable|string',
+        'scheduled_at' => 'nullable|date',
+        'car_id' => 'required|exists:cars,id',
+        'services' => 'required|array',
+        'services.*' => 'exists:services,id',
+    ]);
+
+    // نتأكد إن السيارة دي تخص المستخدم الحالي
+    $car = Car::where('id', $request->car_id)
+              ->where('user_id', auth()->id())
+              ->first();
+
+    if (! $car) {
+        return response()->json(['message' => 'السيارة غير موجودة أو لا تخصك'], 403);
     }
+
+    // نحسب total من أسعار الخدمات
+    $total = Service::whereIn('id', $request->services)->sum('price');
+
+    // إنشاء الطلب مع حفظ total
+    $order = Order::create([
+        'customer_id' => auth()->id(),
+        'latitude' => $request->latitude,
+        'longitude' => $request->longitude,
+        'address' => $request->address,
+        'scheduled_at' => $request->scheduled_at,
+        'car_id' => $car->id,
+        'total' => $total, // ← الجديد هنا
+    ]);
+
+    $order->services()->attach($request->services);
+
+    return response()->json([
+        'message' => 'تم إنشاء الطلب بنجاح',
+        'order' => $order->load('services', 'car')
+    ]);
+}
+
 
     public function myOrders()
 {

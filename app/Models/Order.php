@@ -18,7 +18,8 @@ class Order extends Model
         'latitude',
         'longitude',
         'address',
-        'car_id'
+        'car_id',
+        'total',
 
     ];
 
