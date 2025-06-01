@@ -75,18 +75,19 @@ class OrderController extends Controller
     }
 
     // ✅ عرض الطلبات اللي لسه محددناش لها مزود خدمة
-        public function availableOrders()
-        {
-            if (auth()->user()->role !== 'provider') {
-                return response()->json(['message' => 'غير مسموح'], 403);
-            }
+      public function availableOrders()
+{
+    if (auth()->user()->role !== 'provider') {
+        return response()->json(['message' => 'غير مسموح'], 403);
+    }
 
-            $orders = Order::where('status', 'pending')
-                            ->with('services', 'customer')
-                            ->get();
+    $orders = Order::where('status', 'pending')
+        ->with(['services', 'customer', 'car.brand', 'car.model']) // ✅ أضف العلاقات هنا
+        ->get();
 
-            return response()->json($orders);
-        }
+    return response()->json($orders);
+}
+
         public function completedOrders()
         {
             if (auth()->user()->role !== 'provider') {
@@ -94,7 +95,7 @@ class OrderController extends Controller
             }
 
             $orders = Order::where('status', 'completed')
-                            ->with('services', 'customer')
+                            ->with('services', 'customer','car.brand','car.model')
                             ->get();
 
             return response()->json($orders);
@@ -106,7 +107,7 @@ class OrderController extends Controller
             }
 
             $orders = Order::where('status', 'accepted')
-                            ->with('services', 'customer')
+                            ->with('services', 'customer','car.brand','car.model')
                             ->get();
 
             return response()->json($orders);
