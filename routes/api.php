@@ -32,6 +32,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders/available', [OrderController::class, 'availableOrders']);
     Route::get('/orders/completed', [OrderController::class, 'completedOrders']);
     Route::get('/orders/accepted', [OrderController::class, 'acceptedOrders']);
+    Route::get('/orders/inProgress', [OrderController::class, 'inProgressOrders']);
 
     Route::get('/orders/{id}', [OrderController::class, 'show']);
     Route::post('/orders/{id}/accept', [OrderController::class, 'accept']);

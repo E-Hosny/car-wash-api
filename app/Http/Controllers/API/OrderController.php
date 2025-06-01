@@ -112,6 +112,18 @@ class OrderController extends Controller
 
             return response()->json($orders);
         }
+        public function inProgressOrders()
+        {
+            if (auth()->user()->role !== 'provider') {
+                return response()->json(['message' => 'غير مسموح'], 403);
+            }
+
+            $orders = Order::where('status', 'in_progress')
+                            ->with('services', 'customer','car.brand','car.model')
+                            ->get();
+
+            return response()->json($orders);
+        }
 public function accept($id)
 {
     $order = Order::findOrFail($id);
