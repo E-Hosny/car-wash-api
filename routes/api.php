@@ -8,6 +8,8 @@ use App\Http\Controllers\API\OrderController;
 use App\Http\Controllers\API\ServiceController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\API\FcmTokenController;
+
 
 
 
@@ -37,6 +39,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders/{id}', [OrderController::class, 'show']);
     Route::post('/orders/{id}/accept', [OrderController::class, 'accept']);
     Route::post('/orders/{id}/status', [OrderController::class, 'updateStatus']);
+    Route::post('/fcm-token', [FcmTokenController::class, 'store'])->middleware('auth:sanctum');
+
 
     Route::get('/cars', [CarController::class, 'index']);
     Route::post('/cars', [CarController::class, 'store']);

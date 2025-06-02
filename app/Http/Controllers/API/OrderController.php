@@ -6,11 +6,13 @@ use App\Models\Order;
 use App\Models\Service;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Services\FirebaseNotificationService;
+use App\Models\FcmToken;
 
 class OrderController extends Controller
 {
     // ✅ إنشاء طلب
-    public function store(Request $request)
+ public function store(Request $request)
 {
     $request->validate([
         'latitude' => 'required|numeric',
@@ -42,17 +44,33 @@ class OrderController extends Controller
         'address' => $request->address,
         'scheduled_at' => $request->scheduled_at,
         'car_id' => $car->id,
-        'total' => $total, // ← الجديد هنا
+        'total' => $total,
     ]);
 
     $order->services()->attach($request->services);
+
+    // 🟢 إرسال إشعار إلى جميع مزودي الخدمة
+    $tokens = FcmToken::whereHas('user', function ($q) {
+        $q->where('role', 'provider');
+    })->pluck('token')->toArray();
+
+    if (!empty($tokens)) {
+        $firebase = new FirebaseNotificationService();
+
+        foreach ($tokens as $token) {
+            $firebase->sendToToken(
+                $token,
+                '🚘 طلب جديد',
+                'فيه عميل طلب غسيل سيارة، شوف التفاصيل في التطبيق'
+            );
+        }
+    }
 
     return response()->json([
         'message' => 'تم إنشاء الطلب بنجاح',
         'order' => $order->load('services', 'car')
     ]);
 }
-
 
     public function myOrders()
 {
