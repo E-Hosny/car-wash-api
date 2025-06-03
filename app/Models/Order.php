@@ -43,4 +43,10 @@ class Order extends Model
         return $this->belongsTo(Car::class);
     }
 
+    public function assignedUser()
+{
+    return $this->belongsTo(User::class, 'assigned_to');
+}
+
+
 }

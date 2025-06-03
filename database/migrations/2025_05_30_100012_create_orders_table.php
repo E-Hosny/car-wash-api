@@ -17,8 +17,10 @@ return new class extends Migration
             // العلاقات
             $table->foreignId('customer_id')->constrained('users')->onDelete('cascade');
             $table->foreignId('provider_id')->nullable()->constrained('users')->onDelete('set null');
+             $table->foreignId('assigned_to')->nullable()->constrained('users')->nullOnDelete();
 
             $table->foreignId('car_id')->nullable()->constrained('cars')->onDelete('set null');
+
 
 
 
