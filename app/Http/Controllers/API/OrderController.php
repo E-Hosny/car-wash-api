@@ -95,50 +95,104 @@ class OrderController extends Controller
     // ✅ عرض الطلبات اللي لسه محددناش لها مزود خدمة
       public function availableOrders()
 {
-    if (auth()->user()->role !== 'provider') {
+    if (auth()->user()->role !== 'provider' && auth()->user()->role !== 'worker') {
         return response()->json(['message' => 'غير مسموح'], 403);
     }
 
-    $orders = Order::where('status', 'pending')
-        ->with(['services', 'customer', 'car.brand', 'car.model']) // ✅ أضف العلاقات هنا
+    if(auth()->user()->role=='provider'){
+         $orders = Order::where('status', 'pending')
+        ->with(['services', 'customer', 'car.brand', 'car.model','assignedUser']) // ✅ أضف العلاقات هنا
         ->get();
+    }else{
+        $orders = Order::where('assigned_to', auth()->id())
+         ->where('status','pending')
+        ->with(['services', 'customer', 'car.brand', 'car.model'])
+        ->get();
+
+    }
+   
 
     return response()->json($orders);
 }
 
+public function assignToWorker(Request $request, $id)
+{
+    $request->validate([
+        'worker_id' => 'required|exists:users,id',
+    ]);
+
+    $order = Order::findOrFail($id);
+
+    if (auth()->user()->role !== 'provider') {
+        return response()->json(['message' => 'غير مسموح'], 403);
+    }
+
+    $order->assigned_to = $request->worker_id;
+    $order->save();
+
+    return response()->json(['message' => 'تم توجيه الطلب للعامل بنجاح']);
+}
+
+
         public function completedOrders()
         {
-            if (auth()->user()->role !== 'provider') {
+            if (auth()->user()->role !== 'provider'  && auth()->user()->role !== 'worker' ) {
                 return response()->json(['message' => 'غير مسموح'], 403);
             }
 
-            $orders = Order::where('status', 'completed')
-                            ->with('services', 'customer','car.brand','car.model')
-                            ->get();
+            
+
+            if(auth()->user()->role=='provider'){
+                $orders = Order::where('status', 'completed')
+                ->with(['services', 'customer', 'car.brand', 'car.model','assignedUser']) // ✅ أضف العلاقات هنا
+                ->get();
+            }else{
+                $orders = Order::where('assigned_to', auth()->id())
+                ->where('status','completed')
+                ->with(['services', 'customer', 'car.brand', 'car.model'])
+                ->get();
+
+            }
 
             return response()->json($orders);
         }
         public function acceptedOrders()
         {
-            if (auth()->user()->role !== 'provider') {
+            if (auth()->user()->role !== 'provider'  && auth()->user()->role !== 'worker' ) {
                 return response()->json(['message' => 'غير مسموح'], 403);
             }
 
+         if(auth()->user()->role=='provider'){
             $orders = Order::where('status', 'accepted')
-                            ->with('services', 'customer','car.brand','car.model')
-                            ->get();
+            ->with(['services', 'customer', 'car.brand', 'car.model','assignedUser']) // ✅ أضف العلاقات هنا
+            ->get();
+        }else{
+            $orders = Order::where('assigned_to', auth()->id())
+            ->where('status','accepted')
+            ->with(['services', 'customer', 'car.brand', 'car.model'])
+            ->get();
+
+        }
 
             return response()->json($orders);
         }
         public function inProgressOrders()
         {
-            if (auth()->user()->role !== 'provider') {
+            if (auth()->user()->role !== 'provider'  && auth()->user()->role !== 'worker' ) {
                 return response()->json(['message' => 'غير مسموح'], 403);
             }
 
-            $orders = Order::where('status', 'in_progress')
-                            ->with('services', 'customer','car.brand','car.model')
-                            ->get();
+            if(auth()->user()->role=='provider'){
+             $orders = Order::where('status', 'in_progress')
+                ->with(['services', 'customer', 'car.brand', 'car.model','assignedUser']) // ✅ أضف العلاقات هنا
+                ->get();
+            }else{
+                $orders = Order::where('assigned_to', auth()->id())
+                ->where('status','in_progress')
+                ->with(['services', 'customer', 'car.brand', 'car.model'])
+                ->get();
+
+            }
 
             return response()->json($orders);
         }
@@ -164,9 +218,9 @@ public function updateStatus(Request $request, $id)
         'status' => 'required|in:in_progress,completed,cancelled'
     ]);
 
-    if ($order->provider_id !== auth()->id()) {
-        return response()->json(['message' => 'غير مسموح.'], 403);
-    }
+    // if ($order->provider_id !== auth()->id()) {
+    //     return response()->json(['message' => 'غير مسموح.'], 403);
+    // }
 
     $order->status = $request->status;
     $order->save();

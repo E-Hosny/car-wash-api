@@ -50,6 +50,8 @@ Route::middleware([
         Route::get('/users', [UserController::class, 'index'])->name('admin.users.index');
         Route::get('/users/customers', [UserController::class, 'customers'])->name('admin.users.customers');
         Route::get('/users/providers', [UserController::class, 'providers'])->name('admin.users.providers');
+        Route::put('/users/{user}/role', [UserController::class, 'updateRole'])->name('admin.users.updateRole');
+
 
         Route::get('/orders', [OrderController::class, 'index'])->name('admin.orders.index');
     });

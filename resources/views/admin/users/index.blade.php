@@ -2,6 +2,10 @@
 
 @section('content')
 <div class="container mt-4">
+        @if (session('success'))
+            <div class="alert alert-success text-center">{{ session('success') }}</div>
+        @endif
+
     <h3 class="mb-4 text-center">{{ __('messages.user_list') }}</h3>
 
     <div class="mb-3 text-center">
@@ -29,14 +33,18 @@
                 <td>{{ $user->email ?? '-' }}</td>
                 <td>{{ $user->phone ?? '-' }}</td>
                 <td>
-                    @if ($user->role === 'admin')
-                        <span class="badge bg-dark">{{ __('messages.admin') }}</span>
-                    @elseif ($user->role === 'provider')
-                        <span class="badge bg-warning text-dark">{{ __('messages.provider') }}</span>
-                    @else
-                        <span class="badge bg-success">{{ __('messages.customer') }}</span>
-                    @endif
-                </td>
+                <form action="{{ route('admin.users.updateRole', $user->id) }}" method="POST">
+                    @csrf
+                    @method('PUT')
+                    <select name="role" class="form-select form-select-sm d-inline w-auto" onchange="this.form.submit()">
+                        <option value="customer" {{ $user->role === 'customer' ? 'selected' : '' }}>Customer</option>
+                        <option value="provider" {{ $user->role === 'provider' ? 'selected' : '' }}>Provider</option>
+                        <option value="admin" {{ $user->role === 'admin' ? 'selected' : '' }}>Admin</option>
+                        <option value="worker" {{ $user->role === 'worker' ? 'selected' : '' }}>Worker</option>
+                    </select>
+                </form>
+            </td>
+
                 <td>{{ $user->created_at->format('Y-m-d') }}</td>
             </tr>
             @empty
