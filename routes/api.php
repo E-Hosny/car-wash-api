@@ -46,6 +46,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/orders/{id}/status', [OrderController::class, 'updateStatus']);
     Route::post('/orders/{id}/assign', [OrderController::class, 'assignToWorker']);
 
+    //location
+    Route::post('/orders/location', [OrderController::class, 'saveLocation']);
+    Route::get('/orders/{id}/location', [OrderController::class, 'getLocation']);
+
+
+
+
+
     Route::get('/users', [UserController::class, 'index'])->name('admin.users.index');
 
 

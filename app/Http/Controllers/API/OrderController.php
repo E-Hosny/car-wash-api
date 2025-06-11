@@ -228,4 +228,29 @@ public function updateStatus(Request $request, $id)
     return response()->json(['message' => 'تم تحديث الحالة.', 'order' => $order]);
 }
 
+    public function saveLocation(Request $request)
+    {
+        $request->validate([
+            'order_id' => 'required|exists:orders,id',
+            'lat' => 'required|numeric',
+            'lng' => 'required|numeric',
+        ]);
+
+        $order = Order::find($request->order_id);
+        $order->lat = $request->lat;
+        $order->lng = $request->lng;
+        $order->save();
+
+        return response()->json(['message' => 'Location saved']);
+    }
+
+    public function getLocation($id)
+    {
+        $order = Order::findOrFail($id);
+        return response()->json([
+            'lat' => $order->lat,
+            'lng' => $order->lng,
+        ]);
+    }
+
 }
