@@ -19,18 +19,13 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        $this->call([
-            CarMakeSeeder::class,
-            CarModelSeeder::class,
-            CarYearSeeder::class,
-        ]);
+      $this->call([
+        CarFullSeeder::class,
+        CarYearSeeder::class,
+    ]);
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'phone' => '0500000000', // ← أضف رقم هاتف تجريبي
-            'password' => bcrypt('password'), // مهم لضمان الدخول لو هتستخدمه
-        ]);
+
+  
         
     }
 }

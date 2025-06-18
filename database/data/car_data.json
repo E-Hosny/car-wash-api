@@ -1,0 +1,102 @@
+[
+    {
+        "brand": "Toyota",
+        "models": [
+            "Corolla",
+            "Camry",
+            "Yaris",
+            "Land Cruiser",
+            "RAV4"
+        ]
+    },
+    {
+        "brand": "Honda",
+        "models": [
+            "Civic",
+            "Accord",
+            "CR-V",
+            "Fit",
+            "Pilot"
+        ]
+    },
+    {
+        "brand": "BMW",
+        "models": [
+            "X5",
+            "X3",
+            "3 Series",
+            "5 Series",
+            "7 Series"
+        ]
+    },
+    {
+        "brand": "Mercedes",
+        "models": [
+            "C-Class",
+            "E-Class",
+            "S-Class",
+            "GLA",
+            "GLC"
+        ]
+    },
+    {
+        "brand": "Hyundai",
+        "models": [
+            "Elantra",
+            "Sonata",
+            "Tucson",
+            "Santa Fe",
+            "Accent"
+        ]
+    },
+    {
+        "brand": "Nissan",
+        "models": [
+            "Altima",
+            "Sentra",
+            "Maxima",
+            "Rogue",
+            "Pathfinder"
+        ]
+    },
+    {
+        "brand": "Kia",
+        "models": [
+            "Rio",
+            "Sportage",
+            "Sorento",
+            "Optima",
+            "Forte"
+        ]
+    },
+    {
+        "brand": "Chevrolet",
+        "models": [
+            "Malibu",
+            "Impala",
+            "Tahoe",
+            "Equinox",
+            "Silverado"
+        ]
+    },
+    {
+        "brand": "Ford",
+        "models": [
+            "Fusion",
+            "Focus",
+            "Escape",
+            "Explorer",
+            "F-150"
+        ]
+    },
+    {
+        "brand": "Mazda",
+        "models": [
+            "Mazda3",
+            "Mazda6",
+            "CX-5",
+            "CX-9",
+            "MX-5"
+        ]
+    }
+]
