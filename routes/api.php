@@ -59,7 +59,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
 
-    Route::post('/fcm-token', [FcmTokenController::class, 'store'])->middleware('auth:sanctum');
+    Route::post('/fcm/save-token', [FcmTokenController::class, 'store']);
+
 
 
     Route::get('/cars', [CarController::class, 'index']);

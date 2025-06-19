@@ -3,6 +3,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Car;
 use App\Models\Order;
+use App\Models\User;
 use App\Models\Service;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -50,26 +51,21 @@ class OrderController extends Controller
     $order->services()->attach($request->services);
 
     // 🟢 إرسال إشعار إلى جميع مزودي الخدمة
-    $tokens = FcmToken::whereHas('user', function ($q) {
-        $q->where('role', 'provider');
-    })->pluck('token')->toArray();
+   // بعد Order::create()
+    $tokens = FcmToken::whereHas('user', fn($q) => $q->where('role', 'provider'))->pluck('token')->toArray();
+    \Log::info('FCM Provider Tokens:', $tokens);
 
-    if (!empty($tokens)) {
-        $firebase = new FirebaseNotificationService();
-
-        foreach ($tokens as $token) {
-            $firebase->sendToToken(
-                $token,
-                '🚘 طلب جديد',
-                'فيه عميل طلب غسيل سيارة، شوف التفاصيل في التطبيق'
-            );
-        }
+    $firebase = new FirebaseNotificationService();
+    foreach ($tokens as $token) {
+        $response = $firebase->sendToToken($token, '🚘 طلب جديد', 'تم طلب غسيل جديد، افتح التطبيق');
+        \Log::info('FCM Notification Response', ['token' => $token, 'response' => $response]);
     }
 
-    return response()->json([
-        'message' => 'تم إنشاء الطلب بنجاح',
-        'order' => $order->load('services', 'car')
-    ]);
+
+        return response()->json([
+            'message' => 'تم إنشاء الطلب بنجاح',
+            'order' => $order->load('services', 'car')
+        ]);
 }
 
     public function myOrders()
@@ -129,6 +125,15 @@ public function assignToWorker(Request $request, $id)
 
     $order->assigned_to = $request->worker_id;
     $order->save();
+
+    $worker = User::find($request->worker_id);
+    $tokens = $worker->fcmTokens->pluck('token')->toArray();
+
+    $firebase = new FirebaseNotificationService();
+    foreach ($tokens as $token) {
+        $firebase->sendToToken($token, '🧽 طلب جديد موجه ليك', 'تم توجيه طلب غسيل ليك، افتح التطبيق');
+    }
+
 
     return response()->json(['message' => 'تم توجيه الطلب للعامل بنجاح']);
 }
