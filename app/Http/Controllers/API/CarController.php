@@ -23,6 +23,7 @@ class CarController extends Controller
             'model_id' => 'required|exists:car_models,id',
             'car_year_id' => 'required|exists:car_years,id',
             'color' => 'required|string|max:50',
+            'license_plate' => 'nullable|string|max:20',
         ]);
 
         $car = Car::create([
