@@ -31,7 +31,7 @@ class OrderController extends Controller
               ->first();
 
     if (! $car) {
-        return response()->json(['message' => 'السيارة غير موجودة أو لا تخصك'], 403);
+        return response()->json(['message' => 'Car not found or does not belong to you'], 403);
     }
 
     // نحسب total من أسعار الخدمات
@@ -57,13 +57,13 @@ class OrderController extends Controller
 
     $firebase = new FirebaseNotificationService();
     foreach ($tokens as $token) {
-        $response = $firebase->sendToToken($token, '🚘 طلب جديد', 'تم طلب غسيل جديد، افتح التطبيق');
+        $response = $firebase->sendToToken($token, '🚘 New Order', 'A new car wash has been requested, open the app');
         \Log::info('FCM Notification Response', ['token' => $token, 'response' => $response]);
     }
 
 
         return response()->json([
-            'message' => 'تم إنشاء الطلب بنجاح',
+            'message' => 'Order created successfully',
             'order' => $order->load('services', 'car')
         ]);
 }
@@ -92,7 +92,7 @@ class OrderController extends Controller
       public function availableOrders()
 {
     if (auth()->user()->role !== 'provider' && auth()->user()->role !== 'worker') {
-        return response()->json(['message' => 'غير مسموح'], 403);
+        return response()->json(['message' => 'Forbidden'], 403);
     }
 
     if(auth()->user()->role=='provider'){
@@ -120,7 +120,7 @@ public function assignToWorker(Request $request, $id)
     $order = Order::findOrFail($id);
 
     if (auth()->user()->role !== 'provider') {
-        return response()->json(['message' => 'غير مسموح'], 403);
+        return response()->json(['message' => 'Forbidden'], 403);
     }
 
     $order->assigned_to = $request->worker_id;
@@ -131,18 +131,18 @@ public function assignToWorker(Request $request, $id)
 
     $firebase = new FirebaseNotificationService();
     foreach ($tokens as $token) {
-        $firebase->sendToToken($token, '🧽 طلب جديد موجه ليك', 'تم توجيه طلب غسيل ليك، افتح التطبيق');
+        $firebase->sendToToken($token, '🧽 New assignment', 'A new order has been assigned to you');
     }
 
 
-    return response()->json(['message' => 'تم توجيه الطلب للعامل بنجاح']);
+    return response()->json(['message' => 'Order assigned to worker successfully']);
 }
 
 
         public function completedOrders()
         {
             if (auth()->user()->role !== 'provider'  && auth()->user()->role !== 'worker' ) {
-                return response()->json(['message' => 'غير مسموح'], 403);
+                return response()->json(['message' => 'Forbidden'], 403);
             }
 
             
@@ -164,7 +164,7 @@ public function assignToWorker(Request $request, $id)
         public function acceptedOrders()
         {
             if (auth()->user()->role !== 'provider'  && auth()->user()->role !== 'worker' ) {
-                return response()->json(['message' => 'غير مسموح'], 403);
+                return response()->json(['message' => 'Forbidden'], 403);
             }
 
          if(auth()->user()->role=='provider'){
@@ -184,7 +184,7 @@ public function assignToWorker(Request $request, $id)
         public function inProgressOrders()
         {
             if (auth()->user()->role !== 'provider'  && auth()->user()->role !== 'worker' ) {
-                return response()->json(['message' => 'غير مسموح'], 403);
+                return response()->json(['message' => 'Forbidden'], 403);
             }
 
             if(auth()->user()->role=='provider'){
@@ -206,14 +206,14 @@ public function accept($id)
     $order = Order::findOrFail($id);
 
     if ($order->status !== 'pending') {
-        return response()->json(['message' => 'الطلب غير متاح للقبول.'], 400);
+        return response()->json(['message' => 'This order cannot be accepted.'], 400);
     }
 
     $order->provider_id = auth()->id();
     $order->status = 'accepted';
     $order->save();
 
-    return response()->json(['message' => 'تم قبول الطلب.', 'order' => $order]);
+    return response()->json(['message' => 'Order accepted.', 'order' => $order]);
 }
 public function updateStatus(Request $request, $id)
 {
@@ -230,7 +230,7 @@ public function updateStatus(Request $request, $id)
     $order->status = $request->status;
     $order->save();
 
-    return response()->json(['message' => 'تم تحديث الحالة.', 'order' => $order]);
+    return response()->json(['message' => 'Status updated successfully.', 'order' => $order]);
 }
 
     public function saveLocation(Request $request)
