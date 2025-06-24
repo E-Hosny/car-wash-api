@@ -145,18 +145,15 @@ public function assignToWorker(Request $request, $id)
                 return response()->json(['message' => 'Forbidden'], 403);
             }
 
-            
-
             if(auth()->user()->role=='provider'){
                 $orders = Order::where('status', 'completed')
-                ->with(['services', 'customer', 'car.brand', 'car.model','assignedUser']) // ✅ أضف العلاقات هنا
+                ->with(['services', 'customer', 'car.brand', 'car.model','assignedUser'])
                 ->get();
             }else{
                 $orders = Order::where('assigned_to', auth()->id())
                 ->where('status','completed')
                 ->with(['services', 'customer', 'car.brand', 'car.model'])
                 ->get();
-
             }
 
             return response()->json($orders);
@@ -189,7 +186,7 @@ public function assignToWorker(Request $request, $id)
 
             if(auth()->user()->role=='provider'){
              $orders = Order::where('status', 'in_progress')
-                ->with(['services', 'customer', 'car.brand', 'car.model','assignedUser']) // ✅ أضف العلاقات هنا
+                ->with(['services', 'customer', 'car.brand', 'car.model','assignedUser'])
                 ->get();
             }else{
                 $orders = Order::where('assigned_to', auth()->id())
