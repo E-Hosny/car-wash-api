@@ -168,9 +168,9 @@
         <div class="contact-info">
             <p>If you have any questions about this Privacy Policy or our privacy practices, please contact us:</p>
             <ul>
-                <li><strong>Email:</strong> privacy@carwashapp.com</li>
-                <li><strong>Phone:</strong> +1 (555) 123-4567</li>
-                <li><strong>Address:</strong> 123 Car Wash Street, City, State 12345</li>
+                <li><strong>Email:</strong> info@washluxuria.com</li>
+                <li><strong>Phone:</strong> +971502711549</li>
+                <li><strong>Address:</strong> Dubai, UAE</li>
             </ul>
         </div>
 
