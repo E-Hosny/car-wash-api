@@ -31,6 +31,11 @@ Route::middleware([
         return view('welcome'); 
     });
 
+    // ✅ صفحة شروط الخصوصية
+    Route::get('/terms-of-privacy', function () {
+        return view('terms-of-privacy');
+    })->name('terms.of.privacy');
+
     // ✅ تسجيل دخول الأدمن
     Route::get('admin/login', [AuthController::class, 'showLoginForm'])->name('admin.login');
     Route::post('admin/login', [AuthController::class, 'login'])->name('admin.login.submit');
