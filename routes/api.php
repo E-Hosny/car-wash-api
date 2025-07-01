@@ -30,6 +30,10 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
+// ✅ OTP Authentication
+Route::post('/check-phone', [AuthController::class, 'checkPhone']);
+Route::post('/login-with-otp', [AuthController::class, 'loginWithOtp']);
+
 // ✅ تسجيل الخروج (يتطلب توكن)
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
