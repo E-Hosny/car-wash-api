@@ -56,7 +56,10 @@ Route::middleware([
         Route::get('/users/customers', [UserController::class, 'customers'])->name('admin.users.customers');
         Route::get('/users/providers', [UserController::class, 'providers'])->name('admin.users.providers');
         Route::put('/users/{user}/role', [UserController::class, 'updateRole'])->name('admin.users.updateRole');
-
+        Route::get('/users/create', [UserController::class, 'create'])->name('admin.users.create');
+        Route::post('/users', [UserController::class, 'store'])->name('admin.users.store');
+        Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('admin.users.edit');
+        Route::put('/users/{user}', [UserController::class, 'update'])->name('admin.users.update');
 
         Route::get('/orders', [OrderController::class, 'index'])->name('admin.orders.index');
     });

@@ -41,6 +41,11 @@ return [
 'admin' => 'Admin',
 'no_users' => 'No users found',
 'total' => 'Total Price',
+'password' => 'Password',
+'password_confirmation' => 'Confirm Password',
+'leave_blank_to_keep' => 'Leave blank to keep current password',
+'worker' => 'Worker',
+'add_user' => 'Add New User',
 
 
 
