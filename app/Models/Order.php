@@ -20,7 +20,9 @@ class Order extends Model
         'address',
         'car_id',
         'total',
-
+        'payment_status',
+        'payment_intent_id',
+        'paid_at',
     ];
 
     public function customer()

@@ -8,6 +8,7 @@ use App\Http\Controllers\API\CarYearController;
 use App\Http\Controllers\API\FcmTokenController;
 use App\Http\Controllers\API\OrderController;
 use App\Http\Controllers\API\ServiceController;
+use App\Http\Controllers\API\PaymentController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -72,8 +73,22 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/cars/{car}', [CarController::class, 'destroy']);
 
 
-   Route::get('/workers',[UserController::class,'getWorkers']);
+       Route::get('/workers',[UserController::class,'getWorkers']);
+
+    // Payment routes
+    Route::post('/payments/create-intent', [PaymentController::class, 'createPaymentIntent']);
+    Route::post('/payments/confirm', [PaymentController::class, 'confirmPayment']);
+    Route::get('/payments/status', [PaymentController::class, 'getPaymentStatus']);
+    Route::post('/orders/{orderId}/payment-status', [PaymentController::class, 'updateOrderPaymentStatus']);
+
+    // Addresses API
+    Route::get('/addresses', [\App\Http\Controllers\API\AddressController::class, 'index']);
+    Route::post('/addresses', [\App\Http\Controllers\API\AddressController::class, 'store']);
+    Route::delete('/addresses/{address}', [\App\Http\Controllers\API\AddressController::class, 'destroy']);
 });
+
+// Webhook route (لا يحتاج authentication)
+Route::post('/webhooks/stripe', [PaymentController::class, 'handleWebhook']);
 
 Route::get('/brands', [BrandController::class, 'index']);
 Route::get('/brands/{brand}/models', [BrandController::class, 'models']);

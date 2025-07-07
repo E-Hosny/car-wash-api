@@ -64,6 +64,7 @@ class OrderController extends Controller
 
         return response()->json([
             'message' => 'Order created successfully',
+            'id' => $order->id,
             'order' => $order->load('services', 'car')
         ]);
 }
