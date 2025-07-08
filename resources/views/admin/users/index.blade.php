@@ -46,7 +46,7 @@
                     </select>
                 </form>
             </td>
-                <td>{{ $user->created_at->format('Y-m-d') }}</td>
+                <td>{{ optional($user->created_at)->format('Y-m-d') }}</td>
                 <td>
                     <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-sm btn-info">{{ __('messages.edit') }}</a>
                 </td>

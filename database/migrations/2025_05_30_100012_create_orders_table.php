@@ -33,6 +33,11 @@ return new class extends Migration
             $table->string('address')->nullable();
             $table->decimal('total', 8, 2)->nullable();
 
+            // الموقع الجغرافي
+            $table->string('street')->nullable();
+            $table->string('building')->nullable();
+            $table->string('floor')->nullable();
+            $table->string('apartment')->nullable();
 
             // الوقت المجدول
             $table->timestamp('scheduled_at')->nullable();
