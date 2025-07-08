@@ -10,7 +10,14 @@ use App\Models\Order;
 
 class PaymentController extends Controller
 {
-    private $stripeSecretKey = '***REMOVED***51QBy7wCMJLG6tciZdK1fbK37VYVb2wdQK9hH2g3Fb4b81S4N2g49OReYDIxUlnZpJsVH6uBaOkgycGIEAyRnxT2N00P2nlUDet';
+    private $stripeSecretKey;
+    private $stripeWebhookSecret;
+
+    public function __construct()
+    {
+        $this->stripeSecretKey = env('STRIPE_SECRET_KEY');
+        $this->stripeWebhookSecret = env('STRIPE_WEBHOOK_SECRET');
+    }
 
     /**
      * إنشاء Payment Intent
@@ -180,7 +187,7 @@ class PaymentController extends Controller
         try {
             $payload = $request->getContent();
             $sigHeader = $request->header('Stripe-Signature');
-            $endpointSecret = 'whsec_your_webhook_secret'; // يجب تغيير هذا إلى webhook secret الخاص بك
+            $endpointSecret = $this->stripeWebhookSecret;
 
             $event = \Stripe\Webhook::constructEvent(
                 $payload,
