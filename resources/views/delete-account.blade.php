@@ -3,13 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Delete Account - Car Wash App</title>
+    <title>Delete Account - Wash Luxuria</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
@@ -26,6 +22,23 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
             overflow: hidden;
         }
+        .app-info {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .app-info img {
+            width: 80px;
+            margin-bottom: 10px;
+        }
+        .app-info h2 {
+            margin: 0;
+            font-size: 1.5em;
+            color: #2c3e50;
+        }
+        .app-info p {
+            margin: 0;
+            color: #555;
+        }
         .header {
             background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
             color: white;
@@ -40,9 +53,7 @@
             font-size: 1.1em;
             opacity: 0.9;
         }
-        .content {
-            padding: 40px;
-        }
+        .content { padding: 40px; }
         .warning-box {
             background: #fff3cd;
             border: 1px solid #ffeaa7;
@@ -73,10 +84,7 @@
             border-bottom: 2px solid #dee2e6;
             padding-bottom: 10px;
         }
-        .data-list ul {
-            list-style: none;
-            padding: 0;
-        }
+        .data-list ul { list-style: none; padding: 0; }
         .data-list li {
             padding: 8px 0;
             border-bottom: 1px solid #e9ecef;
@@ -84,9 +92,7 @@
             justify-content: space-between;
             align-items: center;
         }
-        .data-list li:last-child {
-            border-bottom: none;
-        }
+        .data-list li:last-child { border-bottom: none; }
         .data-list .status {
             background: #dc3545;
             color: white;
@@ -94,9 +100,7 @@
             border-radius: 20px;
             font-size: 0.85em;
         }
-        .form-group {
-            margin-bottom: 25px;
-        }
+        .form-group { margin-bottom: 25px; }
         .form-group label {
             display: block;
             margin-bottom: 8px;
@@ -160,9 +164,7 @@
             color: white;
             margin-top: 15px;
         }
-        .btn-secondary:hover {
-            background: #5a6268;
-        }
+        .btn-secondary:hover { background: #5a6268; }
         .alert {
             padding: 15px;
             border-radius: 8px;
@@ -185,35 +187,28 @@
             margin-top: 30px;
             text-align: center;
         }
-        .contact-info h4 {
-            color: #2c3e50;
-            margin-bottom: 15px;
-        }
-        .contact-info p {
-            margin-bottom: 10px;
-            color: #495057;
-        }
+        .contact-info h4 { color: #2c3e50; margin-bottom: 15px; }
+        .contact-info p { margin-bottom: 10px; color: #495057; }
         @media (max-width: 768px) {
-            .container {
-                margin: 10px;
-                border-radius: 10px;
-            }
-            .header {
-                padding: 20px;
-            }
-            .header h1 {
-                font-size: 1.8em;
-            }
-            .content {
-                padding: 20px;
-            }
+            .container { margin: 10px; border-radius: 10px; }
+            .header { padding: 20px; }
+            .header h1 { font-size: 1.8em; }
+            .content { padding: 20px; }
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <div class="app-info">
+            <img src="/assets/logo.png" alt="Wash Luxuria Logo">
+            <h2>Wash Luxuria - Car Wash App</h2>
+            <p>Developer: Wash Luxuria</p>
+            <p style="color:#555; margin-top:10px;">
+                This page allows users of the Wash Luxuria app to request deletion of their account and all associated data, in compliance with Google Play policies.
+            </p>
+        </div>
         <div class="header">
-            <h1>Delete Account</h1>
+            <h1>Delete your Wash Luxuria Account</h1>
             <p>Request to delete your account and all associated data</p>
         </div>
         <div class="content">
