@@ -200,7 +200,7 @@
 <body>
     <div class="container">
         <div class="app-info">
-            <img src="/assets/logo.png" alt="Wash Luxuria Logo">
+            <img src="/logo.png" alt="Wash Luxuria">
             <h2>Wash Luxuria - Car Wash App</h2>
             <p>Developer: Wash Luxuria</p>
             <p style="color:#555; margin-top:10px;">
