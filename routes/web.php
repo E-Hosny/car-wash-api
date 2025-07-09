@@ -36,6 +36,11 @@ Route::middleware([
         return view('terms-of-privacy');
     })->name('terms.of.privacy');
 
+    // ✅ صفحة حذف الحساب
+    Route::get('/delete-account', [App\Http\Controllers\DeleteAccountController::class, 'show'])->name('delete.account');
+    Route::post('/delete-account', [App\Http\Controllers\DeleteAccountController::class, 'requestDeletion'])->name('delete.account.request');
+    Route::get('/delete-account/confirm/{token}', [App\Http\Controllers\DeleteAccountController::class, 'confirmDeletion'])->name('delete.account.confirm');
+
     // ✅ تسجيل دخول الأدمن
     Route::get('admin/login', [AuthController::class, 'showLoginForm'])->name('admin.login');
     Route::post('admin/login', [AuthController::class, 'login'])->name('admin.login.submit');
