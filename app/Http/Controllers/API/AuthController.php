@@ -54,16 +54,21 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'phone' => 'required',
             'password' => 'required',
+            'phone' => 'required_without:email',
+            'email' => 'required_without:phone|email',
         ]);
 
-        $normalizedPhone = $this->normalizePhone($request->phone);
-        $user = User::where('phone', $normalizedPhone)->first();
+        if ($request->filled('email')) {
+            $user = User::where('email', $request->email)->first();
+        } else {
+            $normalizedPhone = $this->normalizePhone($request->phone);
+            $user = User::where('phone', $normalizedPhone)->first();
+        }
 
         if (! $user) {
             throw ValidationException::withMessages([
-                'phone' => ['Phone number not found.'],
+                $request->filled('email') ? 'email' : 'phone' => ['User not found.'],
             ]);
         }
         
@@ -73,7 +78,6 @@ class AuthController extends Controller
             ]);
         }
         
-
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
