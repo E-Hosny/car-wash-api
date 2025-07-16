@@ -27,6 +27,7 @@ class OrderController extends Controller
         'car_id' => 'required|exists:cars,id',
         'services' => 'required|array',
         'services.*' => 'exists:services,id',
+        'use_package' => 'nullable|boolean',
     ]);
 
     // نتأكد إن السيارة دي تخص المستخدم الحالي
@@ -38,8 +39,43 @@ class OrderController extends Controller
         return response()->json(['message' => 'Car not found or does not belong to you'], 403);
     }
 
-    // نحسب total من أسعار الخدمات
-    $total = Service::whereIn('id', $request->services)->sum('price');
+    $user = auth()->user();
+    $total = 0;
+    $pointsUsed = 0;
+    $userPackage = null;
+
+    // Check if user wants to use package
+    if ($request->use_package) {
+        $userPackage = \App\Models\UserPackage::where('user_id', $user->id)
+            ->where('status', 'active')
+            ->where('expires_at', '>=', now()->toDateString())
+            ->where('remaining_points', '>', 0)
+            ->first();
+
+        if (!$userPackage) {
+            return response()->json([
+                'success' => false,
+                'message' => 'لا توجد باقة نشطة أو نقاط متبقية'
+            ], 400);
+        }
+
+        // Calculate points needed for selected services
+        $services = Service::with('servicePoint')->whereIn('id', $request->services)->get();
+        $totalPointsNeeded = $services->sum('points_required');
+
+        if ($totalPointsNeeded > $userPackage->remaining_points) {
+            return response()->json([
+                'success' => false,
+                'message' => 'النقاط المتبقية غير كافية للخدمات المطلوبة'
+            ], 400);
+        }
+
+        $pointsUsed = $totalPointsNeeded;
+        $total = 0; // Free when using package
+    } else {
+        // Calculate total from service prices
+        $total = Service::whereIn('id', $request->services)->sum('price');
+    }
 
     // إنشاء الطلب مع حفظ total
     $order = Order::create([
@@ -54,9 +90,23 @@ class OrderController extends Controller
         'scheduled_at' => $request->scheduled_at,
         'car_id' => $car->id,
         'total' => $total,
+        'payment_status' => $request->use_package ? 'paid' : 'pending',
     ]);
 
     $order->services()->attach($request->services);
+
+    // If using package, create package order and update remaining points
+    if ($request->use_package && $userPackage) {
+        \App\Models\PackageOrder::create([
+            'user_package_id' => $userPackage->id,
+            'order_id' => $order->id,
+            'points_used' => $pointsUsed,
+        ]);
+
+        $userPackage->update([
+            'remaining_points' => $userPackage->remaining_points - $pointsUsed
+        ]);
+    }
 
     // 🟢 إرسال إشعار إلى جميع مزودي الخدمة
    // بعد Order::create()
@@ -69,12 +119,20 @@ class OrderController extends Controller
         \Log::info('FCM Notification Response', ['token' => $token, 'response' => $response]);
     }
 
+    $responseData = [
+        'message' => 'Order created successfully',
+        'id' => $order->id,
+        'order' => $order->load('services', 'car')
+    ];
 
-        return response()->json([
-            'message' => 'Order created successfully',
-            'id' => $order->id,
-            'order' => $order->load('services', 'car')
-        ]);
+    if ($request->use_package && $userPackage) {
+        $responseData['package_info'] = [
+            'remaining_points' => $userPackage->remaining_points,
+            'points_used' => $pointsUsed
+        ];
+    }
+
+    return response()->json($responseData);
 }
 
     public function myOrders()

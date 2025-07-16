@@ -9,6 +9,7 @@ use App\Http\Controllers\API\FcmTokenController;
 use App\Http\Controllers\API\OrderController;
 use App\Http\Controllers\API\ServiceController;
 use App\Http\Controllers\API\PaymentController;
+use App\Http\Controllers\API\PackageController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -85,6 +86,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/addresses', [\App\Http\Controllers\API\AddressController::class, 'index']);
     Route::post('/addresses', [\App\Http\Controllers\API\AddressController::class, 'store']);
     Route::delete('/addresses/{address}', [\App\Http\Controllers\API\AddressController::class, 'destroy']);
+
+    // Packages API
+    Route::get('/packages', [PackageController::class, 'index']);
+    Route::get('/packages/{id}', [PackageController::class, 'show']);
+    Route::post('/packages/{id}/purchase', [PackageController::class, 'purchase']);
+    Route::get('/packages/my/current', [PackageController::class, 'myPackage']);
+    Route::get('/packages/my/services', [PackageController::class, 'availableServices']);
+    Route::get('/packages/my/history', [PackageController::class, 'packageHistory']);
 });
 
 // Webhook route (لا يحتاج authentication)

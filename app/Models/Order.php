@@ -54,5 +54,13 @@ class Order extends Model
     return $this->belongsTo(User::class, 'assigned_to');
 }
 
+    public function packageOrder()
+    {
+        return $this->hasOne(PackageOrder::class);
+    }
 
+    public function isPackageOrder()
+    {
+        return $this->packageOrder()->exists();
+    }
 }

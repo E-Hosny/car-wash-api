@@ -87,6 +87,9 @@
             <a href="{{ route('admin.services.index') }}" class="text-white {{ request()->routeIs('admin.services.*') ? 'active' : '' }}">
                 <i class="bi bi-stars"></i> {{ __('messages.services') }}
             </a>
+            <a href="{{ route('admin.packages.index') }}" class="text-white {{ request()->routeIs('admin.packages.*') ? 'active' : '' }}">
+                <i class="bi bi-box"></i> {{ __('packages.packages') }}
+            </a>
             <div class="text-center mt-2">
                 <a href="{{ route('lang.switch', 'ar') }}">العربية</a> |
                 <a href="{{ route('lang.switch', 'en') }}">English</a>
@@ -107,6 +110,9 @@
         </a>
         <a href="{{ route('admin.services.index') }}" class="{{ request()->routeIs('admin.services.*') ? 'active' : '' }}">
             <i class="bi bi-stars"></i> {{ __('messages.services') }}
+        </a>
+        <a href="{{ route('admin.packages.index') }}" class="{{ request()->routeIs('admin.packages.*') ? 'active' : '' }}">
+            <i class="bi bi-box"></i> {{ __('packages.packages') }}
         </a>
         <div class="text-center mt-2">
             <a href="{{ route('lang.switch', 'ar') }}">العربية</a> |

@@ -19,4 +19,14 @@ class Service extends Model
     {
         return $this->belongsToMany(Order::class, 'order_service');
     }
+
+    public function servicePoint()
+    {
+        return $this->hasOne(ServicePoint::class);
+    }
+
+    public function getPointsRequiredAttribute()
+    {
+        return $this->servicePoint ? $this->servicePoint->points_required : 0;
+    }
 }

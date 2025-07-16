@@ -5,6 +5,8 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ServiceController;
 use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\PackageController;
+use App\Http\Controllers\API\QrCodeController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Session\Middleware\StartSession;
 use App\Http\Middleware\SetLocale;
@@ -30,6 +32,9 @@ Route::middleware([
     Route::get('/', function () {
         return view('welcome'); 
     });
+
+    // ✅ QR Code redirect إلى Google Play
+    Route::get('/qr1', [QrCodeController::class, 'qr1'])->name('qr.redirect');
 
     // ✅ صفحة شروط الخصوصية
     Route::get('/terms-of-privacy', function () {
@@ -67,6 +72,16 @@ Route::middleware([
         Route::put('/users/{user}', [UserController::class, 'update'])->name('admin.users.update');
 
         Route::get('/orders', [OrderController::class, 'index'])->name('admin.orders.index');
+
+        // Packages routes
+        Route::get('/packages', [PackageController::class, 'index'])->name('admin.packages.index');
+        Route::get('/packages/create', [PackageController::class, 'create'])->name('admin.packages.create');
+        Route::post('/packages', [PackageController::class, 'store'])->name('admin.packages.store');
+        Route::get('/packages/{id}/edit', [PackageController::class, 'edit'])->name('admin.packages.edit');
+        Route::post('/packages/{id}/update', [PackageController::class, 'update'])->name('admin.packages.update');
+        Route::post('/packages/{id}/delete', [PackageController::class, 'destroy'])->name('admin.packages.delete');
+        Route::post('/packages/{id}/toggle-status', [PackageController::class, 'toggleStatus'])->name('admin.packages.toggle-status');
+        Route::get('/packages/statistics', [PackageController::class, 'statistics'])->name('admin.packages.statistics');
     });
 
 });
