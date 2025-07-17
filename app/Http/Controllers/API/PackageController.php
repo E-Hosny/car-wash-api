@@ -127,7 +127,7 @@ class PackageController extends Controller
         if (!$userPackage) {
             return response()->json([
                 'success' => false,
-                'message' => 'لا توجد باقة نشطة أو نقاط متبقية'
+                'message' => 'No active package or remaining points'
             ], 404);
         }
 
@@ -135,7 +135,16 @@ class PackageController extends Controller
             ->whereHas('servicePoint', function($query) use ($userPackage) {
                 $query->where('points_required', '<=', $userPackage->remaining_points);
             })
-            ->get();
+            ->get()
+            ->map(function($service) {
+                return [
+                    'id' => $service->id,
+                    'name' => $service->name,
+                    'description' => $service->description,
+                    'price' => $service->price,
+                    'points_required' => $service->servicePoint ? $service->servicePoint->points_required : 0
+                ];
+            });
 
         return response()->json([
             'success' => true,
