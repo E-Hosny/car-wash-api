@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ServiceController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\PackageController;
+use App\Http\Controllers\Admin\UserPackageController;
 use App\Http\Controllers\API\QrCodeController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Session\Middleware\StartSession;
@@ -82,6 +83,19 @@ Route::middleware([
         Route::post('/packages/{id}/delete', [PackageController::class, 'destroy'])->name('admin.packages.delete');
         Route::post('/packages/{id}/toggle-status', [PackageController::class, 'toggleStatus'])->name('admin.packages.toggle-status');
         Route::get('/packages/statistics', [PackageController::class, 'statistics'])->name('admin.packages.statistics');
+
+        // User Package Subscriptions routes
+        Route::get('/user-packages', [UserPackageController::class, 'index'])->name('admin.user-packages.index');
+        Route::get('/user-packages/create', [UserPackageController::class, 'create'])->name('admin.user-packages.create');
+        Route::post('/user-packages', [UserPackageController::class, 'store'])->name('admin.user-packages.store');
+        Route::get('/user-packages/{id}', [UserPackageController::class, 'show'])->name('admin.user-packages.show');
+        Route::get('/user-packages/{id}/edit', [UserPackageController::class, 'edit'])->name('admin.user-packages.edit');
+        Route::put('/user-packages/{id}', [UserPackageController::class, 'update'])->name('admin.user-packages.update');
+        Route::delete('/user-packages/{id}', [UserPackageController::class, 'destroy'])->name('admin.user-packages.destroy');
+        Route::post('/user-packages/{id}/activate', [UserPackageController::class, 'activate'])->name('admin.user-packages.activate');
+        Route::post('/user-packages/{id}/deactivate', [UserPackageController::class, 'deactivate'])->name('admin.user-packages.deactivate');
+        Route::post('/user-packages/{id}/extend', [UserPackageController::class, 'extend'])->name('admin.user-packages.extend');
+        Route::get('/user-packages/filter', [UserPackageController::class, 'filter'])->name('admin.user-packages.filter');
     });
 
 });

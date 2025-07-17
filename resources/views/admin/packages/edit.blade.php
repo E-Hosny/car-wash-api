@@ -7,11 +7,11 @@
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h3 class="card-title">
-                        <i class="fas fa-edit"></i> تعديل الباقة: {{ $package->name }}
+                        <i class="fas fa-edit"></i> {{ __('packages.edit_package') }}: {{ $package->name }}
                     </h3>
                     <div>
                         <a href="{{ route('admin.packages.index') }}" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left"></i> رجوع
+                            <i class="fas fa-arrow-left"></i> {{ __('packages.back') }}
                         </a>
                     </div>
                 </div>
@@ -19,7 +19,7 @@
                     @if($errors->any())
                         <div class="alert alert-danger alert-dismissible fade show" role="alert">
                             <i class="fas fa-exclamation-triangle"></i>
-                            <strong>يرجى تصحيح الأخطاء التالية:</strong>
+                            <strong>{{ __('packages.correct_errors') }}:</strong>
                             <ul class="mb-0 mt-2">
                                 @foreach($errors->all() as $error)
                                     <li>{{ $error }}</li>
@@ -36,24 +36,24 @@
                             <div class="col-md-6">
                                 <div class="form-group mb-3">
                                     <label for="name" class="form-label">
-                                        <i class="fas fa-tag"></i> اسم الباقة <span class="text-danger">*</span>
+                                        <i class="fas fa-tag"></i> {{ __('packages.package_name') }} <span class="text-danger">*</span>
                                     </label>
                                     <input type="text" class="form-control form-control-lg" id="name" name="name" 
                                            value="{{ old('name', $package->name) }}" required
-                                           placeholder="أدخل اسم الباقة">
+                                           placeholder="{{ __('packages.enter_package_name') }}">
                                 </div>
                             </div>
                             
                             <div class="col-md-6">
                                 <div class="form-group mb-3">
                                     <label for="price" class="form-label">
-                                        <i class="fas fa-money-bill"></i> السعر (ريال) <span class="text-danger">*</span>
+                                        <i class="fas fa-money-bill"></i> {{ __('packages.package_price') }} ({{ __('packages.currency') }}) <span class="text-danger">*</span>
                                     </label>
                                     <div class="input-group">
                                         <input type="number" class="form-control form-control-lg" id="price" name="price" 
                                                value="{{ old('price', $package->price) }}" step="0.01" min="0" required
                                                placeholder="0.00">
-                                        <span class="input-group-text">ريال</span>
+                                        <span class="input-group-text">{{ __('packages.currency') }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -63,13 +63,13 @@
                             <div class="col-md-6">
                                 <div class="form-group mb-3">
                                     <label for="points" class="form-label">
-                                        <i class="fas fa-star"></i> عدد النقاط <span class="text-danger">*</span>
+                                        <i class="fas fa-star"></i> {{ __('packages.package_points') }} <span class="text-danger">*</span>
                                     </label>
                                     <div class="input-group">
                                         <input type="number" class="form-control form-control-lg" id="points" name="points" 
                                                value="{{ old('points', $package->points) }}" min="1" required
                                                placeholder="100">
-                                        <span class="input-group-text">نقطة</span>
+                                        <span class="input-group-text">{{ __('packages.points_unit') }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -77,7 +77,7 @@
                             <div class="col-md-6">
                                 <div class="form-group mb-3">
                                     <label for="image" class="form-label">
-                                        <i class="fas fa-image"></i> صورة الباقة
+                                        <i class="fas fa-image"></i> {{ __('packages.package_image') }}
                                     </label>
                                     @if($package->image)
                                         <div class="mb-3">
@@ -87,7 +87,7 @@
                                                          alt="{{ $package->name }}" 
                                                          class="img-thumbnail"
                                                          style="max-width: 200px; max-height: 200px;">
-                                                    <p class="text-muted mt-2">الصورة الحالية</p>
+                                                    <p class="text-muted mt-2">{{ __('packages.current_image') }}</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -96,7 +96,7 @@
                                            accept="image/*" onchange="previewImage(this)">
                                     <div class="form-text">
                                         <i class="fas fa-info-circle"></i> 
-                                        يمكنك اختيار صورة جديدة أو تركها فارغة للاحتفاظ بالصورة الحالية
+                                        {{ __('packages.select_new_image_or_keep_current') }}
                                     </div>
                                 </div>
                             </div>
@@ -104,16 +104,16 @@
 
                         <div class="form-group mb-4">
                             <label for="description" class="form-label">
-                                <i class="fas fa-align-left"></i> وصف الباقة
+                                <i class="fas fa-align-left"></i> {{ __('packages.package_description') }}
                             </label>
                             <textarea class="form-control" id="description" name="description" 
-                                      rows="4" placeholder="أدخل وصف الباقة...">{{ old('description', $package->description) }}</textarea>
+                                      rows="4" placeholder="{{ __('packages.enter_package_description') }}">{{ old('description', $package->description) }}</textarea>
                         </div>
 
                         <div class="card mb-4">
                             <div class="card-header">
                                 <h5 class="card-title mb-0">
-                                    <i class="fas fa-cogs"></i> نقاط الخدمات
+                                    <i class="fas fa-cogs"></i> {{ __('packages.service_points') }}
                                 </h5>
                             </div>
                             <div class="card-body">
@@ -121,9 +121,9 @@
                                     <table class="table table-bordered table-hover">
                                         <thead class="table-dark">
                                             <tr>
-                                                <th>الخدمة</th>
-                                                <th>النقاط المطلوبة</th>
-                                                <th>الحالة</th>
+                                                <th>{{ __('messages.services') }}</th>
+                                                <th>{{ __('packages.points_required') }}</th>
+                                                <th>{{ __('packages.status') }}</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -143,17 +143,17 @@
                                                                name="services[{{ $loop->index }}][points_required]" 
                                                                value="{{ old("services.{$loop->index}.points_required", $service->servicePoint ? $service->servicePoint->points_required : 0) }}" 
                                                                min="0" required>
-                                                        <span class="input-group-text">نقطة</span>
+                                                        <span class="input-group-text">{{ __('packages.points_unit') }}</span>
                                                     </div>
                                                 </td>
                                                 <td>
                                                     @if($service->servicePoint && $service->servicePoint->points_required > 0)
                                                         <span class="badge bg-success">
-                                                            <i class="fas fa-check"></i> متاح
+                                                            <i class="fas fa-check"></i> {{ __('packages.available') }}
                                                         </span>
                                                     @else
                                                         <span class="badge bg-secondary">
-                                                            <i class="fas fa-times"></i> غير متاح
+                                                            <i class="fas fa-times"></i> {{ __('packages.not_available') }}
                                                         </span>
                                                     @endif
                                                 </td>
@@ -168,13 +168,13 @@
                         <div class="form-group">
                             <div class="d-flex gap-2">
                                 <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
-                                    <i class="fas fa-save"></i> تحديث الباقة
+                                    <i class="fas fa-save"></i> {{ __('packages.update_package') }}
                                 </button>
                                 <a href="{{ route('admin.packages.index') }}" class="btn btn-secondary btn-lg">
-                                    <i class="fas fa-arrow-left"></i> رجوع
+                                    <i class="fas fa-arrow-left"></i> {{ __('packages.back') }}
                                 </a>
                                 <button type="button" class="btn btn-outline-info btn-lg" onclick="previewPackage()">
-                                    <i class="fas fa-eye"></i> معاينة
+                                    <i class="fas fa-eye"></i> {{ __('packages.preview') }}
                                 </button>
                             </div>
                         </div>
@@ -191,7 +191,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">
-                    <i class="fas fa-eye"></i> معاينة الباقة
+                    <i class="fas fa-eye"></i> {{ __('packages.preview_package') }}
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
@@ -207,7 +207,7 @@
                             @else
                                 <div class="bg-light border rounded p-5">
                                     <i class="fas fa-image fa-3x text-muted"></i>
-                                    <p class="text-muted mt-2">لا توجد صورة</p>
+                                    <p class="text-muted mt-2">{{ __('packages.no_image') }}</p>
                                 </div>
                             @endif
                         </div>
@@ -217,16 +217,16 @@
                             <div class="col-6">
                                 <div class="card bg-success text-white">
                                     <div class="card-body">
-                                        <h5 id="previewPrice">{{ $package->price }} ريال</h5>
-                                        <small>السعر</small>
+                                        <h5 id="previewPrice">{{ $package->price }} {{ __('packages.currency') }}</h5>
+                                        <small>{{ __('packages.price') }}</small>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-6">
                                 <div class="card bg-info text-white">
                                     <div class="card-body">
-                                        <h5 id="previewPoints">{{ $package->points }} نقطة</h5>
-                                        <small>النقاط</small>
+                                        <h5 id="previewPoints">{{ $package->points }} {{ __('packages.points_unit') }}</h5>
+                                        <small>{{ __('packages.points') }}</small>
                                     </div>
                                 </div>
                             </div>
@@ -261,10 +261,10 @@ function previewPackage() {
     const price = document.getElementById('price').value;
     const points = document.getElementById('points').value;
     
-    document.getElementById('previewName').textContent = name || 'اسم الباقة';
-    document.getElementById('previewDescription').textContent = description || 'وصف الباقة';
-    document.getElementById('previewPrice').textContent = (price || '0') + ' ريال';
-    document.getElementById('previewPoints').textContent = (points || '0') + ' نقطة';
+    document.getElementById('previewName').textContent = name || '{{ __('packages.package_name') }}';
+    document.getElementById('previewDescription').textContent = description || '{{ __('packages.package_description') }}';
+    document.getElementById('previewPrice').textContent = (price || '0') + ' {{ __('packages.currency') }}';
+    document.getElementById('previewPoints').textContent = (points || '0') + ' {{ __('packages.points_unit') }}';
     
     const modal = new bootstrap.Modal(document.getElementById('previewModal'));
     modal.show();
@@ -273,7 +273,7 @@ function previewPackage() {
 // Form validation and loading state
 document.getElementById('editPackageForm').addEventListener('submit', function(e) {
     const submitBtn = document.getElementById('submitBtn');
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التحديث...';
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> {{ __('packages.updating_package') }}...';
     submitBtn.disabled = true;
 });
 

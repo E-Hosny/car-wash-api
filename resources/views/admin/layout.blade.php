@@ -90,6 +90,9 @@
             <a href="{{ route('admin.packages.index') }}" class="text-white {{ request()->routeIs('admin.packages.*') ? 'active' : '' }}">
                 <i class="bi bi-box"></i> {{ __('packages.packages') }}
             </a>
+            <a href="{{ route('admin.user-packages.index') }}" class="text-white {{ request()->routeIs('admin.user-packages.*') ? 'active' : '' }}">
+                <i class="bi bi-people-fill"></i> User Subscriptions
+            </a>
             <div class="text-center mt-2">
                 <a href="{{ route('lang.switch', 'ar') }}">العربية</a> |
                 <a href="{{ route('lang.switch', 'en') }}">English</a>
@@ -113,6 +116,9 @@
         </a>
         <a href="{{ route('admin.packages.index') }}" class="{{ request()->routeIs('admin.packages.*') ? 'active' : '' }}">
             <i class="bi bi-box"></i> {{ __('packages.packages') }}
+        </a>
+        <a href="{{ route('admin.user-packages.index') }}" class="{{ request()->routeIs('admin.user-packages.*') ? 'active' : '' }}">
+            <i class="bi bi-people-fill"></i> User Subscriptions
         </a>
         <div class="text-center mt-2">
             <a href="{{ route('lang.switch', 'ar') }}">العربية</a> |

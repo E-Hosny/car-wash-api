@@ -119,11 +119,68 @@ return [
     'package_services' => 'خدمات الباقة',
 
     // Currency
-    'currency' => 'ريال',
+    'currency' => 'درهم',
     'points_unit' => 'نقطة',
     'points_unit_plural' => 'نقاط',
     
     // Additional
     'no_packages_found' => 'لا توجد باقات',
     'confirm_delete' => 'هل أنت متأكد من حذف هذه الباقة؟',
+    
+    // User Package Subscriptions
+    'user_package_subscriptions' => 'اشتراكات الباقات',
+    'add_new_subscription' => 'إضافة اشتراك جديد',
+    'all_packages' => 'جميع الباقات',
+    'all_status' => 'جميع الحالات',
+    'all_users' => 'جميع المستخدمين',
+    'from_date' => 'من تاريخ',
+    'to_date' => 'إلى تاريخ',
+    'filter' => 'تصفية',
+    'clear' => 'مسح',
+    'total_subscriptions' => 'إجمالي الاشتراكات',
+    'active_subscriptions' => 'الاشتراكات النشطة',
+    'expired_subscriptions' => 'الاشتراكات المنتهية',
+    'no_expiry' => 'لا يوجد تاريخ انتهاء',
+    'extend' => 'تمديد',
+    'confirm_delete_package' => 'هل أنت متأكد من حذف الباقة',
+    'delete_warning' => 'تحذير: لا يمكن التراجع عن هذا الإجراء!',
+    'loading' => 'جاري التحميل',
+    'no_packages_available' => 'لا توجد باقات متاحة حالياً',
+    'add_first_package' => 'إضافة أول باقة',
+    'view_detailed_statistics' => 'عرض الإحصائيات التفصيلية',
+    'confirm_activate' => 'هل تريد تفعيل هذه الباقة؟',
+    'confirm_deactivate' => 'هل تريد إلغاء تفعيل هذه الباقة؟',
+    'edit_package' => 'تعديل الباقة',
+    'delete_package' => 'حذف الباقة نهائياً',
+    
+    // Create/Edit Form
+    'correct_errors' => 'يرجى تصحيح الأخطاء التالية',
+    'optional' => 'اختياري',
+    'max_size_2mb' => 'الحد الأقصى 2 ميجابايت',
+    'set_points_per_service' => 'حدد عدد النقاط المطلوبة لكل خدمة',
+    'not_available' => 'غير متاح',
+    'available' => 'متاح',
+    'preview' => 'معاينة',
+    'preview_package' => 'معاينة الباقة',
+    'no_image' => 'لا توجد صورة',
+    'saving' => 'جاري الحفظ',
+    
+    // Edit Form
+    'current_image' => 'الصورة الحالية',
+    'select_new_image_or_keep_current' => 'يمكنك اختيار صورة جديدة أو تركها فارغة للاحتفاظ بالصورة الحالية',
+    'updating_package' => 'جاري التحديث',
+
+    // Statistics
+    'back_to_packages' => 'رجوع للباقات',
+    'percentage' => 'النسبة',
+    'no_data' => 'لا توجد بيانات',
+    'no_purchases_yet' => 'لم يتم تسجيل أي مشتريات بعد',
+    'additional_info' => 'معلومات إضافية',
+    'active_packages_percentage' => 'نسبة الباقات النشطة',
+    'active_subscriptions_percentage' => 'نسبة الاشتراكات النشطة',
+    'average_revenue_per_subscriber' => 'متوسط الإيراد لكل مشتركة',
+    'last_update_date' => 'تاريخ آخر تحديث',
+    'view_all_packages' => 'عرض جميع الباقات',
+    'add_new_package' => 'إضافة باقة جديدة',
+    'print_report' => 'طباعة التقرير',
 ]; 

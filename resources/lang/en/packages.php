@@ -119,11 +119,55 @@ return [
     'package_services' => 'Package Services',
 
     // Currency
-    'currency' => 'SAR',
+    'currency' => 'AED',
     'points_unit' => 'point',
     'points_unit_plural' => 'points',
     
     // Additional
     'no_packages_found' => 'No packages found',
     'confirm_delete' => 'Are you sure you want to delete this package?',
+    
+    // User Package Subscriptions
+    'user_package_subscriptions' => 'User Package Subscriptions',
+    'add_new_subscription' => 'Add New Subscription',
+    'all_packages' => 'All Packages',
+    'all_status' => 'All Status',
+    'all_users' => 'All Users',
+    'from_date' => 'From Date',
+    'to_date' => 'To Date',
+    'filter' => 'Filter',
+    'clear' => 'Clear',
+    'total_subscriptions' => 'Total Subscriptions',
+    'active_subscriptions' => 'Active Subscriptions',
+    'expired_subscriptions' => 'Expired Subscriptions',
+    'no_expiry' => 'No expiry',
+    'extend' => 'Extend',
+    'confirm_delete_package' => 'Are you sure you want to delete the package',
+    'delete_warning' => 'Warning: This action cannot be undone!',
+    'loading' => 'Loading',
+    'no_packages_available' => 'No packages available at the moment',
+    'add_first_package' => 'Add First Package',
+    'view_detailed_statistics' => 'View Detailed Statistics',
+    'confirm_activate' => 'Do you want to activate this package?',
+    'confirm_deactivate' => 'Do you want to deactivate this package?',
+    'edit_package' => 'Edit Package',
+    'delete_package' => 'Delete Package Permanently',
+    
+    // Create/Edit Form
+    'correct_errors' => 'Please correct the following errors',
+    'optional' => 'optional',
+    'max_size_2mb' => 'Maximum 2MB',
+    'set_points_per_service' => 'Set the number of points required for each service',
+    'not_available' => 'Not Available',
+    'available' => 'Available',
+    'preview' => 'Preview',
+    'preview_package' => 'Preview Package',
+    'no_image' => 'No Image',
+    'saving' => 'Saving',
+    
+    // Edit Form
+    'current_image' => 'Current Image',
+    'select_new_image_or_keep_current' => 'You can select a new image or leave it empty to keep the current image',
+    'update_package' => 'Update Package',
+    'updating_package' => 'Updating Package',
 ]; 

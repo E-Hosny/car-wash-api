@@ -101,14 +101,14 @@
                                         @endif
                                     </td>
                                     <td>
-                                        <div class="btn-group" role="group" aria-label="إجراءات الباقة">
+                                        <div class="btn-group" role="group" aria-label="{{ __('packages.actions') }}">
                                             <a href="{{ route('admin.packages.edit', $package->id) }}" 
                                                class="btn btn-sm btn-primary" 
                                                data-bs-toggle="tooltip" 
                                                data-bs-placement="top" 
-                                               title="تعديل الباقة">
+                                               title="{{ __('packages.edit_package') }}">
                                                 <i class="fas fa-edit me-1"></i>
-                                                <span class="d-none d-lg-inline">تعديل</span>
+                                                <span class="d-none d-lg-inline">{{ __('packages.edit') }}</span>
                                             </a>
                                             
                                             <form action="{{ route('admin.packages.toggle-status', $package->id) }}" 
@@ -118,14 +118,14 @@
                                                         class="btn btn-sm {{ $package->is_active ? 'btn-warning' : 'btn-success' }}"
                                                         data-bs-toggle="tooltip" 
                                                         data-bs-placement="top" 
-                                                        title="{{ $package->is_active ? 'إلغاء تفعيل الباقة' : 'تفعيل الباقة' }}"
-                                                        onclick="return confirm('{{ $package->is_active ? 'هل تريد إلغاء تفعيل هذه الباقة؟' : 'هل تريد تفعيل هذه الباقة؟' }}')">
+                                                        title="{{ $package->is_active ? __('packages.deactivate') : __('packages.activate') }}"
+                                                        onclick="return confirm('{{ $package->is_active ? __('packages.confirm_deactivate') : __('packages.confirm_activate') }}')">
                                                     @if($package->is_active)
                                                         <i class="fas fa-eye-slash me-1"></i>
-                                                        <span class="d-none d-lg-inline">إلغاء التفعيل</span>
+                                                        <span class="d-none d-lg-inline">{{ __('packages.deactivate') }}</span>
                                                     @else
                                                         <i class="fas fa-eye me-1"></i>
-                                                        <span class="d-none d-lg-inline">تفعيل</span>
+                                                        <span class="d-none d-lg-inline">{{ __('packages.activate') }}</span>
                                                     @endif
                                                 </button>
                                             </form>
@@ -139,9 +139,9 @@
                                                         class="btn btn-sm btn-danger"
                                                         data-bs-toggle="tooltip" 
                                                         data-bs-placement="top" 
-                                                        title="حذف الباقة نهائياً">
+                                                        title="{{ __('packages.delete_package') }}">
                                                     <i class="fas fa-trash me-1"></i>
-                                                    <span class="d-none d-lg-inline">حذف</span>
+                                                    <span class="d-none d-lg-inline">{{ __('packages.delete') }}</span>
                                                 </button>
                                             </form>
                                         </div>
@@ -151,7 +151,7 @@
                                             <div class="d-grid gap-1">
                                                 <a href="{{ route('admin.packages.edit', $package->id) }}" 
                                                    class="btn btn-sm btn-primary">
-                                                    <i class="fas fa-edit me-1"></i> تعديل الباقة
+                                                    <i class="fas fa-edit me-1"></i> {{ __('packages.edit_package') }}
                                                 </a>
                                                 
                                                 <form action="{{ route('admin.packages.toggle-status', $package->id) }}" 
@@ -159,11 +159,11 @@
                                                     @csrf
                                                     <button type="submit" 
                                                             class="btn btn-sm {{ $package->is_active ? 'btn-warning' : 'btn-success' }} w-100"
-                                                            onclick="return confirm('{{ $package->is_active ? 'هل تريد إلغاء تفعيل هذه الباقة؟' : 'هل تريد تفعيل هذه الباقة؟' }}')">
+                                                            onclick="return confirm('{{ $package->is_active ? __('packages.confirm_deactivate') : __('packages.confirm_activate') }}')">
                                                         @if($package->is_active)
-                                                            <i class="fas fa-eye-slash me-1"></i> إلغاء تفعيل الباقة
+                                                            <i class="fas fa-eye-slash me-1"></i> {{ __('packages.deactivate') }}
                                                         @else
-                                                            <i class="fas fa-eye me-1"></i> تفعيل الباقة
+                                                            <i class="fas fa-eye me-1"></i> {{ __('packages.activate') }}
                                                         @endif
                                                     </button>
                                                 </form>
@@ -174,7 +174,7 @@
                                                     @csrf
                                                     <button type="submit" 
                                                             class="btn btn-sm btn-danger w-100">
-                                                        <i class="fas fa-trash me-1"></i> حذف الباقة
+                                                        <i class="fas fa-trash me-1"></i> {{ __('packages.delete_package') }}
                                                     </button>
                                                 </form>
                                             </div>
@@ -207,9 +207,9 @@
                                         <div class="text-muted">
                                             <i class="fas fa-box fa-3x mb-3"></i>
                                             <h5>{{ __('packages.no_packages_found') }}</h5>
-                                            <p>لا توجد باقات متاحة حالياً</p>
+                                            <p>{{ __('packages.no_packages_available') }}</p>
                                             <a href="{{ route('admin.packages.create') }}" class="btn btn-primary">
-                                                <i class="fas fa-plus"></i> إضافة أول باقة
+                                                <i class="fas fa-plus"></i> {{ __('packages.add_first_package') }}
                                             </a>
                                         </div>
                                     </td>
@@ -225,12 +225,12 @@
                             <div class="col-md-6">
                                 <p class="text-muted">
                                     <i class="fas fa-info-circle"></i>
-                                    إجمالي الباقات: <strong>{{ $packages->count() }}</strong>
+                                    {{ __('packages.total_packages') }}: <strong>{{ $packages->count() }}</strong>
                                 </p>
                             </div>
                             <div class="col-md-6 text-end">
                                 <a href="{{ route('admin.packages.statistics') }}" class="btn btn-outline-info btn-sm">
-                                    <i class="fas fa-chart-line"></i> عرض الإحصائيات التفصيلية
+                                    <i class="fas fa-chart-line"></i> {{ __('packages.view_detailed_statistics') }}
                                 </a>
                             </div>
                         </div>
@@ -361,7 +361,7 @@
 
 <script>
 function confirmDelete(packageName) {
-    return confirm(`هل أنت متأكد من حذف الباقة "${packageName}"؟\n\nتحذير: لا يمكن التراجع عن هذا الإجراء!`);
+    return confirm(`{{ __('packages.confirm_delete_package') }} "${packageName}"?\n\n{{ __('packages.delete_warning') }}`);
 }
 
 // Auto-hide alerts after 5 seconds
@@ -387,7 +387,7 @@ document.addEventListener('DOMContentLoaded', function() {
         form.addEventListener('submit', function() {
             const submitBtn = form.querySelector('button[type="submit"]');
             if (submitBtn) {
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التحميل...';
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> {{ __('packages.loading') }}...';
                 submitBtn.disabled = true;
             }
         });

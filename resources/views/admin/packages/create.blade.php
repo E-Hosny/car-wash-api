@@ -19,7 +19,7 @@
                     @if($errors->any())
                         <div class="alert alert-danger alert-dismissible fade show" role="alert">
                             <i class="fas fa-exclamation-triangle"></i>
-                            <strong>يرجى تصحيح الأخطاء التالية:</strong>
+                            <strong>{{ __('packages.correct_errors') }}:</strong>
                             <ul class="mb-0 mt-2">
                                 @foreach($errors->all() as $error)
                                     <li>{{ $error }}</li>
@@ -83,7 +83,7 @@
                                            accept="image/*" onchange="previewImage(this)">
                                     <div class="form-text">
                                         <i class="fas fa-info-circle"></i> 
-                                        اختر صورة للباقة (اختياري) - الحد الأقصى 2 ميجابايت
+                                        {{ __('packages.select_package_image') }} ({{ __('packages.optional') }}) - {{ __('packages.max_size_2mb') }}
                                     </div>
                                 </div>
                             </div>
@@ -102,7 +102,7 @@
                                 <h5 class="card-title mb-0">
                                     <i class="fas fa-cogs"></i> {{ __('packages.service_points') }}
                                 </h5>
-                                <small class="text-muted">حدد عدد النقاط المطلوبة لكل خدمة</small>
+                                <small class="text-muted">{{ __('packages.set_points_per_service') }}</small>
                             </div>
                             <div class="card-body">
                                 <div class="table-responsive">
@@ -111,7 +111,7 @@
                                             <tr>
                                                 <th>{{ __('messages.services') }}</th>
                                                 <th>{{ __('packages.points_required') }}</th>
-                                                <th>الحالة</th>
+                                                <th>{{ __('packages.status') }}</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -137,7 +137,7 @@
                                                 </td>
                                                 <td>
                                                     <span class="badge bg-secondary service-status">
-                                                        <i class="fas fa-times"></i> غير متاح
+                                                        <i class="fas fa-times"></i> {{ __('packages.not_available') }}
                                                     </span>
                                                 </td>
                                             </tr>
@@ -157,7 +157,7 @@
                                     <i class="fas fa-arrow-left"></i> {{ __('packages.back') }}
                                 </a>
                                 <button type="button" class="btn btn-outline-info btn-lg" onclick="previewPackage()">
-                                    <i class="fas fa-eye"></i> معاينة
+                                    <i class="fas fa-eye"></i> {{ __('packages.preview') }}
                                 </button>
                             </div>
                         </div>
@@ -174,7 +174,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">
-                    <i class="fas fa-eye"></i> معاينة الباقة
+                    <i class="fas fa-eye"></i> {{ __('packages.preview_package') }}
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
@@ -184,17 +184,17 @@
                         <div id="previewImage" class="mb-3">
                             <div class="bg-light border rounded p-5">
                                 <i class="fas fa-image fa-3x text-muted"></i>
-                                <p class="text-muted mt-2">لا توجد صورة</p>
+                                <p class="text-muted mt-2">{{ __('packages.no_image') }}</p>
                             </div>
                         </div>
-                        <h4 id="previewName">اسم الباقة</h4>
-                        <p id="previewDescription" class="text-muted">وصف الباقة</p>
+                        <h4 id="previewName">{{ __('packages.package_name') }}</h4>
+                        <p id="previewDescription" class="text-muted">{{ __('packages.package_description') }}</p>
                         <div class="row">
                             <div class="col-6">
                                 <div class="card bg-success text-white">
                                     <div class="card-body">
                                         <h5 id="previewPrice">0 {{ __('packages.currency') }}</h5>
-                                        <small>السعر</small>
+                                        <small>{{ __('packages.price') }}</small>
                                     </div>
                                 </div>
                             </div>
@@ -202,7 +202,7 @@
                                 <div class="card bg-info text-white">
                                     <div class="card-body">
                                         <h5 id="previewPoints">0 {{ __('packages.points_unit') }}</h5>
-                                        <small>النقاط</small>
+                                        <small>{{ __('packages.points') }}</small>
                                     </div>
                                 </div>
                             </div>
@@ -238,10 +238,10 @@ function updateServiceStatus(input) {
     
     if (points > 0) {
         statusBadge.className = 'badge bg-success service-status';
-        statusBadge.innerHTML = '<i class="fas fa-check"></i> متاح';
+        statusBadge.innerHTML = '<i class="fas fa-check"></i> {{ __('packages.available') }}';
     } else {
         statusBadge.className = 'badge bg-secondary service-status';
-        statusBadge.innerHTML = '<i class="fas fa-times"></i> غير متاح';
+        statusBadge.innerHTML = '<i class="fas fa-times"></i> {{ __('packages.not_available') }}';
     }
 }
 
@@ -251,8 +251,8 @@ function previewPackage() {
     const price = document.getElementById('price').value;
     const points = document.getElementById('points').value;
     
-    document.getElementById('previewName').textContent = name || 'اسم الباقة';
-    document.getElementById('previewDescription').textContent = description || 'وصف الباقة';
+    document.getElementById('previewName').textContent = name || '{{ __('packages.package_name') }}';
+    document.getElementById('previewDescription').textContent = description || '{{ __('packages.package_description') }}';
     document.getElementById('previewPrice').textContent = (price || '0') + ' {{ __('packages.currency') }}';
     document.getElementById('previewPoints').textContent = (points || '0') + ' {{ __('packages.points_unit') }}';
     
@@ -263,7 +263,7 @@ function previewPackage() {
 // Form validation and loading state
 document.getElementById('createPackageForm').addEventListener('submit', function(e) {
     const submitBtn = document.getElementById('submitBtn');
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> {{ __('packages.saving') }}...';
     submitBtn.disabled = true;
 });
 
