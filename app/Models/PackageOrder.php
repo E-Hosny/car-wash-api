@@ -13,6 +13,7 @@ class PackageOrder extends Model
         'user_package_id',
         'order_id',
         'points_used',
+        'services',
     ];
 
     public function userPackage()

@@ -63,4 +63,14 @@ class Order extends Model
     {
         return $this->packageOrder()->exists();
     }
+
+    public function orderCars()
+    {
+        return $this->hasMany(OrderCar::class);
+    }
+
+    public function isMultiCarOrder()
+    {
+        return $this->orderCars()->count() > 1;
+    }
 }

@@ -34,6 +34,42 @@ class FirebaseNotificationService
             ->json();
     }
 
+    public function sendNotification($tokens, $title, $body, $data = [])
+    {
+        if (empty($tokens)) {
+            return null;
+        }
+
+        $message = [
+            "message" => [
+                "notification" => [
+                    "title" => $title,
+                    "body" => $body,
+                ],
+                "android" => ["notification" => ["sound" => "default"]],
+                "apns" => ["payload" => ["aps" => ["sound" => "default"]]],
+            ]
+        ];
+
+        // Add data if provided
+        if (!empty($data)) {
+            $message["message"]["data"] = $data;
+        }
+
+        // Add tokens
+        if (count($tokens) === 1) {
+            $message["message"]["token"] = $tokens[0];
+        } else {
+            $message["message"]["tokens"] = $tokens;
+        }
+
+        $accessToken = $this->getAccessToken();
+
+        return Http::withToken($accessToken)
+            ->post("https://fcm.googleapis.com/v1/projects/{$this->projectId}/messages:send", $message)
+            ->json();
+    }
+
     private function getAccessToken()
     {
         $client = new \Google_Client();

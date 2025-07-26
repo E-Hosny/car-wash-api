@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('user_package_id')->constrained()->onDelete('cascade');
             $table->foreignId('order_id')->constrained()->onDelete('cascade');
             $table->integer('points_used');
+            $table->json('services')->nullable();
             $table->timestamps();
         });
     }

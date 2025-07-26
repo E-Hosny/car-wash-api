@@ -61,7 +61,9 @@ class OrderController extends Controller
 
         // Calculate points needed for selected services
         $services = Service::with('servicePoint')->whereIn('id', $request->services)->get();
-        $totalPointsNeeded = $services->sum('points_required');
+        $totalPointsNeeded = $services->sum(function($service) {
+            return $service->servicePoint ? $service->servicePoint->points_required : 0;
+        });
 
         if ($totalPointsNeeded > $userPackage->remaining_points) {
             return response()->json([
@@ -138,9 +140,41 @@ class OrderController extends Controller
     public function myOrders()
 {
     $orders = Order::where('customer_id', auth()->id())
-        ->with(['services', 'car.brand', 'car.model', 'car.year']) // ✅ تأكد من تضمين العلاقات هنا
+        ->with(['services', 'car.brand', 'car.model', 'car.year', 'orderCars.car.brand', 'orderCars.car.model', 'orderCars.car.year', 'orderCars.services']) // ✅ تأكد من تضمين العلاقات هنا
         ->latest()
         ->get();
+
+    // Add multi-car information to each order
+    $orders->each(function ($order) {
+        if ($order->orderCars->count() > 0) {
+            $order->is_multi_car = $order->orderCars->count() > 1;
+            $order->cars_count = $order->orderCars->count();
+            $order->all_cars = $order->orderCars->map(function ($orderCar) {
+                return [
+                    'id' => $orderCar->car->id,
+                    'brand' => $orderCar->car->brand->name,
+                    'model' => $orderCar->car->model->name,
+                    'year' => $orderCar->car->year->year,
+                    'services' => $orderCar->services->pluck('name'),
+                    'subtotal' => $orderCar->subtotal,
+                    'points_used' => $orderCar->points_used,
+                ];
+            });
+        } else {
+            $order->is_multi_car = false;
+            $order->cars_count = 1;
+            // For orders without orderCars, use the main car and services
+            $order->all_cars = [[
+                'id' => $order->car->id,
+                'brand' => $order->car->brand->name,
+                'model' => $order->car->model->name,
+                'year' => $order->car->year->year,
+                'services' => $order->services->pluck('name'),
+                'subtotal' => $order->total,
+                'points_used' => 0,
+            ]];
+        }
+    });
 
     return response()->json($orders);
 }
@@ -151,7 +185,38 @@ class OrderController extends Controller
     // ✅ عرض طلب مفرد
     public function show($id)
     {
-        $order = Order::with('services', 'customer', 'provider')->findOrFail($id);
+        $order = Order::with(['services', 'customer', 'provider', 'orderCars.car.brand', 'orderCars.car.model', 'orderCars.car.year', 'orderCars.services'])->findOrFail($id);
+        
+        // Add multi-car information
+        if ($order->orderCars->count() > 0) {
+            $order->is_multi_car = $order->orderCars->count() > 1;
+            $order->cars_count = $order->orderCars->count();
+            $order->all_cars = $order->orderCars->map(function ($orderCar) {
+                return [
+                    'id' => $orderCar->car->id,
+                    'brand' => $orderCar->car->brand->name,
+                    'model' => $orderCar->car->model->name,
+                    'year' => $orderCar->car->year->year,
+                    'services' => $orderCar->services->pluck('name'),
+                    'subtotal' => $orderCar->subtotal,
+                    'points_used' => $orderCar->points_used,
+                ];
+            });
+        } else {
+            $order->is_multi_car = false;
+            $order->cars_count = 1;
+            // For orders without orderCars, use the main car and services
+            $order->all_cars = [[
+                'id' => $order->car->id,
+                'brand' => $order->car->brand->name,
+                'model' => $order->car->model->name,
+                'year' => $order->car->year->year,
+                'services' => $order->services->pluck('name'),
+                'subtotal' => $order->total,
+                'points_used' => 0,
+            ]];
+        }
+        
         return response()->json($order);
     }
 
@@ -164,15 +229,43 @@ class OrderController extends Controller
 
     if(auth()->user()->role=='provider'){
          $orders = Order::where('status', 'pending')
-        ->with(['services', 'customer', 'car.brand', 'car.model','assignedUser']) // ✅ أضف العلاقات هنا
+        ->with(['services', 'customer', 'car.brand', 'car.model','assignedUser', 'orderCars.car.brand', 'orderCars.car.model', 'orderCars.services']) // ✅ أضف العلاقات هنا
         ->get();
     }else{
         $orders = Order::where('assigned_to', auth()->id())
          ->where('status','pending')
-        ->with(['services', 'customer', 'car.brand', 'car.model'])
+        ->with(['services', 'customer', 'car.brand', 'car.model', 'orderCars.car.brand', 'orderCars.car.model', 'orderCars.services'])
         ->get();
 
     }
+
+    // Add multi-car information to each order
+    $orders->each(function ($order) {
+        if ($order->orderCars->count() > 0) {
+            $order->is_multi_car = $order->orderCars->count() > 1;
+            $order->cars_count = $order->orderCars->count();
+            $order->all_cars = $order->orderCars->map(function ($orderCar) {
+                return [
+                    'id' => $orderCar->car->id,
+                    'brand' => $orderCar->car->brand->name,
+                    'model' => $orderCar->car->model->name,
+                    'services' => $orderCar->services->pluck('name'),
+                    'subtotal' => $orderCar->subtotal,
+                ];
+            });
+        } else {
+            $order->is_multi_car = false;
+            $order->cars_count = 1;
+            // For orders without orderCars, use the main car and services
+            $order->all_cars = [[
+                'id' => $order->car->id,
+                'brand' => $order->car->brand->name,
+                'model' => $order->car->model->name,
+                'services' => $order->services->pluck('name'),
+                'subtotal' => $order->total,
+            ]];
+        }
+    });
    
 
     return response()->json($orders);
@@ -214,14 +307,42 @@ public function assignToWorker(Request $request, $id)
 
             if(auth()->user()->role=='provider'){
                 $orders = Order::where('status', 'completed')
-                ->with(['services', 'customer', 'car.brand', 'car.model','assignedUser'])
+                ->with(['services', 'customer', 'car.brand', 'car.model','assignedUser', 'orderCars.car.brand', 'orderCars.car.model', 'orderCars.services'])
                 ->get();
             }else{
                 $orders = Order::where('assigned_to', auth()->id())
                 ->where('status','completed')
-                ->with(['services', 'customer', 'car.brand', 'car.model'])
+                ->with(['services', 'customer', 'car.brand', 'car.model', 'orderCars.car.brand', 'orderCars.car.model', 'orderCars.services'])
                 ->get();
             }
+
+            // Add multi-car information to each order
+            $orders->each(function ($order) {
+                if ($order->orderCars->count() > 0) {
+                    $order->is_multi_car = $order->orderCars->count() > 1;
+                    $order->cars_count = $order->orderCars->count();
+                    $order->all_cars = $order->orderCars->map(function ($orderCar) {
+                        return [
+                            'id' => $orderCar->car->id,
+                            'brand' => $orderCar->car->brand->name,
+                            'model' => $orderCar->car->model->name,
+                            'services' => $orderCar->services->pluck('name'),
+                            'subtotal' => $orderCar->subtotal,
+                        ];
+                    });
+                } else {
+                    $order->is_multi_car = false;
+                    $order->cars_count = 1;
+                    // For orders without orderCars, use the main car and services
+                    $order->all_cars = [[
+                        'id' => $order->car->id,
+                        'brand' => $order->car->brand->name,
+                        'model' => $order->car->model->name,
+                        'services' => $order->services->pluck('name'),
+                        'subtotal' => $order->total,
+                    ]];
+                }
+            });
 
             return response()->json($orders);
         }
@@ -233,15 +354,43 @@ public function assignToWorker(Request $request, $id)
 
          if(auth()->user()->role=='provider'){
             $orders = Order::where('status', 'accepted')
-            ->with(['services', 'customer', 'car.brand', 'car.model','assignedUser']) // ✅ أضف العلاقات هنا
+            ->with(['services', 'customer', 'car.brand', 'car.model','assignedUser', 'orderCars.car.brand', 'orderCars.car.model', 'orderCars.services']) // ✅ أضف العلاقات هنا
             ->get();
         }else{
             $orders = Order::where('assigned_to', auth()->id())
             ->where('status','accepted')
-            ->with(['services', 'customer', 'car.brand', 'car.model'])
+            ->with(['services', 'customer', 'car.brand', 'car.model', 'orderCars.car.brand', 'orderCars.car.model', 'orderCars.services'])
             ->get();
 
         }
+
+        // Add multi-car information to each order
+        $orders->each(function ($order) {
+            if ($order->orderCars->count() > 0) {
+                $order->is_multi_car = $order->orderCars->count() > 1;
+                $order->cars_count = $order->orderCars->count();
+                $order->all_cars = $order->orderCars->map(function ($orderCar) {
+                    return [
+                        'id' => $orderCar->car->id,
+                        'brand' => $orderCar->car->brand->name,
+                        'model' => $orderCar->car->model->name,
+                        'services' => $orderCar->services->pluck('name'),
+                        'subtotal' => $orderCar->subtotal,
+                    ];
+                });
+            } else {
+                $order->is_multi_car = false;
+                $order->cars_count = 1;
+                // For orders without orderCars, use the main car and services
+                $order->all_cars = [[
+                    'id' => $order->car->id,
+                    'brand' => $order->car->brand->name,
+                    'model' => $order->car->model->name,
+                    'services' => $order->services->pluck('name'),
+                    'subtotal' => $order->total,
+                ]];
+            }
+        });
 
             return response()->json($orders);
         }
@@ -253,15 +402,43 @@ public function assignToWorker(Request $request, $id)
 
             if(auth()->user()->role=='provider'){
              $orders = Order::where('status', 'in_progress')
-                ->with(['services', 'customer', 'car.brand', 'car.model','assignedUser'])
+                ->with(['services', 'customer', 'car.brand', 'car.model','assignedUser', 'orderCars.car.brand', 'orderCars.car.model', 'orderCars.services'])
                 ->get();
             }else{
                 $orders = Order::where('assigned_to', auth()->id())
                 ->where('status','in_progress')
-                ->with(['services', 'customer', 'car.brand', 'car.model'])
+                ->with(['services', 'customer', 'car.brand', 'car.model', 'orderCars.car.brand', 'orderCars.car.model', 'orderCars.services'])
                 ->get();
 
             }
+
+            // Add multi-car information to each order
+            $orders->each(function ($order) {
+                if ($order->orderCars->count() > 0) {
+                    $order->is_multi_car = $order->orderCars->count() > 1;
+                    $order->cars_count = $order->orderCars->count();
+                    $order->all_cars = $order->orderCars->map(function ($orderCar) {
+                        return [
+                            'id' => $orderCar->car->id,
+                            'brand' => $orderCar->car->brand->name,
+                            'model' => $orderCar->car->model->name,
+                            'services' => $orderCar->services->pluck('name'),
+                            'subtotal' => $orderCar->subtotal,
+                        ];
+                    });
+                } else {
+                    $order->is_multi_car = false;
+                    $order->cars_count = 1;
+                    // For orders without orderCars, use the main car and services
+                    $order->all_cars = [[
+                        'id' => $order->car->id,
+                        'brand' => $order->car->brand->name,
+                        'model' => $order->car->model->name,
+                        'services' => $order->services->pluck('name'),
+                        'subtotal' => $order->total,
+                    ]];
+                }
+            });
 
             return response()->json($orders);
         }
@@ -322,4 +499,181 @@ public function updateStatus(Request $request, $id)
         ]);
     }
 
+    // ✅ إنشاء طلب متعدد السيارات
+    public function storeMultiCar(Request $request)
+    {
+        $request->validate([
+            'latitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
+            'address' => 'nullable|string',
+            'street' => 'nullable|string',
+            'building' => 'nullable|string',
+            'floor' => 'nullable|string',
+            'apartment' => 'nullable|string',
+            'scheduled_at' => 'nullable|date',
+            'cars' => 'required|array|min:1',
+            'cars.*.car_id' => 'required|exists:cars,id',
+            'cars.*.services' => 'required|array|min:1',
+            'cars.*.services.*' => 'exists:services,id',
+            'use_package' => 'nullable|boolean',
+        ]);
+
+        $user = auth()->user();
+        $total = 0;
+        $pointsUsed = 0;
+        $userPackage = null;
+        $orderCars = [];
+
+        // Check if user wants to use package
+        if ($request->use_package) {
+            $userPackage = \App\Models\UserPackage::where('user_id', $user->id)
+                ->where('status', 'active')
+                ->where('expires_at', '>=', now()->toDateString())
+                ->where('remaining_points', '>', 0)
+                ->first();
+
+            if (!$userPackage) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'لا توجد باقة نشطة أو نقاط متبقية'
+                ], 400);
+            }
+
+            // Calculate total points needed for all cars
+            $totalPointsNeeded = 0;
+            foreach ($request->cars as $carData) {
+                $services = Service::with('servicePoint')->whereIn('id', $carData['services'])->get();
+                $totalPointsNeeded += $services->sum(function($service) {
+                    return $service->servicePoint ? $service->servicePoint->points_required : 0;
+                });
+            }
+
+            if ($totalPointsNeeded > $userPackage->remaining_points) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'النقاط المتبقية غير كافية للخدمات المطلوبة'
+                ], 400);
+            }
+
+            $pointsUsed = $totalPointsNeeded;
+        }
+
+        // Verify all cars belong to user and calculate totals
+        foreach ($request->cars as $carData) {
+            $car = Car::where('id', $carData['car_id'])
+                      ->where('user_id', $user->id)
+                      ->first();
+
+            if (!$car) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Car ID {$carData['car_id']} not found or does not belong to you"
+                ], 403);
+            }
+
+            // Calculate total for this car
+            $carTotal = 0;
+            $carPointsUsed = 0;
+
+            if ($request->use_package) {
+                $services = Service::with('servicePoint')->whereIn('id', $carData['services'])->get();
+                $carPointsUsed = $services->sum(function($service) {
+                    return $service->servicePoint ? $service->servicePoint->points_required : 0;
+                });
+                $carTotal = 0; // Free when using package
+            } else {
+                $carTotal = Service::whereIn('id', $carData['services'])->sum('price');
+                $total += $carTotal;
+            }
+
+            $orderCars[] = [
+                'car_id' => $car->id,
+                'services' => $carData['services'],
+                'subtotal' => $carTotal,
+                'points_used' => $carPointsUsed,
+            ];
+        }
+
+        // Create single order for all cars
+        $order = Order::create([
+            'customer_id' => $user->id,
+            'latitude' => $request->latitude,
+            'longitude' => $request->longitude,
+            'address' => $request->address,
+            'street' => $request->street,
+            'building' => $request->building,
+            'floor' => $request->floor,
+            'apartment' => $request->apartment,
+            'scheduled_at' => $request->scheduled_at,
+            'car_id' => $orderCars[0]['car_id'], // Use first car as primary
+            'total' => $total,
+            'payment_status' => $request->use_package ? 'paid' : 'pending',
+        ]);
+
+        // Create order_cars records for each car
+        foreach ($orderCars as $carData) {
+            $orderCar = \App\Models\OrderCar::create([
+                'order_id' => $order->id,
+                'car_id' => $carData['car_id'],
+                'subtotal' => $carData['subtotal'],
+                'points_used' => $carData['points_used'],
+            ]);
+
+            // Attach services for this car
+            $orderCar->services()->attach($carData['services']);
+        }
+
+        // If using package, create package order
+        if ($request->use_package && $userPackage) {
+            \App\Models\PackageOrder::create([
+                'user_package_id' => $userPackage->id,
+                'order_id' => $order->id,
+                'points_used' => $pointsUsed,
+                'services' => json_encode(array_merge(...array_column($orderCars, 'services'))),
+            ]);
+
+            // Update remaining points
+            $userPackage->remaining_points -= $pointsUsed;
+            $userPackage->save();
+        }
+
+        // Send notification to providers
+        $this->sendOrderNotification([$order]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Multi-car order created successfully',
+            'order' => $order->load('orderCars.car', 'orderCars.services'),
+            'total_cars' => count($orderCars),
+            'total_amount' => $total,
+            'points_used' => $pointsUsed,
+        ], 201);
+    }
+
+    private function sendOrderNotification($orders)
+    {
+        try {
+            $fcmTokens = FcmToken::where('user_id', '!=', auth()->id())
+                ->whereHas('user', function ($query) {
+                    $query->where('role', 'provider');
+                })
+                ->pluck('token')
+                ->toArray();
+
+            if (!empty($fcmTokens)) {
+                $firebaseService = new FirebaseNotificationService();
+                $firebaseService->sendNotification(
+                    $fcmTokens,
+                    'New Multi-Car Order',
+                    'You have a new multi-car order to review',
+                    [
+                        'type' => 'new_order',
+                        'order_count' => count($orders),
+                    ]
+                );
+            }
+        } catch (\Exception $e) {
+            \Log::error('Failed to send notification: ' . $e->getMessage());
+        }
+    }
 }
