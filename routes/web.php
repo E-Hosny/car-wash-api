@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\PackageController;
 use App\Http\Controllers\Admin\UserPackageController;
 use App\Http\Controllers\API\QrCodeController;
+use App\Http\Controllers\SupportController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Session\Middleware\StartSession;
 use App\Http\Middleware\SetLocale;
@@ -41,6 +42,10 @@ Route::middleware([
     Route::get('/terms-of-privacy', function () {
         return view('terms-of-privacy');
     })->name('terms.of.privacy');
+
+    // ✅ صفحة الدعم
+    Route::get('/support', [SupportController::class, 'index'])->name('support');
+    Route::post('/support/ticket', [SupportController::class, 'submitTicket'])->name('support.ticket');
 
     // ✅ صفحة حذف الحساب
     Route::get('/delete-account', [App\Http\Controllers\DeleteAccountController::class, 'show'])->name('delete.account');

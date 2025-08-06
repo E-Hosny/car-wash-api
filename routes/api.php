@@ -34,6 +34,8 @@ Route::get('/car-years', [CarYearController::class, 'index']);
 // ✅ Public packages endpoint for guest browsing
 Route::get('/packages', [PackageController::class, 'index']);
 
+
+
 // ✅ Public services endpoint for guest browsing
 Route::apiResource('services', ServiceController::class)->only(['index', 'show']);
 
