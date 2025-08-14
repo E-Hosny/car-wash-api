@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Package;
 use App\Models\Service;
 use App\Models\UserPackage;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -13,18 +14,40 @@ use Carbon\Carbon;
 
 class PackageController extends Controller
 {
+    private function packagesEnabled(): bool
+    {
+        $value = Setting::getValue('packages_enabled', '1');
+        return $value === '1' || $value === true || $value === 1;
+    }
+
     public function index()
     {
+        if (!$this->packagesEnabled()) {
+            return response()->json([
+                'success' => true,
+                'data' => [],
+                'packages_enabled' => false,
+            ]);
+        }
+
         $packages = Package::active()->get();
         
         return response()->json([
             'success' => true,
-            'data' => $packages
+            'data' => $packages,
+            'packages_enabled' => true,
         ]);
     }
 
     public function show($id)
     {
+        if (!$this->packagesEnabled()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Packages feature is disabled',
+            ], 403);
+        }
+
         $package = Package::active()->findOrFail($id);
         $services = Service::with('servicePoint')->get();
         
@@ -39,6 +62,13 @@ class PackageController extends Controller
 
     public function purchase(Request $request, $id)
     {
+        if (!$this->packagesEnabled()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Packages feature is disabled',
+            ], 403);
+        }
+
         $request->validate([
             'payment_intent_id' => 'required|string',
             'paid_amount' => 'required|numeric|min:0'
@@ -47,7 +77,6 @@ class PackageController extends Controller
         $package = Package::active()->findOrFail($id);
         $user = Auth::user();
 
-        // Check if user already has an active package
         $activePackage = UserPackage::where('user_id', $user->id)
             ->where('status', 'active')
             ->where('expires_at', '>=', now()->toDateString())
@@ -93,6 +122,13 @@ class PackageController extends Controller
 
     public function myPackage()
     {
+        if (!$this->packagesEnabled()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Packages feature is disabled',
+            ], 403);
+        }
+
         $user = Auth::user();
         
         $userPackage = UserPackage::where('user_id', $user->id)
@@ -116,6 +152,13 @@ class PackageController extends Controller
 
     public function availableServices()
     {
+        if (!$this->packagesEnabled()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Packages feature is disabled',
+            ], 403);
+        }
+
         $user = Auth::user();
         
         $userPackage = UserPackage::where('user_id', $user->id)
@@ -157,6 +200,13 @@ class PackageController extends Controller
 
     public function packageHistory()
     {
+        if (!$this->packagesEnabled()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Packages feature is disabled',
+            ], 403);
+        }
+
         $user = Auth::user();
         
         $packages = UserPackage::where('user_id', $user->id)

@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\ServiceController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\PackageController;
 use App\Http\Controllers\Admin\UserPackageController;
+use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\API\QrCodeController;
 use App\Http\Controllers\SupportController;
 use Illuminate\Support\Facades\Route;
@@ -101,6 +102,10 @@ Route::middleware([
         Route::post('/user-packages/{id}/deactivate', [UserPackageController::class, 'deactivate'])->name('admin.user-packages.deactivate');
         Route::post('/user-packages/{id}/extend', [UserPackageController::class, 'extend'])->name('admin.user-packages.extend');
         Route::get('/user-packages/filter', [UserPackageController::class, 'filter'])->name('admin.user-packages.filter');
+
+        // Settings
+        Route::get('/settings', [SettingsController::class, 'edit'])->name('admin.settings.index');
+        Route::post('/settings', [SettingsController::class, 'update'])->name('admin.settings.update');
     });
 
 });

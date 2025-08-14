@@ -10,6 +10,7 @@ use App\Http\Controllers\API\OrderController;
 use App\Http\Controllers\API\ServiceController;
 use App\Http\Controllers\API\PaymentController;
 use App\Http\Controllers\API\PackageController;
+use App\Http\Controllers\API\ConfigController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -30,6 +31,7 @@ Route::post('/login-with-otp', [AuthController::class, 'loginWithOtp']);
 Route::get('/brands', [BrandController::class, 'index']);
 Route::get('/brands/{brand}/models', [BrandController::class, 'models']);
 Route::get('/car-years', [CarYearController::class, 'index']);
+Route::get('/config', [ConfigController::class, 'appConfig']);
 
 // ✅ Public packages endpoint for guest browsing
 Route::get('/packages', [PackageController::class, 'index']);
