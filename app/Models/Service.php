@@ -13,6 +13,7 @@ class Service extends Model
         'name',
         'description',
         'price',
+        'sort_order',
     ];
 
     public function orders()
@@ -28,5 +29,13 @@ class Service extends Model
     public function getPointsRequiredAttribute()
     {
         return $this->servicePoint ? $this->servicePoint->points_required : 0;
+    }
+
+    /**
+     * Scope to order services by sort_order
+     */
+    public function scopeOrdered($query)
+    {
+        return $query->orderBy('sort_order', 'asc');
     }
 }

@@ -68,6 +68,9 @@ Route::middleware([
         Route::get('/services/{id}/edit', [ServiceController::class, 'edit'])->name('admin.services.edit');
         Route::post('/services/{id}/update', [ServiceController::class, 'update'])->name('admin.services.update');
         Route::post('/services/{id}/delete', [ServiceController::class, 'destroy'])->name('admin.services.delete');
+        Route::post('/services/update-order', [ServiceController::class, 'updateOrder'])->name('admin.services.update-order');
+        Route::post('/services/{id}/move-up', [ServiceController::class, 'moveUp'])->name('admin.services.move-up');
+        Route::post('/services/{id}/move-down', [ServiceController::class, 'moveDown'])->name('admin.services.move-down');
 
         Route::get('/users', [UserController::class, 'index'])->name('admin.users.index');
         Route::get('/users/customers', [UserController::class, 'customers'])->name('admin.users.customers');

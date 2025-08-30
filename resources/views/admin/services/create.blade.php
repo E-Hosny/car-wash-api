@@ -22,6 +22,12 @@
             <input type="number" name="price" step="0.01" class="form-control" required>
         </div>
 
+        <div class="mb-3">
+            <label>{{ __('messages.sort_order') }}:</label>
+            <input type="number" name="sort_order" class="form-control" min="1" value="{{ \App\Models\Service::max('sort_order') + 1 }}" required>
+            <small class="form-text text-muted">{{ __('messages.sort_order_help') }}</small>
+        </div>
+
         <button class="btn btn-success">{{ __('messages.save') }}</button>
     </form>
 </div>

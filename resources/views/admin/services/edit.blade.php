@@ -22,6 +22,12 @@
             <input type="number" name="price" step="0.01" class="form-control" value="{{ $service->price }}" required>
         </div>
 
+        <div class="mb-3">
+            <label>{{ __('messages.sort_order') }}:</label>
+            <input type="number" name="sort_order" class="form-control" min="1" value="{{ $service->sort_order }}" required>
+            <small class="form-text text-muted">{{ __('messages.sort_order_help') }}</small>
+        </div>
+
         <button class="btn btn-primary">{{ __('messages.update') }}</button>
     </form>
 </div>

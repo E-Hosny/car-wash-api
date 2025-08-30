@@ -12,7 +12,8 @@ class ServiceController extends Controller
     //
     public function index()
     {
-        return response()->json(Service::all());
+        // استخدام scope ordered() للحصول على الخدمات مرتبة حسب sort_order
+        return response()->json(Service::ordered()->get());
     }
 
     // ✅ إنشاء خدمة جديدة

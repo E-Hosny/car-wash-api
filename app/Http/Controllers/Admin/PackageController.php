@@ -77,7 +77,7 @@ class PackageController extends Controller
     public function edit($id)
     {
         $package = Package::findOrFail($id);
-        $services = Service::with('servicePoint')->get();
+        $services = Service::ordered()->with('servicePoint')->get();
         
         return view('admin.packages.edit', compact('package', 'services'));
     }
