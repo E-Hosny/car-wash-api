@@ -19,14 +19,10 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-      $this->call([
-        CarFullSeeder::class,
-        CarYearSeeder::class,
-        PackageSeeder::class,
-    ]);
-
-
-  
-        
+        $this->call([
+            ComprehensiveCarSeeder::class,  // البراندات والموديلات الشاملة
+            CarYearSeeder::class,           // سنوات الإنتاج
+            PackageSeeder::class,           // الباقات
+        ]);
     }
 }
