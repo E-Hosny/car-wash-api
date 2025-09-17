@@ -82,6 +82,16 @@ Route::middleware([
         Route::put('/users/{user}', [UserController::class, 'update'])->name('admin.users.update');
 
         Route::get('/orders', [OrderController::class, 'index'])->name('admin.orders.index');
+        Route::get('/orders/time-slots', [OrderController::class, 'timeSlots'])->name('admin.orders.time-slots');
+        Route::get('/orders/{order}', [OrderController::class, 'show'])->name('admin.orders.show');
+        Route::get('/orders/{order}/status', [OrderController::class, 'getStatus'])->name('admin.orders.status');
+        Route::post('/orders/{order}/status', [OrderController::class, 'updateStatus'])->name('admin.orders.update-status');
+        Route::post('/orders/{order}/cancel', [OrderController::class, 'cancel'])->name('admin.orders.cancel');
+        
+        // Time Slots Management
+        Route::post('/time-slots/{hour}/toggle', [OrderController::class, 'toggleTimeSlot'])->name('admin.time-slots.toggle');
+        Route::post('/time-slots/{hour}/set-status', [OrderController::class, 'setTimeSlotStatus'])->name('admin.time-slots.set-status');
+        Route::get('/time-slots/status', [OrderController::class, 'getTimeSlotsStatus'])->name('admin.time-slots.status');
 
         // Packages routes
         Route::get('/packages', [PackageController::class, 'index'])->name('admin.packages.index');

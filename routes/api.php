@@ -11,6 +11,7 @@ use App\Http\Controllers\API\ServiceController;
 use App\Http\Controllers\API\PaymentController;
 use App\Http\Controllers\API\PackageController;
 use App\Http\Controllers\API\ConfigController;
+use App\Http\Controllers\API\TimeSlotController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -49,9 +50,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/orders/multi-car', [OrderController::class, 'storeMultiCar']);
     Route::get('/orders/my', [OrderController::class, 'myOrders']);
     Route::get('/orders/available', [OrderController::class, 'availableOrders']);
+    Route::get('/orders/booked-time-slots', [OrderController::class, 'getBookedTimeSlots']);
     Route::get('/orders/completed', [OrderController::class, 'completedOrders']);
     Route::get('/orders/accepted', [OrderController::class, 'acceptedOrders']);
     Route::get('/orders/inProgress', [OrderController::class, 'inProgressOrders']);
+    Route::get('/orders/location/{id}', [OrderController::class, 'getLocation']);
 
     Route::get('/orders/{id}', [OrderController::class, 'show']);
     Route::post('/orders/{id}/accept', [OrderController::class, 'accept']);
@@ -60,7 +63,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     //location
     Route::post('/orders/location', [OrderController::class, 'saveLocation']);
-    Route::get('/orders/{id}/location', [OrderController::class, 'getLocation']);
 
     Route::get('/users', [UserController::class, 'index'])->name('admin.users.index');
 
@@ -89,6 +91,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/packages/my/current', [PackageController::class, 'myPackage']);
     Route::get('/packages/my/services', [PackageController::class, 'availableServices']);
     Route::get('/packages/my/history', [PackageController::class, 'packageHistory']);
+
+    // Time Slots API
+    Route::get('/time-slots', [TimeSlotController::class, 'getTimeSlots']);
+    Route::get('/time-slots/booked', [TimeSlotController::class, 'getBookedTimeSlots']);
+    Route::post('/time-slots/book', [TimeSlotController::class, 'bookTimeSlot']);
+});
+
+// Admin Time Slots Management (Admin only)
+Route::middleware(['auth:sanctum', 'admin'])->group(function () {
+    Route::get('/admin/time-slots', [TimeSlotController::class, 'getManagementData']);
+    Route::post('/admin/time-slots/toggle', [TimeSlotController::class, 'toggleTimeSlot']);
+    Route::post('/admin/time-slots/release', [TimeSlotController::class, 'releaseTimeSlot']);
 });
 
 // Webhook route (لا يحتاج authentication)

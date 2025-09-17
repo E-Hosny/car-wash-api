@@ -27,6 +27,8 @@ class Order extends Model
         'payment_status',
         'payment_intent_id',
         'paid_at',
+        'admin_notes',
+        'cancelled_at',
     ];
 
     public function customer()

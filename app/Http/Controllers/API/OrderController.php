@@ -5,8 +5,11 @@ use App\Models\Car;
 use App\Models\Order;
 use App\Models\User;
 use App\Models\Service;
+use App\Models\DailyTimeSlot;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 use App\Services\FirebaseNotificationService;
 use App\Models\FcmToken;
 
@@ -675,5 +678,51 @@ public function updateStatus(Request $request, $id)
         } catch (\Exception $e) {
             \Log::error('Failed to send notification: ' . $e->getMessage());
         }
+    }
+
+    // ✅ الحصول على المواعيد المحجوزة لليوم الحالي
+    public function getBookedTimeSlots(Request $request)
+    {
+        $date = $request->get('date', now()->toDateString());
+        
+        Log::info('Fetching booked time slots for date: ' . $date);
+        
+        // الحصول على الطلبات المحجوزة لليوم المحدد
+        $bookedOrders = Order::whereDate('scheduled_at', $date)
+            ->whereIn('status', ['pending', 'accepted', 'in_progress'])
+            ->get(['scheduled_at', 'status']);
+        
+        Log::info('Found ' . $bookedOrders->count() . ' booked orders');
+        
+        // استخراج الساعات المحجوزة
+        $bookedHours = $bookedOrders->map(function ($order) {
+            $hour = Carbon::parse($order->scheduled_at)->hour;
+            Log::info("Order at {$order->scheduled_at} (status: {$order->status}) -> hour: {$hour}");
+            return $hour;
+        })->toArray();
+        
+        // الحصول على الساعات غير المتاحة من إعدادات الأدمن
+        $unavailableHours = DailyTimeSlot::getUnavailableHoursForDate($date);
+        
+        Log::info('Booked hours: ' . json_encode($bookedHours));
+        Log::info('Unavailable hours: ' . json_encode($unavailableHours));
+        
+        // الساعات المتاحة = جميع الساعات - المحجوزة - غير المتاحة
+        $allHours = range(10, 23);
+        $unavailableHours = array_merge($bookedHours, $unavailableHours);
+        $availableHours = array_diff($allHours, $unavailableHours);
+        
+        Log::info('Available hours: ' . json_encode($availableHours));
+        
+        return response()->json([
+            'success' => true,
+            'date' => $date,
+            'booked_hours' => $bookedHours,
+            'unavailable_hours' => DailyTimeSlot::getUnavailableHoursForDate($date),
+            'available_hours' => $availableHours,
+            'total_booked' => count($bookedHours),
+            'total_unavailable' => count(DailyTimeSlot::getUnavailableHoursForDate($date)),
+            'total_available' => count($availableHours)
+        ]);
     }
 }

@@ -86,6 +86,9 @@
             <a href="{{ route('admin.orders.index') }}" class="text-white {{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
                 <i class="bi bi-box"></i> {{ __('messages.orders') }}
             </a>
+            <a href="{{ route('admin.orders.time-slots') }}" class="text-white {{ request()->routeIs('admin.orders.time-slots') ? 'active' : '' }}">
+                <i class="bi bi-calendar-clock"></i> المواعيد والساعات
+            </a>
             <a href="{{ route('admin.services.index') }}" class="text-white {{ request()->routeIs('admin.services.*') ? 'active' : '' }}">
                 <i class="bi bi-stars"></i> {{ __('messages.services') }}
             </a>
@@ -115,6 +118,9 @@
         </a>
         <a href="{{ route('admin.orders.index') }}" class="{{ request()->routeIs('admin.orders.*') ? 'active' : '' }}">
             <i class="bi bi-box"></i> {{ __('messages.orders') }}
+        </a>
+        <a href="{{ route('admin.orders.time-slots') }}" class="{{ request()->routeIs('admin.orders.time-slots') ? 'active' : '' }}">
+            <i class="bi bi-calendar-clock"></i> المواعيد والساعات
         </a>
         <a href="{{ route('admin.services.index') }}" class="{{ request()->routeIs('admin.services.*') ? 'active' : '' }}">
             <i class="bi bi-stars"></i> {{ __('messages.services') }}
