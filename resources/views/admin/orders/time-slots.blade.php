@@ -1866,7 +1866,13 @@ function updateTimeSlotsDisplay(data) {
                 
                 // Update slot classes and styling
                 if (isBooked) {
-                    slotElement.className = 'time-slot-card booked border-danger';
+                    // Check if order is completed
+                    const orderStatus = hourData.order?.status;
+                    if (orderStatus === 'completed') {
+                        slotElement.className = 'time-slot-card completed border-success';
+                    } else {
+                        slotElement.className = 'time-slot-card booked border-danger';
+                    }
                 } else if (isUnavailable) {
                     slotElement.className = 'time-slot-card unavailable border-warning';
                 } else {
@@ -1877,7 +1883,12 @@ function updateTimeSlotsDisplay(data) {
                 const timeText = slotElement.querySelector('.fw-bold');
                 if (timeText) {
                     if (isBooked) {
-                        timeText.className = 'fw-bold text-danger fs-6';
+                        const orderStatus = hourData.order?.status;
+                        if (orderStatus === 'completed') {
+                            timeText.className = 'fw-bold text-success fs-6';
+                        } else {
+                            timeText.className = 'fw-bold text-danger fs-6';
+                        }
                     } else if (isUnavailable) {
                         timeText.className = 'fw-bold text-warning fs-6';
                     } else {
@@ -1890,8 +1901,14 @@ function updateTimeSlotsDisplay(data) {
                 
                 if (isBooked) {
                     // Booked slot
-                    statusText.innerHTML = `<i class="bi bi-x-circle"></i> ${t('booked')}`;
-                    statusText.className = 'text-danger d-block';
+                    const orderStatus = hourData.order?.status;
+                    if (orderStatus === 'completed') {
+                        statusText.innerHTML = `<i class="bi bi-check-circle"></i> ${t('completed')}`;
+                        statusText.className = 'text-success d-block';
+                    } else {
+                        statusText.innerHTML = `<i class="bi bi-x-circle"></i> ${t('booked')}`;
+                        statusText.className = 'text-danger d-block';
+                    }
                     
                     // Add customer name if available
                     const customerName = hourData.order?.customer?.name || 'عميل';
@@ -1957,7 +1974,12 @@ function updateTimeSlotsDisplay(data) {
                 
                 // Update tooltip
                 if (isBooked) {
-                    slotElement.setAttribute('data-bs-original-title', `${t('booked')} - ${hourData.order?.customer?.name || t('customer')}`);
+                    const orderStatus = hourData.order?.status;
+                    if (orderStatus === 'completed') {
+                        slotElement.setAttribute('data-bs-original-title', `${t('completed')} - ${hourData.order?.customer?.name || t('customer')}`);
+                    } else {
+                        slotElement.setAttribute('data-bs-original-title', `${t('booked')} - ${hourData.order?.customer?.name || t('customer')}`);
+                    }
                 } else if (isUnavailable) {
                     slotElement.setAttribute('data-bs-original-title', `${t('unavailable')} - ${t('click_to_enable')}`);
                 } else {
@@ -1994,6 +2016,10 @@ function updateOrdersTable(data) {
     ['today', 'tomorrow', 'day_after'].forEach(dayKey => {
         const dayData = data[dayKey];
         dayData.orders.forEach(order => {
+            // Skip cancelled orders but keep completed orders
+            if (order.status === 'cancelled') {
+                return;
+            }
             const row = document.createElement('tr');
             row.setAttribute('data-status', order.status);
             row.setAttribute('data-customer', order.customer?.name || '');
@@ -2093,9 +2119,22 @@ function handleTimeSlotClick(dayKey, hour, isBooked, isUnavailable, date) {
 
 // View order details
 function viewOrderDetails(orderId) {
+    console.log('View order details called with ID:', orderId);
     currentOrderId = orderId;
-    const modal = new bootstrap.Modal(document.getElementById('orderDetailsModal'));
-    modal.show();
+    showModal('orderDetailsModal');
+    
+    // Reset content to loading state
+    const contentElement = document.getElementById('orderDetailsContent');
+    if (contentElement) {
+        contentElement.innerHTML = `
+            <div class="text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">جاري التحميل...</span>
+                </div>
+                <p class="mt-2">جاري تحميل تفاصيل الطلب...</p>
+            </div>
+        `;
+    }
     
     // Load order details via AJAX
     fetch(`/admin/orders/${orderId}`, {
@@ -2105,92 +2144,113 @@ function viewOrderDetails(orderId) {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         }
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
     .then(data => {
-        if (data.success) {
-            document.getElementById('orderDetailsContent').innerHTML = data.html;
+        if (data.success && contentElement) {
+            contentElement.innerHTML = data.html;
         } else {
-            document.getElementById('orderDetailsContent').innerHTML = `<div class="alert alert-danger">${t('loading_error')}</div>`;
+            if (contentElement) {
+                contentElement.innerHTML = `<div class="alert alert-danger">خطأ في تحميل تفاصيل الطلب</div>`;
+            }
         }
     })
     .catch(error => {
-        console.error('Error:', error);
-        document.getElementById('orderDetailsContent').innerHTML = `<div class="alert alert-danger">${t('loading_error')}</div>`;
+        console.error('Error loading order details:', error);
+        if (contentElement) {
+            contentElement.innerHTML = `<div class="alert alert-danger">حدث خطأ في تحميل تفاصيل الطلب</div>`;
+        }
     });
 }
 
 // Edit order status
 function editOrderStatus(orderId) {
+    console.log('Edit order status called with ID:', orderId);
     currentOrderId = orderId;
     document.getElementById('orderId').value = orderId;
-    
-    // Load current status
-    fetch(`/admin/orders/${orderId}/status`, {
-        method: 'GET',
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            document.getElementById('newStatus').value = data.status;
-        }
-    });
-    
-    const modal = new bootstrap.Modal(document.getElementById('statusUpdateModal'));
-    modal.show();
+    showModal('statusUpdateModal');
 }
 
 // Update order status
 function updateOrderStatus() {
-    const formData = new FormData(document.getElementById('statusUpdateForm'));
-    const newStatus = document.getElementById('newStatus').value;
-    const statusText = document.getElementById('newStatus').selectedOptions[0].text;
-    
-    // Show loading state
-    const updateBtn = document.querySelector('#statusUpdateModal .btn-primary');
-    const originalBtnText = updateBtn.innerHTML;
-    updateBtn.innerHTML = '<i class="bi bi-hourglass-split spin"></i> جاري التحديث...';
-    updateBtn.disabled = true;
-    
-    fetch(`/admin/orders/${currentOrderId}/status`, {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        },
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Show success notification with animation
-            showStatusUpdateSuccessNotification(currentOrderId, statusText);
-            
-            // Update the UI immediately
-            updateOrderStatusInUI(currentOrderId, newStatus, statusText);
-            
-            // Close modal
-            bootstrap.Modal.getInstance(document.getElementById('statusUpdateModal')).hide();
-            
-            // Refresh data after a short delay to ensure consistency
-            setTimeout(() => {
-                refreshTimeSlots(true);
-            }, 1000);
-        } else {
-            showNotification(t('status_update_error'), 'error');
+    try {
+        if (!currentOrderId) {
+            showNotification('لم يتم تحديد الطلب', 'error');
+            return;
         }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showNotification(t('status_update_error'), 'error');
-    })
-    .finally(() => {
-        // Restore button state
-        updateBtn.innerHTML = originalBtnText;
-        updateBtn.disabled = false;
-    });
+        
+        const formElement = document.getElementById('statusUpdateForm');
+        const statusElement = document.getElementById('newStatus');
+        
+        if (!formElement || !statusElement) {
+            showNotification('خطأ في العثور على نموذج التحديث', 'error');
+            return;
+        }
+        
+        const formData = new FormData(formElement);
+        const newStatus = statusElement.value;
+        const statusText = statusElement.selectedOptions[0]?.text || newStatus;
+        
+        // Show loading state
+        const updateBtn = document.querySelector('#statusUpdateModal .btn-warning');
+        if (!updateBtn) {
+            showNotification('خطأ في العثور على زر التحديث', 'error');
+            return;
+        }
+        
+        const originalBtnText = updateBtn.innerHTML;
+        updateBtn.innerHTML = '<i class="bi bi-hourglass-split spin"></i> جاري التحديث...';
+        updateBtn.disabled = true;
+        
+        fetch(`/admin/orders/${currentOrderId}/status`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Show success notification with animation
+                showStatusUpdateSuccessNotification(currentOrderId, statusText);
+                
+                // Update the UI immediately
+                updateOrderStatusInUI(currentOrderId, newStatus, statusText);
+                
+                // Close modal
+                hideModal('statusUpdateModal');
+                
+                // Refresh data after a short delay to ensure consistency
+                setTimeout(() => {
+                    refreshTimeSlots(true);
+                }, 1000);
+            } else {
+                showNotification(data.message || 'حدث خطأ في تحديث الحالة', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error updating order status:', error);
+            showNotification('حدث خطأ في تحديث الحالة', 'error');
+        })
+        .finally(() => {
+            // Restore button state
+            updateBtn.innerHTML = originalBtnText;
+            updateBtn.disabled = false;
+        });
+    } catch (error) {
+        console.error('Error in updateOrderStatus:', error);
+        showNotification('حدث خطأ غير متوقع في تحديث الحالة', 'error');
+    }
 }
 
 // Show success notification for status update
@@ -2269,6 +2329,12 @@ function updateOrderStatusInUI(orderId, newStatus, statusText) {
             setTimeout(() => {
                 statusCell.style.transform = 'scale(1)';
             }, 300);
+            
+            // If status is completed, add special styling
+            if (newStatus === 'completed') {
+                orderRow.style.backgroundColor = '#f8f9fa';
+                orderRow.style.borderLeft = '4px solid #28a745';
+            }
         }
         
         // Update time slot card if it exists
@@ -2515,20 +2581,22 @@ function toggleTimeSlot(hour, date) {
 
 // Show confirmation modal for time slot toggle
 function showTimeSlotConfirmationModal(hour, date, isCurrentlyUnavailable, onConfirm) {
-    const action = isCurrentlyUnavailable ? t('enable_hour') : t('disable_hour');
+    const action = isCurrentlyUnavailable ? 'تفعيل' : 'إيقاف';
     const actionIcon = isCurrentlyUnavailable ? 'bi-check-circle' : 'bi-power';
     const actionColor = isCurrentlyUnavailable ? 'success' : 'warning';
-    const actionText = isCurrentlyUnavailable ? t('available') : t('unavailable');
+    const actionText = isCurrentlyUnavailable ? 'متاحة' : 'غير متاحة';
     
+    // Create modal HTML
     const modalHtml = `
-        <div class="modal fade" id="timeSlotConfirmModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content border-0 shadow-lg">
-                    <div class="modal-header bg-${actionColor} text-white border-0">
+        <div class="modal" id="timeSlotConfirmModal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-${actionColor} text-white">
                         <h5 class="modal-title d-flex align-items-center">
                             <i class="bi ${actionIcon} me-2"></i>
                             تأكيد ${action} الساعة
                         </h5>
+                        <button type="button" class="btn-close btn-close-white" onclick="hideTimeSlotModal()">&times;</button>
                     </div>
                     <div class="modal-body text-center py-4">
                         <div class="mb-3">
@@ -2537,14 +2605,14 @@ function showTimeSlotConfirmationModal(hour, date, isCurrentlyUnavailable, onCon
                         <h6 class="mb-3">هل تريد ${action} الساعة <strong>${hour}:00</strong> لليوم <strong>${date}</strong>؟</h6>
                         <p class="text-muted mb-0">
                             ستصبح الساعة <span class="badge bg-${actionColor === 'success' ? 'success' : 'warning'}">${actionText}</span> 
-                            ${isCurrentlyUnavailable ? t('for_receiving_orders') : t('not_available_for_booking')}
+                            ${isCurrentlyUnavailable ? 'للاستقبال الطلبات' : 'ولن تكون متاحة للحجز'}
                         </p>
                     </div>
-                    <div class="modal-footer border-0 justify-content-center">
-                        <button type="button" class="btn btn-outline-secondary me-2" data-bs-dismiss="modal">
+                    <div class="modal-footer justify-content-center">
+                        <button type="button" class="btn btn-outline-secondary me-2" onclick="hideTimeSlotModal()">
                             <i class="bi bi-x-circle me-1"></i> إلغاء
                         </button>
-                        <button type="button" class="btn btn-${actionColor}" onclick="confirmTimeSlotToggle()">
+                        <button type="button" class="btn btn-${actionColor}" onclick="confirmTimeSlotAction()">
                             <i class="bi ${actionIcon} me-1"></i> ${action}
                         </button>
                     </div>
@@ -2566,38 +2634,31 @@ function showTimeSlotConfirmationModal(hour, date, isCurrentlyUnavailable, onCon
     window.timeSlotConfirmCallback = onConfirm;
     
     // Show modal
-    const modal = new bootstrap.Modal(document.getElementById('timeSlotConfirmModal'));
-    modal.show();
-    
-    // Auto-hide modal after 10 seconds if no action taken
-    setTimeout(() => {
-        const modalElement = document.getElementById('timeSlotConfirmModal');
-        if (modalElement && modalElement.classList.contains('show')) {
-            modal.hide();
-        }
-    }, 10000);
+    showModal('timeSlotConfirmModal');
 }
 
-// Confirm time slot toggle
-function confirmTimeSlotToggle() {
-    if (window.timeSlotConfirmCallback) {
-        window.timeSlotConfirmCallback();
-    }
-    
-    // Hide modal
-    const modal = bootstrap.Modal.getInstance(document.getElementById('timeSlotConfirmModal'));
-    if (modal) {
-        modal.hide();
-    }
-    
-    // Clean up
+// Hide time slot modal
+function hideTimeSlotModal() {
+    hideModal('timeSlotConfirmModal');
     setTimeout(() => {
         const modalElement = document.getElementById('timeSlotConfirmModal');
         if (modalElement) {
             modalElement.remove();
         }
-        delete window.timeSlotConfirmCallback;
     }, 300);
+}
+
+// Confirm time slot action
+function confirmTimeSlotAction() {
+    if (window.timeSlotConfirmCallback) {
+        window.timeSlotConfirmCallback();
+    }
+    hideTimeSlotModal();
+}
+
+// Confirm time slot toggle (legacy function)
+function confirmTimeSlotToggle() {
+    confirmTimeSlotAction();
 }
 
 // Perform the actual time slot toggle
@@ -2951,15 +3012,17 @@ function showBulkActionConfirmationModal(date, enable, onConfirm) {
     const actionColor = enable ? 'success' : 'warning';
     const actionText = enable ? 'متاحة' : 'غير متاحة';
     
+    // Create modal HTML
     const modalHtml = `
-        <div class="modal fade" id="bulkActionConfirmModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content border-0 shadow-lg">
-                    <div class="modal-header bg-${actionColor} text-white border-0">
+        <div class="modal" id="bulkActionConfirmModal">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header bg-${actionColor} text-white">
                         <h5 class="modal-title d-flex align-items-center">
                             <i class="bi ${actionIcon} me-2"></i>
                             تأكيد ${action} جميع الساعات
                         </h5>
+                        <button type="button" class="btn-close btn-close-white" onclick="hideBulkActionModal()">&times;</button>
                     </div>
                     <div class="modal-body text-center py-4">
                         <div class="mb-3">
@@ -2974,8 +3037,8 @@ function showBulkActionConfirmationModal(date, enable, onConfirm) {
                             <small><i class="bi bi-info-circle me-1"></i> سيتم ${action} الساعات من 10:00 صباحاً حتى 11:00 مساءً</small>
                         </div>
                     </div>
-                    <div class="modal-footer border-0 justify-content-center">
-                        <button type="button" class="btn btn-outline-secondary me-2" data-bs-dismiss="modal">
+                    <div class="modal-footer justify-content-center">
+                        <button type="button" class="btn btn-outline-secondary me-2" onclick="hideBulkActionModal()">
                             <i class="bi bi-x-circle me-1"></i> إلغاء
                         </button>
                         <button type="button" class="btn btn-${actionColor}" onclick="confirmBulkAction()">
@@ -3000,8 +3063,18 @@ function showBulkActionConfirmationModal(date, enable, onConfirm) {
     window.bulkActionConfirmCallback = onConfirm;
     
     // Show modal
-    const modal = new bootstrap.Modal(document.getElementById('bulkActionConfirmModal'));
-    modal.show();
+    showModal('bulkActionConfirmModal');
+}
+
+// Hide bulk action modal
+function hideBulkActionModal() {
+    hideModal('bulkActionConfirmModal');
+    setTimeout(() => {
+        const modalElement = document.getElementById('bulkActionConfirmModal');
+        if (modalElement) {
+            modalElement.remove();
+        }
+    }, 300);
 }
 
 // Confirm bulk action
@@ -3009,21 +3082,7 @@ function confirmBulkAction() {
     if (window.bulkActionConfirmCallback) {
         window.bulkActionConfirmCallback();
     }
-    
-    // Hide modal
-    const modal = bootstrap.Modal.getInstance(document.getElementById('bulkActionConfirmModal'));
-    if (modal) {
-        modal.hide();
-    }
-    
-    // Clean up
-    setTimeout(() => {
-        const modalElement = document.getElementById('bulkActionConfirmModal');
-        if (modalElement) {
-            modalElement.remove();
-        }
-        delete window.bulkActionConfirmCallback;
-    }, 300);
+    hideBulkActionModal();
 }
 
 // Perform bulk time slot action
@@ -3235,7 +3294,34 @@ function saveTimeSlotsChanges() {
     refreshTimeSlots(true);
 }
 
-// Add spin animation
+// Simple modal functions
+function showModal(modalId) {
+    console.log('Attempting to show modal:', modalId);
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.display = 'block';
+        modal.classList.add('show');
+        document.body.classList.add('modal-open');
+        console.log('Modal shown successfully:', modalId);
+    } else {
+        console.error('Modal not found:', modalId);
+    }
+}
+
+function hideModal(modalId) {
+    console.log('Attempting to hide modal:', modalId);
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.display = 'none';
+        modal.classList.remove('show');
+        document.body.classList.remove('modal-open');
+        console.log('Modal hidden successfully:', modalId);
+    } else {
+        console.error('Modal not found:', modalId);
+    }
+}
+
+// Add spin animation and modal enhancements
 const style = document.createElement('style');
 style.textContent = `
     .spin {
@@ -3246,7 +3332,392 @@ style.textContent = `
         from { transform: rotate(0deg); }
         to { transform: rotate(360deg); }
     }
+    
+    /* Simple Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1050;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+    }
+    
+    .modal.show {
+        display: block !important;
+    }
+    
+    .modal-dialog {
+        position: relative;
+        width: auto;
+        margin: 1.75rem auto;
+        max-width: 500px;
+    }
+    
+    .modal-content {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        background-color: #fff;
+        border: 1px solid rgba(0,0,0,.2);
+        border-radius: 0.3rem;
+        box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,.5);
+    }
+    
+    .modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .modal-body {
+        position: relative;
+        flex: 1 1 auto;
+        padding: 1rem;
+    }
+    
+    .modal-footer {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        padding: 1rem;
+        border-top: 1px solid #dee2e6;
+    }
+    
+    .btn-close {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+    }
+    
+    .spinner-border {
+        width: 2rem;
+        height: 2rem;
+    }
+    
+    /* Completed orders styling */
+    .time-slot-card.completed {
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+        border: 2px solid #28a745 !important;
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.2);
+    }
+    
+    .time-slot-card.completed:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(40, 167, 69, 0.3);
+    }
+    
+    /* Beautiful Modal Styles */
+    .modal-content {
+        border-radius: 15px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.98);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+    }
+    
+    .modal-header {
+        border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+    }
+    
+    .modal-body {
+        padding: 2rem;
+        background: rgba(255, 255, 255, 0.95);
+    }
+    
+    .modal-footer {
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+        background: rgba(255, 255, 255, 0.95);
+    }
+    
+    .btn-close-white {
+        color: white;
+        opacity: 0.8;
+    }
+    
+    .btn-close-white:hover {
+        opacity: 1;
+    }
+    
+    .modal.show {
+        display: block !important;
+        animation: modalFadeIn 0.3s ease;
+    }
+    
+    @keyframes modalFadeIn {
+        from {
+            opacity: 0;
+            transform: scale(0.9);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
 `;
 document.head.appendChild(style);
+
+// Simple event listeners for modal close buttons
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Setting up modal event listeners');
+    
+    // Test modal functionality
+    console.log('Testing modal elements:');
+    console.log('orderDetailsModal:', document.getElementById('orderDetailsModal'));
+    console.log('statusUpdateModal:', document.getElementById('statusUpdateModal'));
+    console.log('cancelOrderModal:', document.getElementById('cancelOrderModal'));
+    
+    // Add click listeners for modal close buttons
+    const closeButtons = document.querySelectorAll('[data-bs-dismiss="modal"]');
+    console.log('Found close buttons:', closeButtons.length);
+    closeButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            console.log('Close button clicked');
+            const modal = this.closest('.modal');
+            if (modal) {
+                hideModal(modal.id);
+            }
+        });
+    });
+    
+    // Add ESC key listener
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const openModal = document.querySelector('.modal.show');
+            if (openModal) {
+                hideModal(openModal.id);
+            }
+        }
+    });
+    
+    // Test function
+    window.testModal = function() {
+        console.log('Testing modal...');
+        showModal('orderDetailsModal');
+    };
+    
+    // Test all functions
+    window.testAllFunctions = function() {
+        console.log('Testing all functions...');
+        console.log('viewOrderDetails:', typeof viewOrderDetails);
+        console.log('editOrderStatus:', typeof editOrderStatus);
+        console.log('cancelOrder:', typeof cancelOrder);
+        console.log('showModal:', typeof showModal);
+        console.log('hideModal:', typeof hideModal);
+    };
+    
+});
+
+// Cancel order function
+function cancelOrder(orderId) {
+    console.log('Cancel order called with ID:', orderId);
+    currentOrderId = orderId;
+    showModal('cancelOrderModal');
+}
+
+// Confirm cancel order
+function confirmCancelOrder() {
+    if (!currentOrderId) {
+        showNotification('لم يتم تحديد الطلب', 'error');
+        return;
+    }
+    
+    try {
+        // Show loading state
+        const cancelBtn = document.querySelector('#cancelOrderModal .btn-danger');
+        if (!cancelBtn) {
+            showNotification('خطأ في العثور على زر الإلغاء', 'error');
+            return;
+        }
+        
+        const originalBtnText = cancelBtn.innerHTML;
+        cancelBtn.innerHTML = '<i class="bi bi-hourglass-split spin"></i> جاري الإلغاء...';
+        cancelBtn.disabled = true;
+        
+        fetch(`/admin/orders/${currentOrderId}/cancel`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('تم إلغاء الطلب بنجاح', 'success');
+                
+                // Close modal
+                hideModal('cancelOrderModal');
+                
+                // Refresh data
+                setTimeout(() => {
+                    refreshTimeSlots(true);
+                }, 1000);
+            } else {
+                showNotification(data.message || 'حدث خطأ في إلغاء الطلب', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showNotification('حدث خطأ في إلغاء الطلب', 'error');
+        })
+        .finally(() => {
+            // Restore button state
+            cancelBtn.innerHTML = originalBtnText;
+            cancelBtn.disabled = false;
+        });
+    } catch (error) {
+        console.error('Error in confirmCancelOrder:', error);
+        showNotification('حدث خطأ غير متوقع', 'error');
+    }
+}
+
+// Update time slot card status
+function updateTimeSlotCardStatus(orderId, newStatus) {
+    // Find the time slot card that contains this order
+    const timeSlotCards = document.querySelectorAll('.time-slot-card');
+    timeSlotCards.forEach(card => {
+        const cardOrderId = card.getAttribute('data-order-id');
+        if (cardOrderId == orderId) {
+            if (newStatus === 'completed') {
+                card.className = 'time-slot-card completed border-success';
+                
+                // Update status text
+                const statusText = card.querySelector('small');
+                if (statusText) {
+                    statusText.innerHTML = `<i class="bi bi-check-circle"></i> ${t('completed')}`;
+                    statusText.className = 'text-success d-block';
+                }
+                
+                // Update time text color
+                const timeText = card.querySelector('.fw-bold');
+                if (timeText) {
+                    timeText.className = 'fw-bold text-success fs-6';
+                }
+                
+                // Update tooltip
+                card.setAttribute('data-bs-original-title', `${t('completed')} - ${card.getAttribute('data-customer-name') || t('customer')}`);
+            }
+        }
+    });
+}
+
 </script>
+
+<!-- Order Details Modal -->
+<div class="modal" id="orderDetailsModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">تفاصيل الطلب</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="orderDetailsContent" class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">جاري التحميل...</span>
+                    </div>
+                    <p class="mt-2">جاري تحميل تفاصيل الطلب...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Status Update Modal -->
+<div class="modal" id="statusUpdateModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">تحديث حالة الطلب</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="statusUpdateForm">
+                    <input type="hidden" id="orderId" name="order_id">
+                    <div class="mb-3">
+                        <label for="newStatus" class="form-label">الحالة الجديدة</label>
+                        <select class="form-select" id="newStatus" name="status" required>
+                            <option value="pending">في الانتظار</option>
+                            <option value="accepted">مقبول</option>
+                            <option value="in_progress">قيد التنفيذ</option>
+                            <option value="completed">مكتمل</option>
+                            <option value="cancelled">ملغي</option>
+                        </select>
+                    </div>
+                    <div class="alert alert-info">
+                        سيتم إشعار العميل بالتغيير في حالة الطلب
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary me-2" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-warning" onclick="updateOrderStatus()">تحديث الحالة</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Order Modal -->
+<div class="modal" id="cancelOrderModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">إلغاء الطلب</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="mb-3">
+                    <i class="bi bi-exclamation-triangle text-danger" style="font-size: 3rem;"></i>
+                </div>
+                <h6 class="mb-3">هل أنت متأكد من إلغاء هذا الطلب؟</h6>
+                <p class="text-muted mb-0">
+                    سيتم إلغاء الطلب وإشعار العميل بالتغيير. لا يمكن التراجع عن هذا الإجراء.
+                </p>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-outline-secondary me-2" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-danger" onclick="confirmCancelOrder()">تأكيد الإلغاء</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bulk Action Confirmation Modal -->
+<div class="modal" id="bulkActionConfirmModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">تأكيد الإجراء الجماعي</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="mb-3">
+                    <i class="bi bi-gear text-info" style="font-size: 3rem;"></i>
+                </div>
+                <h6 class="mb-3" id="bulkActionTitle">تأكيد الإجراء</h6>
+                <p class="text-muted mb-0" id="bulkActionDescription">
+                    سيتم تطبيق هذا الإجراء على جميع الساعات المحددة
+                </p>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-outline-secondary me-2" data-bs-dismiss="modal">إلغاء</button>
+                <button type="button" class="btn btn-info" onclick="confirmBulkAction()">تأكيد</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
