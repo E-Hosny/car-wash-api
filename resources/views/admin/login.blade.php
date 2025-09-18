@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>لوحة تحكم الأدمن - تسجيل الدخول</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -14,6 +14,14 @@
             box-sizing: border-box;
         }
 
+        html {
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+            width: 100%;
+            max-width: 100vw;
+            overflow-x: hidden;
+        }
+
         body {
             font-family: 'Cairo', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -22,7 +30,12 @@
             align-items: center;
             justify-content: center;
             position: relative;
-            overflow: hidden;
+            overflow-x: hidden;
+            overflow-y: auto;
+            padding: 10px;
+            width: 100%;
+            max-width: 100vw;
+            margin: 0;
         }
 
         /* Animated background elements */
@@ -49,7 +62,11 @@
             z-index: 1;
             width: 100%;
             max-width: 450px;
-            margin: 20px;
+            margin: 20px auto;
+            min-height: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         .login-card {
@@ -61,6 +78,9 @@
             border: 1px solid rgba(255, 255, 255, 0.3);
             position: relative;
             overflow: hidden;
+            width: 100%;
+            max-width: 100%;
+            margin: 0 auto;
         }
 
         .login-card::before {
@@ -140,6 +160,10 @@
             transition: all 0.3s ease;
             background: rgba(255, 255, 255, 0.8);
             backdrop-filter: blur(10px);
+            width: 100%;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
         }
 
         .form-control:focus {
@@ -173,6 +197,9 @@
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
         }
 
         .btn-login::before {
@@ -235,9 +262,32 @@
 
         /* Responsive Design */
         @media (max-width: 768px) {
+            html, body {
+                overflow-x: hidden;
+                width: 100%;
+                max-width: 100vw;
+            }
+            
+            body {
+                padding: 5px;
+                align-items: flex-start;
+                padding-top: 20px;
+                justify-content: center;
+            }
+            
+            .login-container {
+                margin: 10px;
+                max-width: calc(100vw - 20px);
+                width: 100%;
+                padding: 0 10px;
+            }
+            
             .login-card {
                 padding: 30px 25px;
-                margin: 10px;
+                margin: 0 auto;
+                border-radius: 20px;
+                width: 100%;
+                max-width: 100%;
             }
             
             .welcome-title {
@@ -251,21 +301,155 @@
         }
 
         @media (max-width: 480px) {
+            html, body {
+                overflow-x: hidden;
+                width: 100%;
+                max-width: 100vw;
+            }
+            
+            body {
+                padding: 5px;
+                padding-top: 10px;
+                justify-content: center;
+            }
+            
+            .login-container {
+                margin: 5px;
+                max-width: calc(100vw - 10px);
+                width: 100%;
+                padding: 0 5px;
+            }
+            
             .login-card {
                 padding: 25px 20px;
+                border-radius: 15px;
+                margin: 0 auto;
+                width: 100%;
+                max-width: 100%;
             }
             
             .welcome-title {
                 font-size: 1.6rem;
             }
             
+            .welcome-subtitle {
+                font-size: 0.9rem;
+                margin-bottom: 30px;
+            }
+            
             .form-control {
                 padding: 12px 15px;
+                font-size: 16px; /* Prevents zoom on iOS */
+                width: 100%;
             }
             
             .btn-login {
                 padding: 12px 25px;
+                font-size: 1rem;
+                width: 100%;
             }
+            
+            .form-group {
+                margin-bottom: 20px;
+            }
+            
+            .logo {
+                width: 80px;
+                height: 80px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            html, body {
+                overflow-x: hidden;
+                width: 100%;
+                max-width: 100vw;
+            }
+            
+            .login-container {
+                max-width: calc(100vw - 10px);
+                padding: 0 5px;
+            }
+            
+            .login-card {
+                padding: 20px 15px;
+                margin: 0 auto;
+                width: 100%;
+                max-width: 100%;
+            }
+            
+            .welcome-title {
+                font-size: 1.4rem;
+            }
+            
+            .form-control {
+                padding: 10px 12px;
+                width: 100%;
+            }
+            
+            .btn-login {
+                padding: 10px 20px;
+                width: 100%;
+            }
+        }
+
+        /* Additional mobile optimizations */
+        @media (max-height: 600px) {
+            html, body {
+                overflow-x: hidden;
+                width: 100%;
+                max-width: 100vw;
+            }
+            
+            body {
+                align-items: flex-start;
+                padding-top: 10px;
+                justify-content: center;
+            }
+            
+            .login-container {
+                max-width: calc(100vw - 20px);
+                width: 100%;
+            }
+            
+            .login-card {
+                margin-top: 10px;
+                margin: 0 auto;
+                width: 100%;
+                max-width: 100%;
+            }
+            
+            .logo-container {
+                margin-bottom: 20px;
+            }
+            
+            .logo {
+                width: 80px;
+                height: 80px;
+            }
+            
+            .welcome-title {
+                font-size: 1.5rem;
+                margin-bottom: 5px;
+            }
+            
+            .welcome-subtitle {
+                margin-bottom: 25px;
+            }
+            
+            .form-group {
+                margin-bottom: 15px;
+            }
+        }
+
+        /* Prevent horizontal scrolling on all devices */
+        * {
+            max-width: 100%;
+        }
+
+        /* Ensure form elements don't cause overflow */
+        .form-control, .btn-login, .login-card {
+            box-sizing: border-box;
         }
 
         /* Loading animation */
