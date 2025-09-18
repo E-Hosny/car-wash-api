@@ -9,51 +9,51 @@
                 <div>
                     <h2 class="mb-1">
                         <i class="bi bi-calendar-clock text-primary"></i>
-                        إدارة المواعيد والساعات المتاحة
+                        {{ __('messages.time_slots_management') }}
                     </h2>
-                    <p class="text-muted mb-0">عرض وإدارة جميع المواعيد المحجوزة والمتاحة</p>
+                    <p class="text-muted mb-0">{{ __('messages.time_slots_description') }}</p>
                 </div>
                 <div class="d-flex gap-2">
                     <a href="{{ route('admin.orders.index') }}" class="btn btn-outline-secondary">
-                        <i class="bi bi-arrow-left"></i> العودة للطلبات
+                        <i class="bi bi-arrow-left"></i> {{ __('messages.back_to_orders') }}
                     </a>
                     <button class="btn btn-primary" onclick="refreshTimeSlots()" id="refreshBtn">
-                        <i class="bi bi-arrow-clockwise"></i> تحديث
+                        <i class="bi bi-arrow-clockwise"></i> {{ __('messages.refresh') }}
                     </button>
                     <button class="btn btn-success" onclick="exportTimeSlots()">
-                        <i class="bi bi-download"></i> تصدير
+                        <i class="bi bi-download"></i> {{ __('messages.export') }}
                     </button>
                     <div class="btn-group">
                         <button class="btn btn-warning dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-gear"></i> إدارة الساعات
+                            <i class="bi bi-gear"></i> {{ __('messages.manage_hours') }}
                         </button>
                         <ul class="dropdown-menu">
-                            <li><h6 class="dropdown-header">اليوم</h6></li>
+                            <li><h6 class="dropdown-header">{{ __('messages.today') }}</h6></li>
                             <li><a class="dropdown-item" href="#" onclick="enableAllTimeSlotsForDate('{{ $timeSlotsData['today']['date_string'] }}')">
-                                <i class="bi bi-check-circle text-success"></i> تفعيل جميع الساعات
+                                <i class="bi bi-check-circle text-success"></i> {{ __('messages.enable_all_hours') }}
                             </a></li>
                             <li><a class="dropdown-item" href="#" onclick="disableAllTimeSlotsForDate('{{ $timeSlotsData['today']['date_string'] }}')">
-                                <i class="bi bi-power text-warning"></i> إيقاف جميع الساعات
+                                <i class="bi bi-power text-warning"></i> {{ __('messages.disable_all_hours') }}
                             </a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><h6 class="dropdown-header">غداً</h6></li>
+                            <li><h6 class="dropdown-header">{{ __('messages.tomorrow') }}</h6></li>
                             <li><a class="dropdown-item" href="#" onclick="enableAllTimeSlotsForDate('{{ $timeSlotsData['tomorrow']['date_string'] }}')">
-                                <i class="bi bi-check-circle text-success"></i> تفعيل جميع الساعات
+                                <i class="bi bi-check-circle text-success"></i> {{ __('messages.enable_all_hours') }}
                             </a></li>
                             <li><a class="dropdown-item" href="#" onclick="disableAllTimeSlotsForDate('{{ $timeSlotsData['tomorrow']['date_string'] }}')">
-                                <i class="bi bi-power text-warning"></i> إيقاف جميع الساعات
+                                <i class="bi bi-power text-warning"></i> {{ __('messages.disable_all_hours') }}
                             </a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><h6 class="dropdown-header">بعد غد</h6></li>
+                            <li><h6 class="dropdown-header">{{ __('messages.day_after') }}</h6></li>
                             <li><a class="dropdown-item" href="#" onclick="enableAllTimeSlotsForDate('{{ $timeSlotsData['day_after']['date_string'] }}')">
-                                <i class="bi bi-check-circle text-success"></i> تفعيل جميع الساعات
+                                <i class="bi bi-check-circle text-success"></i> {{ __('messages.enable_all_hours') }}
                             </a></li>
                             <li><a class="dropdown-item" href="#" onclick="disableAllTimeSlotsForDate('{{ $timeSlotsData['day_after']['date_string'] }}')">
-                                <i class="bi bi-power text-warning"></i> إيقاف جميع الساعات
+                                <i class="bi bi-power text-warning"></i> {{ __('messages.disable_all_hours') }}
                             </a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="#" onclick="showTimeSlotsManagement()">
-                                <i class="bi bi-list-check"></i> إدارة متقدمة
+                                <i class="bi bi-list-check"></i> {{ __('messages.advanced_management') }}
                             </a></li>
                         </ul>
                     </div>
@@ -69,9 +69,9 @@
                 <div class="card-body text-center">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h5 class="card-title mb-1">اليوم</h5>
+                            <h5 class="card-title mb-1">{{ __('messages.today') }}</h5>
                             <h2 class="mb-0">{{ $timeSlotsData['today']['total_booked'] }}</h2>
-                            <small>مواعيد محجوزة</small>
+                            <small>{{ __('messages.booked_appointments') }}</small>
                         </div>
                         <div class="fs-1 opacity-75">
                             <i class="bi bi-calendar-day"></i>
@@ -85,9 +85,9 @@
                 <div class="card-body text-center">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h5 class="card-title mb-1">غداً</h5>
+                            <h5 class="card-title mb-1">{{ __('messages.tomorrow') }}</h5>
                             <h2 class="mb-0">{{ $timeSlotsData['tomorrow']['total_booked'] }}</h2>
-                            <small>مواعيد محجوزة</small>
+                            <small>{{ __('messages.booked_appointments') }}</small>
                         </div>
                         <div class="fs-1 opacity-75">
                             <i class="bi bi-calendar-plus"></i>
@@ -101,9 +101,9 @@
                 <div class="card-body text-center">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h5 class="card-title mb-1">بعد غد</h5>
+                            <h5 class="card-title mb-1">{{ __('messages.day_after') }}</h5>
                             <h2 class="mb-0">{{ $timeSlotsData['day_after']['total_booked'] }}</h2>
-                            <small>مواعيد محجوزة</small>
+                            <small>{{ __('messages.booked_appointments') }}</small>
                         </div>
                         <div class="fs-1 opacity-75">
                             <i class="bi bi-calendar-week"></i>
@@ -129,10 +129,10 @@
                                 </h5>
                                 <div class="d-flex gap-2">
                                     <span class="badge bg-light text-dark">
-                                        <i class="bi bi-x-circle"></i> {{ $dayData['total_booked'] }} محجوز
+                                        <i class="bi bi-x-circle"></i> {{ $dayData['total_booked'] }} {{ __('messages.booked') }}
                                     </span>
                                     <span class="badge bg-light text-dark">
-                                        <i class="bi bi-check-circle"></i> {{ $dayData['total_available'] }} متاح
+                                        <i class="bi bi-check-circle"></i> {{ $dayData['total_available'] }} {{ __('messages.available') }}
                                     </span>
                                 </div>
                             </div>
@@ -158,14 +158,20 @@
                                         data-hour="{{ $hourData['hour'] }}"
                                         data-date="{{ $dayData['date_string'] }}"
                                         data-day="{{ $dayKey }}"
+                                        data-order-id="{{ $hourData['order']->id ?? '' }}"
+                                        data-customer-name="{{ $hourData['order']->customer->name ?? 'عميل' }}"
                                         @if($hourData['is_booked'])
                                             data-bs-toggle="tooltip" 
                                             data-bs-placement="top"
-                                            title="محجوز - {{ $hourData['order']->customer->name ?? 'عميل' }} - {{ $hourData['order']->status }}"
+                                            title="{{ __('messages.booked') }} - {{ $hourData['order']->customer->name ?? __('messages.customer') }} - {{ ucfirst($hourData['order']->status) }}"
                                         @elseif($hourData['is_unavailable'])
                                             data-bs-toggle="tooltip" 
                                             data-bs-placement="top"
-                                            title="غير متاح - اضغط للتفعيل"
+                                            title="{{ __('messages.unavailable') }} - {{ __('messages.click_to_enable') }}"
+                                        @else
+                                            data-bs-toggle="tooltip" 
+                                            data-bs-placement="top"
+                                            title="{{ __('messages.available') }} - {{ __('messages.click_to_book') }}"
                                         @endif
                                         onclick="handleTimeSlotClick('{{ $dayKey }}', {{ $hourData['hour'] }}, {{ $hourData['is_booked'] ? 'true' : 'false' }}, {{ $hourData['is_unavailable'] ? 'true' : 'false' }}, '{{ $dayData['date_string'] }}')">
                                         <div class="text-center p-2">
@@ -174,23 +180,23 @@
                                             </div>
                                             @if($hourData['is_booked'])
                                                 <small class="text-danger d-block">
-                                                    <i class="bi bi-x-circle"></i> محجوز
+                                                    <i class="bi bi-x-circle"></i> {{ __('messages.booked') }}
                                                 </small>
                                                 @if($hourData['order'])
                                                     <small class="text-muted d-block" style="font-size: 0.7rem;">
-                                                        {{ $hourData['order']->customer->name ?? 'عميل' }}
+                                                        {{ $hourData['order']->customer->name ?? __('messages.customer') }}
                                                     </small>
                                                 @endif
                                             @elseif($hourData['is_unavailable'])
                                                 <small class="text-warning d-block">
-                                                    <i class="bi bi-power"></i> OFF
+                                                    <i class="bi bi-power"></i> {{ __('messages.off') }}
                                                 </small>
                                                 <small class="text-muted d-block" style="font-size: 0.6rem;">
-                                                    اضغط للتفعيل
+                                                    {{ __('messages.click_to_enable') }}
                                                 </small>
                                             @else
                                                 <small class="text-success d-block">
-                                                    <i class="bi bi-check-circle"></i> متاح
+                                                    <i class="bi bi-check-circle"></i> {{ __('messages.available') }}
                                                 </small>
                                             @endif
                                         </div>
@@ -201,7 +207,7 @@
                                                 <button class="btn btn-sm toggle-btn {{ $hourData['is_unavailable'] ? 'btn-warning' : 'btn-success' }}"
                                                         onclick="event.stopPropagation(); toggleTimeSlot({{ $hourData['hour'] }}, '{{ $dayData['date_string'] }}')"
                                                         data-bs-toggle="tooltip" 
-                                                        title="{{ $hourData['is_unavailable'] ? 'تفعيل الساعة' : 'إيقاف الساعة' }}">
+                                                        title="{{ $hourData['is_unavailable'] ? __('messages.enable_hour') : __('messages.disable_hour') }}">
                                                     <i class="bi {{ $hourData['is_unavailable'] ? 'bi-power' : 'bi-check-circle' }}"></i>
                                                 </button>
                                             </div>
@@ -224,18 +230,18 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">
                             <i class="bi bi-list-ul text-primary"></i>
-                            تفاصيل الطلبات المحجوزة
+                            {{ __('messages.booked_orders_details') }}
                         </h5>
                         <div class="d-flex gap-2">
                             <select class="form-select form-select-sm" id="statusFilter" onchange="filterOrders()">
-                                <option value="">جميع الحالات</option>
-                                <option value="pending">معلق</option>
-                                <option value="accepted">مقبول</option>
-                                <option value="in_progress">قيد التنفيذ</option>
-                                <option value="completed">مكتمل</option>
-                                <option value="cancelled">ملغي</option>
+                                <option value="">{{ __('messages.all_statuses') }}</option>
+                                <option value="pending">{{ __('messages.pending') }}</option>
+                                <option value="accepted">{{ __('messages.accepted') }}</option>
+                                <option value="in_progress">{{ __('messages.in_progress') }}</option>
+                                <option value="completed">{{ __('messages.completed') }}</option>
+                                <option value="cancelled">{{ __('messages.cancelled') }}</option>
                             </select>
-                            <input type="text" class="form-control form-control-sm" id="searchInput" placeholder="البحث..." onkeyup="searchOrders()">
+                            <input type="text" class="form-control form-control-sm" id="searchInput" placeholder="{{ __('messages.search') }}" onkeyup="searchOrders()">
                         </div>
                     </div>
                 </div>
@@ -244,20 +250,20 @@
                         <table class="table table-hover mb-0" id="ordersTable">
                             <thead class="table-dark">
                                 <tr>
-                                    <th>التاريخ</th>
-                                    <th>الوقت</th>
-                                    <th>العميل</th>
-                                    <th>الهاتف</th>
-                                    <th>الخدمات</th>
-                                    <th>المبلغ</th>
-                                    <th>الحالة</th>
-                                    <th>الإجراءات</th>
+                                    <th>{{ __('messages.date') }}</th>
+                                    <th>{{ __('messages.time') }}</th>
+                                    <th>{{ __('messages.customer') }}</th>
+                                    <th>{{ __('messages.phone') }}</th>
+                                    <th>{{ __('messages.services') }}</th>
+                                    <th>{{ __('messages.amount') }}</th>
+                                    <th>{{ __('messages.status') }}</th>
+                                    <th>{{ __('messages.actions') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach(['today', 'tomorrow', 'day_after'] as $dayKey)
                                     @foreach($timeSlotsData[$dayKey]['orders'] as $order)
-                                        <tr data-status="{{ $order->status }}" data-customer="{{ $order->customer->name ?? '' }}">
+                                        <tr data-status="{{ $order->status }}" data-customer="{{ $order->customer->name ?? '' }}" data-order-id="{{ $order->id }}" data-customer-name="{{ $order->customer->name ?? 'عميل' }}">
                                             <td>
                                                 <span class="badge bg-{{ $dayKey === 'today' ? 'primary' : ($dayKey === 'tomorrow' ? 'success' : 'info') }}">
                                                     {{ $timeSlotsData[$dayKey]['label'] }}
@@ -307,17 +313,17 @@
                                                 <div class="btn-group btn-group-sm">
                                                     <button class="btn btn-outline-info" 
                                                             onclick="viewOrderDetails({{ $order->id }})"
-                                                            data-bs-toggle="tooltip" title="عرض التفاصيل">
+                                                            data-bs-toggle="tooltip" title="{{ __('messages.view_details') }}">
                                                         <i class="bi bi-eye"></i>
                                                     </button>
                                                     <button class="btn btn-outline-warning" 
                                                             onclick="editOrderStatus({{ $order->id }})"
-                                                            data-bs-toggle="tooltip" title="تعديل الحالة">
+                                                            data-bs-toggle="tooltip" title="{{ __('messages.edit_status') }}">
                                                         <i class="bi bi-pencil"></i>
                                                     </button>
                                                     <button class="btn btn-outline-danger" 
                                                             onclick="cancelOrder({{ $order->id }})"
-                                                            data-bs-toggle="tooltip" title="إلغاء الطلب">
+                                                            data-bs-toggle="tooltip" title="{{ __('messages.cancel_order') }}">
                                                         <i class="bi bi-x-circle"></i>
                                                     </button>
                                                 </div>
@@ -339,13 +345,13 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">تفاصيل الطلب</h5>
+                <h5 class="modal-title">{{ __('messages.order_details') }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body" id="orderDetailsContent">
                 <div class="text-center">
                     <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">جاري التحميل...</span>
+                        <span class="visually-hidden">{{ __('messages.loading') }}</span>
                     </div>
                 </div>
             </div>
@@ -358,31 +364,31 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">تحديث حالة الطلب</h5>
+                <h5 class="modal-title">{{ __('messages.update_order_status') }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <form id="statusUpdateForm">
                     <input type="hidden" id="orderId" name="order_id">
                     <div class="mb-3">
-                        <label for="newStatus" class="form-label">الحالة الجديدة</label>
+                        <label for="newStatus" class="form-label">{{ __('messages.new_status') }}</label>
                         <select class="form-select" id="newStatus" name="status" required>
-                            <option value="pending">معلق</option>
-                            <option value="accepted">مقبول</option>
-                            <option value="in_progress">قيد التنفيذ</option>
-                            <option value="completed">مكتمل</option>
-                            <option value="cancelled">ملغي</option>
+                            <option value="pending">{{ __('messages.pending') }}</option>
+                            <option value="accepted">{{ __('messages.accepted') }}</option>
+                            <option value="in_progress">{{ __('messages.in_progress') }}</option>
+                            <option value="completed">{{ __('messages.completed') }}</option>
+                            <option value="cancelled">{{ __('messages.cancelled') }}</option>
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label for="statusNotes" class="form-label">ملاحظات (اختياري)</label>
+                        <label for="statusNotes" class="form-label">{{ __('messages.notes_optional') }}</label>
                         <textarea class="form-control" id="statusNotes" name="notes" rows="3"></textarea>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-                <button type="button" class="btn btn-primary" onclick="updateOrderStatus()">تحديث</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('messages.cancel') }}</button>
+                <button type="button" class="btn btn-primary" onclick="updateOrderStatus()">{{ __('messages.update') }}</button>
             </div>
         </div>
     </div>
@@ -612,27 +618,34 @@
     box-shadow: 0 8px 25px rgba(0,0,0,0.15);
     border: none;
     font-weight: 500;
+    backdrop-filter: blur(10px);
+    border-left: 4px solid;
 }
 
 .alert-success {
-    background: linear-gradient(135deg, #d4edda, #c3e6cb);
+    background: linear-gradient(135deg, rgba(212, 237, 218, 0.95), rgba(195, 230, 203, 0.95));
     color: #155724;
+    border-left-color: #28a745;
 }
 
 .alert-danger {
-    background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+    background: linear-gradient(135deg, rgba(248, 215, 218, 0.95), rgba(245, 198, 203, 0.95));
     color: #721c24;
+    border-left-color: #dc3545;
 }
 
 .alert-warning {
-    background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+    background: linear-gradient(135deg, rgba(255, 243, 205, 0.95), rgba(255, 234, 167, 0.95));
     color: #856404;
+    border-left-color: #ffc107;
 }
 
 .alert-info {
-    background: linear-gradient(135deg, #d1ecf1, #bee5eb);
+    background: linear-gradient(135deg, rgba(209, 236, 241, 0.95), rgba(190, 229, 235, 0.95));
     color: #0c5460;
+    border-left-color: #17a2b8;
 }
+
 
 /* Enhanced Button Styles */
 .btn {
@@ -705,6 +718,49 @@
     padding: 8px 12px;
 }
 
+/* Table Row Animation */
+.table tbody tr {
+    transition: all 0.3s ease;
+}
+
+.table tbody tr:hover {
+    background-color: rgba(0, 123, 255, 0.05);
+    transform: translateX(2px);
+}
+
+/* Status Badge Animation */
+.badge {
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.badge::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.5s;
+}
+
+.badge:hover::before {
+    left: 100%;
+}
+
+/* Real-time Indicator */
+#realTimeIndicator {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
 /* Responsive Enhancements */
 @media (max-width: 768px) {
     .modal-dialog {
@@ -719,6 +775,10 @@
     .time-slot-card {
         min-height: 70px;
     }
+    
+    .table tbody tr:hover {
+        transform: none;
+    }
 }
 </style>
 
@@ -726,12 +786,204 @@
 // Global variables
 let currentOrderId = null;
 let refreshInterval = null;
+let currentLocale = '{{ app()->getLocale() }}';
+
+// Translation helper function
+function t(key) {
+    const translations = {
+        'ar': {
+            'refresh_btn_text': 'تحديث',
+            'updating': 'جاري التحديث...',
+            'refresh_success': 'تم تحديث البيانات بنجاح',
+            'refresh_error': 'حدث خطأ في تحديث البيانات',
+            'status_updated_successfully': 'تم تحديث حالة الطلب بنجاح',
+            'status_update_error': 'حدث خطأ في تحديث الحالة',
+            'order_cancelled_successfully': 'تم إلغاء الطلب بنجاح',
+            'order_cancel_error': 'حدث خطأ في إلغاء الطلب',
+            'loading': 'جاري التحميل...',
+            'updating': 'جاري التحديث...',
+            'booked': 'محجوز',
+            'available': 'متاح',
+            'unavailable': 'غير متاح',
+            'off': 'OFF',
+            'click_to_enable': 'اضغط للتفعيل',
+            'click_to_book': 'اضغط للحجز',
+            'enable_hour': 'تفعيل الساعة',
+            'disable_hour': 'إيقاف الساعة',
+            'confirm_enable_hour': 'هل تريد تفعيل الساعة',
+            'confirm_disable_hour': 'هل تريد إيقاف الساعة',
+            'hour_available': 'متاحة للحجز',
+            'hour_unavailable': 'ولن تكون متاحة للحجز',
+            'hour_enabled_successfully': 'تم تفعيل الساعة بنجاح',
+            'hour_disabled_successfully': 'تم إيقاف الساعة بنجاح',
+            'hour_toggle_error': 'حدث خطأ في تغيير حالة الساعة',
+            'real_time_updates_active': 'تحديث تلقائي نشط',
+            'order_status_changed': 'تم تحديث حالة الطلب بنجاح!',
+            'order_now': 'أصبح الآن',
+            'customer_notified': 'تم إلغاؤه وتم إشعار العميل',
+            'enable_all_hours_for_date': 'هل تريد تفعيل جميع الساعات لليوم',
+            'disable_all_hours_for_date': 'هل تريد إيقاف جميع الساعات لليوم',
+            'all_hours_will_be': 'ستكون جميع الساعات',
+            'for_receiving_orders': 'للاستقبال الطلبات',
+            'not_available_for_booking': 'ولن تكون متاحة للحجز',
+            'hours_from_10_to_11': 'سيتم تفعيل الساعات من 10:00 صباحاً حتى 11:00 مساءً',
+            'processing_all_hours': 'جاري المعالجة...',
+            'enabling_hours': 'تفعيل الساعات',
+            'disabling_hours': 'إيقاف الساعات',
+            'hours_processed': 'تم تفعيل جميع الساعات لليوم',
+            'most_hours_processed': 'تم تفعيل معظم الساعات، حدثت بعض الأخطاء البسيطة',
+            'advanced_hours_management': 'إدارة الساعات المتقدمة',
+            'available_slots': 'الساعات المتاحة',
+            'unavailable_slots': 'الساعات غير المتاحة',
+            'save_changes': 'حفظ التغييرات',
+            'changes_saved_successfully': 'تم حفظ التغييرات بنجاح',
+            'confirm_cancel': 'هل أنت متأكد من إلغاء هذا الطلب؟',
+            'order_cancelled_successfully': 'تم إلغاء الطلب بنجاح',
+            'order_cancel_error': 'حدث خطأ في إلغاء الطلب',
+            'status_updated_successfully': 'تم تحديث حالة الطلب بنجاح',
+            'status_update_error': 'حدث خطأ في تحديث الحالة',
+            'refresh_success': 'تم تحديث البيانات بنجاح',
+            'refresh_error': 'حدث خطأ في تحديث البيانات',
+            'loading': 'جاري التحميل...',
+            'updating': 'جاري التحديث...',
+            'booked': 'محجوز',
+            'available': 'متاح',
+            'unavailable': 'غير متاح',
+            'off': 'OFF',
+            'click_to_enable': 'اضغط للتفعيل',
+            'click_to_book': 'اضغط للحجز',
+            'enable_hour': 'تفعيل الساعة',
+            'disable_hour': 'إيقاف الساعة',
+            'confirm_enable_hour': 'هل تريد تفعيل الساعة',
+            'confirm_disable_hour': 'هل تريد إيقاف الساعة',
+            'hour_available': 'متاحة للحجز',
+            'hour_unavailable': 'ولن تكون متاحة للحجز',
+            'hour_enabled_successfully': 'تم تفعيل الساعة بنجاح',
+            'hour_disabled_successfully': 'تم إيقاف الساعة بنجاح',
+            'hour_toggle_error': 'حدث خطأ في تغيير حالة الساعة',
+            'real_time_updates_active': 'تحديث تلقائي نشط',
+            'order_status_changed': 'تم تحديث حالة الطلب بنجاح!',
+            'order_now': 'أصبح الآن',
+            'customer_notified': 'تم إلغاؤه وتم إشعار العميل',
+            'enable_all_hours_for_date': 'هل تريد تفعيل جميع الساعات لليوم',
+            'disable_all_hours_for_date': 'هل تريد إيقاف جميع الساعات لليوم',
+            'all_hours_will_be': 'ستكون جميع الساعات',
+            'for_receiving_orders': 'للاستقبال الطلبات',
+            'not_available_for_booking': 'ولن تكون متاحة للحجز',
+            'hours_from_10_to_11': 'سيتم تفعيل الساعات من 10:00 صباحاً حتى 11:00 مساءً',
+            'processing_all_hours': 'جاري المعالجة...',
+            'enabling_hours': 'تفعيل الساعات',
+            'disabling_hours': 'إيقاف الساعات',
+            'hours_processed': 'تم تفعيل جميع الساعات لليوم',
+            'most_hours_processed': 'تم تفعيل معظم الساعات، حدثت بعض الأخطاء البسيطة',
+            'advanced_hours_management': 'إدارة الساعات المتقدمة',
+            'available_slots': 'الساعات المتاحة',
+            'unavailable_slots': 'الساعات غير المتاحة',
+            'save_changes': 'حفظ التغييرات',
+            'changes_saved_successfully': 'تم حفظ التغييرات بنجاح'
+        },
+        'en': {
+            'refresh_btn_text': 'Refresh',
+            'updating': 'Updating...',
+            'refresh_success': 'Data updated successfully',
+            'refresh_error': 'Error occurred while updating data',
+            'status_updated_successfully': 'Order status updated successfully',
+            'status_update_error': 'Error occurred while updating status',
+            'order_cancelled_successfully': 'Order cancelled successfully',
+            'order_cancel_error': 'Error occurred while cancelling order',
+            'loading': 'Loading...',
+            'updating': 'Updating...',
+            'booked': 'Booked',
+            'available': 'Available',
+            'unavailable': 'Unavailable',
+            'off': 'OFF',
+            'click_to_enable': 'Click to Enable',
+            'click_to_book': 'Click to Book',
+            'enable_hour': 'Enable Hour',
+            'disable_hour': 'Disable Hour',
+            'confirm_enable_hour': 'Do you want to enable hour',
+            'confirm_disable_hour': 'Do you want to disable hour',
+            'hour_available': 'available for booking',
+            'hour_unavailable': 'and will not be available for booking',
+            'hour_enabled_successfully': 'Hour enabled successfully',
+            'hour_disabled_successfully': 'Hour disabled successfully',
+            'hour_toggle_error': 'Error occurred while changing hour status',
+            'real_time_updates_active': 'Real-time updates active',
+            'order_status_changed': 'Order status updated successfully!',
+            'order_now': 'is now',
+            'customer_notified': 'has been cancelled and customer has been notified',
+            'enable_all_hours_for_date': 'Do you want to enable all hours for',
+            'disable_all_hours_for_date': 'Do you want to disable all hours for',
+            'all_hours_will_be': 'All hours will be',
+            'for_receiving_orders': 'for receiving orders',
+            'not_available_for_booking': 'and will not be available for booking',
+            'hours_from_10_to_11': 'Hours will be enabled from 10:00 AM to 11:00 PM',
+            'processing_all_hours': 'Processing...',
+            'enabling_hours': 'Enabling Hours',
+            'disabling_hours': 'Disabling Hours',
+            'hours_processed': 'All hours enabled for',
+            'most_hours_processed': 'Most hours processed, some minor errors occurred',
+            'advanced_hours_management': 'Advanced Hours Management',
+            'available_slots': 'Available Slots',
+            'unavailable_slots': 'Unavailable Slots',
+            'save_changes': 'Save Changes',
+            'changes_saved_successfully': 'Changes saved successfully',
+            'confirm_cancel': 'Are you sure you want to cancel this order?',
+            'order_cancelled_successfully': 'Order cancelled successfully',
+            'order_cancel_error': 'Error occurred while cancelling order',
+            'status_updated_successfully': 'Order status updated successfully',
+            'status_update_error': 'Error occurred while updating status',
+            'refresh_success': 'Data updated successfully',
+            'refresh_error': 'Error occurred while updating data',
+            'loading': 'Loading...',
+            'updating': 'Updating...',
+            'booked': 'Booked',
+            'available': 'Available',
+            'unavailable': 'Unavailable',
+            'off': 'OFF',
+            'click_to_enable': 'Click to Enable',
+            'click_to_book': 'Click to Book',
+            'enable_hour': 'Enable Hour',
+            'disable_hour': 'Disable Hour',
+            'confirm_enable_hour': 'Do you want to enable hour',
+            'confirm_disable_hour': 'Do you want to disable hour',
+            'hour_available': 'available for booking',
+            'hour_unavailable': 'and will not be available for booking',
+            'hour_enabled_successfully': 'Hour enabled successfully',
+            'hour_disabled_successfully': 'Hour disabled successfully',
+            'hour_toggle_error': 'Error occurred while changing hour status',
+            'real_time_updates_active': 'Real-time updates active',
+            'order_status_changed': 'Order status updated successfully!',
+            'order_now': 'is now',
+            'customer_notified': 'has been cancelled and customer has been notified',
+            'enable_all_hours_for_date': 'Do you want to enable all hours for',
+            'disable_all_hours_for_date': 'Do you want to disable all hours for',
+            'all_hours_will_be': 'All hours will be',
+            'for_receiving_orders': 'for receiving orders',
+            'not_available_for_booking': 'and will not be available for booking',
+            'hours_from_10_to_11': 'Hours will be enabled from 10:00 AM to 11:00 PM',
+            'processing_all_hours': 'Processing...',
+            'enabling_hours': 'Enabling Hours',
+            'disabling_hours': 'Disabling Hours',
+            'hours_processed': 'All hours enabled for',
+            'most_hours_processed': 'Most hours processed, some minor errors occurred',
+            'advanced_hours_management': 'Advanced Hours Management',
+            'available_slots': 'Available Slots',
+            'unavailable_slots': 'Unavailable Slots',
+            'save_changes': 'Save Changes',
+            'changes_saved_successfully': 'Changes saved successfully'
+        }
+    };
+    
+    return translations[currentLocale] && translations[currentLocale][key] ? translations[currentLocale][key] : key;
+}
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', function() {
     initializeTooltips();
-    startAutoRefresh();
+    startSmartAutoRefresh(); // Use smart auto refresh instead
     initializeSoundEffects();
+    initializeRealTimeUpdates();
 });
 
 // Initialize sound effects
@@ -743,6 +995,53 @@ function initializeSoundEffects() {
     } catch (e) {
         console.log('Web Audio API not supported');
     }
+}
+
+// Initialize real-time updates
+function initializeRealTimeUpdates() {
+    // Add visual indicators for real-time updates
+    addRealTimeIndicators();
+    
+    // Listen for visibility changes to pause/resume updates
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            stopAutoRefresh();
+        } else {
+            startSmartAutoRefresh();
+            // Refresh immediately when page becomes visible
+            setTimeout(() => {
+                refreshTimeSlots(true);
+            }, 1000);
+        }
+    });
+}
+
+// Add real-time indicators
+function addRealTimeIndicators() {
+    // Add a small indicator showing the page is live
+    const indicator = document.createElement('div');
+    indicator.id = 'realTimeIndicator';
+    indicator.className = 'position-fixed';
+    indicator.style.cssText = 'bottom: 20px; right: 20px; z-index: 1000;';
+    indicator.innerHTML = `
+        <div class="d-flex align-items-center bg-success text-white px-3 py-2 rounded-pill shadow-sm">
+            <div class="me-2">
+                <div class="spinner-border spinner-border-sm" role="status">
+                    <span class="visually-hidden">${t('loading')}</span>
+                </div>
+            </div>
+            <small>${t('real_time_updates_active')}</small>
+        </div>
+    `;
+    
+    document.body.appendChild(indicator);
+    
+    // Hide indicator after 5 seconds
+    setTimeout(() => {
+        if (indicator.parentNode) {
+            indicator.style.opacity = '0.7';
+        }
+    }, 5000);
 }
 
 // Play success sound
@@ -794,6 +1093,19 @@ function startAutoRefresh() {
     }, 30000);
 }
 
+// Enhanced auto refresh with smart detection
+function startSmartAutoRefresh() {
+    refreshInterval = setInterval(function() {
+        // Only refresh if no modals are open and user is not actively editing
+        const openModals = document.querySelectorAll('.modal.show');
+        const activeInputs = document.querySelectorAll('input:focus, textarea:focus, select:focus');
+        
+        if (openModals.length === 0 && activeInputs.length === 0) {
+            refreshTimeSlots(true);
+        }
+    }, 30000);
+}
+
 // Stop auto refresh
 function stopAutoRefresh() {
     if (refreshInterval) {
@@ -806,7 +1118,7 @@ function stopAutoRefresh() {
 function refreshTimeSlots(silent = false) {
     if (!silent) {
         const refreshBtn = document.getElementById('refreshBtn');
-        refreshBtn.innerHTML = '<i class="bi bi-arrow-clockwise spin"></i> جاري التحديث...';
+        refreshBtn.innerHTML = `<i class="bi bi-arrow-clockwise spin"></i> ${t('updating')}`;
         refreshBtn.disabled = true;
     }
     
@@ -822,20 +1134,20 @@ function refreshTimeSlots(silent = false) {
         if (data.success) {
             updateTimeSlotsDisplay(data.data);
             if (!silent) {
-                showNotification('تم تحديث البيانات بنجاح', 'success');
+                showNotification(t('refresh_success'), 'success');
             }
         }
     })
     .catch(error => {
         console.error('Error:', error);
         if (!silent) {
-            showNotification('حدث خطأ في تحديث البيانات', 'error');
+            showNotification(t('refresh_error'), 'error');
         }
     })
     .finally(() => {
         if (!silent) {
             const refreshBtn = document.getElementById('refreshBtn');
-            refreshBtn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> تحديث';
+            refreshBtn.innerHTML = `<i class="bi bi-arrow-clockwise"></i> ${t('refresh_btn_text')}`;
             refreshBtn.disabled = false;
         }
     });
@@ -855,8 +1167,8 @@ function updateTimeSlotsDisplay(data) {
         
         // Update badges
         const badges = dayContainer.querySelectorAll('.badge');
-        badges[0].innerHTML = `<i class="bi bi-x-circle"></i> ${dayData.total_booked} محجوز`;
-        badges[1].innerHTML = `<i class="bi bi-check-circle"></i> ${dayData.total_available} متاح`;
+        badges[0].innerHTML = `<i class="bi bi-x-circle"></i> ${dayData.total_booked} ${t('booked')}`;
+        badges[1].innerHTML = `<i class="bi bi-check-circle"></i> ${dayData.total_available} ${t('available')}`;
         
         // Update time slots
         dayData.hours_data.forEach(hourData => {
@@ -891,7 +1203,7 @@ function updateTimeSlotsDisplay(data) {
                 
                 if (isBooked) {
                     // Booked slot
-                    statusText.innerHTML = `<i class="bi bi-x-circle"></i> محجوز`;
+                    statusText.innerHTML = `<i class="bi bi-x-circle"></i> ${t('booked')}`;
                     statusText.className = 'text-danger d-block';
                     
                     // Add customer name if available
@@ -920,13 +1232,13 @@ function updateTimeSlotsDisplay(data) {
                     // Add instruction text
                     const instructionSpan = slotElement.querySelector('.text-muted');
                     if (instructionSpan) {
-                        instructionSpan.textContent = 'اضغط للتفعيل';
+                        instructionSpan.textContent = t('click_to_enable');
                         instructionSpan.style.fontSize = '0.6rem';
                     } else {
                         const newInstructionSpan = document.createElement('small');
                         newInstructionSpan.className = 'text-muted d-block';
                         newInstructionSpan.style.fontSize = '0.6rem';
-                        newInstructionSpan.textContent = 'اضغط للتفعيل';
+                        newInstructionSpan.textContent = t('click_to_enable');
                         statusText.parentNode.appendChild(newInstructionSpan);
                     }
                     
@@ -934,17 +1246,17 @@ function updateTimeSlotsDisplay(data) {
                     if (toggleBtn) {
                         toggleBtn.className = 'btn btn-sm toggle-btn btn-warning';
                         toggleBtn.innerHTML = '<i class="bi bi-power"></i>';
-                        toggleBtn.title = 'تفعيل الساعة';
+                        toggleBtn.title = t('enable_hour');
                     }
                     
                 } else {
                     // Available slot
-                    statusText.innerHTML = `<i class="bi bi-check-circle"></i> متاح`;
+                    statusText.innerHTML = `<i class="bi bi-check-circle"></i> ${t('available')}`;
                     statusText.className = 'text-success d-block';
                     
                     // Remove instruction text if exists
                     const instructionSpan = slotElement.querySelector('.text-muted');
-                    if (instructionSpan && instructionSpan.textContent === 'اضغط للتفعيل') {
+                    if (instructionSpan && instructionSpan.textContent === t('click_to_enable')) {
                         instructionSpan.remove();
                     }
                     
@@ -952,17 +1264,17 @@ function updateTimeSlotsDisplay(data) {
                     if (toggleBtn) {
                         toggleBtn.className = 'btn btn-sm toggle-btn btn-success';
                         toggleBtn.innerHTML = '<i class="bi bi-check-circle"></i>';
-                        toggleBtn.title = 'إيقاف الساعة';
+                        toggleBtn.title = t('disable_hour');
                     }
                 }
                 
                 // Update tooltip
                 if (isBooked) {
-                    slotElement.setAttribute('data-bs-original-title', `محجوز - ${hourData.order?.customer?.name || 'عميل'}`);
+                    slotElement.setAttribute('data-bs-original-title', `${t('booked')} - ${hourData.order?.customer?.name || t('customer')}`);
                 } else if (isUnavailable) {
-                    slotElement.setAttribute('data-bs-original-title', 'غير متاح - اضغط للتفعيل');
+                    slotElement.setAttribute('data-bs-original-title', `${t('unavailable')} - ${t('click_to_enable')}`);
                 } else {
-                    slotElement.setAttribute('data-bs-original-title', 'متاح - اضغط للحجز');
+                    slotElement.setAttribute('data-bs-original-title', `${t('available')} - ${t('click_to_book')}`);
                 }
             }
         });
@@ -985,12 +1297,12 @@ function handleTimeSlotClick(dayKey, hour, isBooked, isUnavailable, date) {
         }
     } else if (isUnavailable) {
         // Show option to enable the slot
-        if (confirm(`هل تريد تفعيل الساعة ${hour}:00 لليوم ${date}؟`)) {
+        if (confirm(`${t('confirm_enable_hour')} ${hour}:00 ${t('for')} ${date}?`)) {
             toggleTimeSlot(hour, date);
         }
     } else {
         // Show available slot info
-        showNotification(`الساعة ${hour}:00 متاحة للحجز لليوم ${date}`, 'info');
+        showNotification(`${t('hour')} ${hour}:00 ${t('hour_available')} ${t('for')} ${date}`, 'info');
     }
 }
 
@@ -1013,12 +1325,12 @@ function viewOrderDetails(orderId) {
         if (data.success) {
             document.getElementById('orderDetailsContent').innerHTML = data.html;
         } else {
-            document.getElementById('orderDetailsContent').innerHTML = '<div class="alert alert-danger">حدث خطأ في تحميل التفاصيل</div>';
+            document.getElementById('orderDetailsContent').innerHTML = `<div class="alert alert-danger">${t('loading_error')}</div>`;
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        document.getElementById('orderDetailsContent').innerHTML = '<div class="alert alert-danger">حدث خطأ في تحميل التفاصيل</div>';
+        document.getElementById('orderDetailsContent').innerHTML = `<div class="alert alert-danger">${t('loading_error')}</div>`;
     });
 }
 
@@ -1049,6 +1361,14 @@ function editOrderStatus(orderId) {
 // Update order status
 function updateOrderStatus() {
     const formData = new FormData(document.getElementById('statusUpdateForm'));
+    const newStatus = document.getElementById('newStatus').value;
+    const statusText = document.getElementById('newStatus').selectedOptions[0].text;
+    
+    // Show loading state
+    const updateBtn = document.querySelector('#statusUpdateModal .btn-primary');
+    const originalBtnText = updateBtn.innerHTML;
+    updateBtn.innerHTML = '<i class="bi bi-hourglass-split spin"></i> جاري التحديث...';
+    updateBtn.disabled = true;
     
     fetch(`/admin/orders/${currentOrderId}/status`, {
         method: 'POST',
@@ -1060,42 +1380,309 @@ function updateOrderStatus() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            showNotification('تم تحديث حالة الطلب بنجاح', 'success');
+            // Show success notification with animation
+            showStatusUpdateSuccessNotification(currentOrderId, statusText);
+            
+            // Update the UI immediately
+            updateOrderStatusInUI(currentOrderId, newStatus, statusText);
+            
+            // Close modal
             bootstrap.Modal.getInstance(document.getElementById('statusUpdateModal')).hide();
-            refreshTimeSlots(true);
+            
+            // Refresh data after a short delay to ensure consistency
+            setTimeout(() => {
+                refreshTimeSlots(true);
+            }, 1000);
         } else {
-            showNotification('حدث خطأ في تحديث الحالة', 'error');
+            showNotification(t('status_update_error'), 'error');
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        showNotification('حدث خطأ في تحديث الحالة', 'error');
+        showNotification(t('status_update_error'), 'error');
+    })
+    .finally(() => {
+        // Restore button state
+        updateBtn.innerHTML = originalBtnText;
+        updateBtn.disabled = false;
+    });
+}
+
+// Show success notification for status update
+function showStatusUpdateSuccessNotification(orderId, statusText) {
+    // Play success sound
+    playSuccessSound();
+    
+    const notification = document.createElement('div');
+    notification.className = 'alert alert-success alert-dismissible fade show position-fixed';
+    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 400px; border-left: 4px solid #28a745;';
+    notification.innerHTML = `
+        <div class="d-flex align-items-center">
+            <div class="me-3">
+                <i class="bi bi-check-circle-fill text-success" style="font-size: 1.5rem;"></i>
+            </div>
+            <div class="flex-grow-1">
+                <strong>تم تحديث حالة الطلب بنجاح!</strong><br>
+                <small>الطلب #${orderId} أصبح الآن: <span class="badge bg-success">${statusText}</span></small>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Add success animation
+    notification.style.transform = 'translateX(100%)';
+    notification.style.transition = 'transform 0.3s ease';
+    
+    setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+    }, 100);
+    
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 300);
+        }
+    }, 5000);
+}
+
+// Update order status in UI immediately
+function updateOrderStatusInUI(orderId, newStatus, statusText) {
+    // Find the order row in the table
+    const orderRow = document.querySelector(`tr[data-order-id="${orderId}"]`);
+    if (!orderRow) {
+        // Try to find by order ID in the table
+        const rows = document.querySelectorAll('#ordersTable tbody tr');
+        for (let row of rows) {
+            const editBtn = row.querySelector(`button[onclick*="editOrderStatus(${orderId})"]`);
+            if (editBtn) {
+                orderRow = row;
+                break;
+            }
+        }
+    }
+    
+    if (orderRow) {
+        // Update the status badge
+        const statusCell = orderRow.querySelector('td:nth-child(7)'); // Status column
+        if (statusCell) {
+            const badgeClass = getStatusBadgeClass(newStatus);
+            statusCell.innerHTML = `<span class="badge bg-${badgeClass}">${statusText}</span>`;
+            
+            // Update data attribute
+            orderRow.setAttribute('data-status', newStatus);
+            
+            // Add visual feedback animation
+            statusCell.style.transform = 'scale(1.1)';
+            statusCell.style.transition = 'transform 0.3s ease';
+            
+            setTimeout(() => {
+                statusCell.style.transform = 'scale(1)';
+            }, 300);
+        }
+        
+        // Update time slot card if it exists
+        updateTimeSlotCardStatus(orderId, newStatus);
+        
+        // Add success animation to the entire row
+        orderRow.style.backgroundColor = '#d4edda';
+        orderRow.style.transition = 'background-color 0.5s ease';
+        
+        setTimeout(() => {
+            orderRow.style.backgroundColor = '';
+        }, 2000);
+    }
+}
+
+// Get status badge class based on status
+function getStatusBadgeClass(status) {
+    const badgeClasses = {
+        'pending': 'warning',
+        'accepted': 'info',
+        'in_progress': 'primary',
+        'completed': 'success',
+        'cancelled': 'danger'
+    };
+    return badgeClasses[status] || 'secondary';
+}
+
+// Update time slot card status
+function updateTimeSlotCardStatus(orderId, newStatus) {
+    // Find the time slot card that contains this order
+    const timeSlotCards = document.querySelectorAll('.time-slot-card');
+    timeSlotCards.forEach(card => {
+        const cardOrderId = card.getAttribute('data-order-id');
+        if (cardOrderId == orderId) {
+            // Update tooltip with new status
+            const customerName = card.getAttribute('data-customer-name') || 'عميل';
+            card.setAttribute('data-bs-original-title', `${t('booked')} - ${customerName} - ${newStatus}`);
+            
+            // Update customer name display if exists
+            const customerSpan = card.querySelector('.text-muted');
+            if (customerSpan && customerSpan.textContent !== t('click_to_enable')) {
+                customerSpan.textContent = customerName;
+            }
+            
+            // Add visual feedback
+            card.style.transform = 'scale(1.02)';
+            card.style.transition = 'transform 0.3s ease';
+            
+            setTimeout(() => {
+                card.style.transform = 'scale(1)';
+            }, 300);
+        }
     });
 }
 
 // Cancel order
 function cancelOrder(orderId) {
-    if (confirm('هل أنت متأكد من إلغاء هذا الطلب؟')) {
-        fetch(`/admin/orders/${orderId}/cancel`, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                showNotification('تم إلغاء الطلب بنجاح', 'success');
-                refreshTimeSlots(true);
-            } else {
-                showNotification('حدث خطأ في إلغاء الطلب', 'error');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showNotification('حدث خطأ في إلغاء الطلب', 'error');
-        });
+    // Show enhanced confirmation modal
+    showCancelOrderConfirmationModal(orderId);
+}
+
+// Show cancel order confirmation modal
+function showCancelOrderConfirmationModal(orderId) {
+    const modalHtml = `
+        <div class="modal fade" id="cancelOrderConfirmModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg">
+                    <div class="modal-header bg-danger text-white border-0">
+                        <h5 class="modal-title d-flex align-items-center">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            تأكيد إلغاء الطلب
+                        </h5>
+                    </div>
+                    <div class="modal-body text-center py-4">
+                        <div class="mb-3">
+                            <i class="bi bi-x-circle text-danger" style="font-size: 3rem;"></i>
+                        </div>
+                        <h6 class="mb-3">هل أنت متأكد من إلغاء الطلب #<strong>${orderId}</strong>؟</h6>
+                        <p class="text-muted mb-0">
+                            سيتم إلغاء الطلب نهائياً ولن يمكن استرداده
+                        </p>
+                        <div class="alert alert-warning mt-3">
+                            <small><i class="bi bi-info-circle me-1"></i> سيتم إشعار العميل بإلغاء الطلب</small>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 justify-content-center">
+                        <button type="button" class="btn btn-outline-secondary me-2" data-bs-dismiss="modal">
+                            <i class="bi bi-x-circle me-1"></i> إلغاء
+                        </button>
+                        <button type="button" class="btn btn-danger" onclick="confirmCancelOrder(${orderId})">
+                            <i class="bi bi-trash me-1"></i> تأكيد الإلغاء
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Remove existing modal if any
+    const existingModal = document.getElementById('cancelOrderConfirmModal');
+    if (existingModal) {
+        existingModal.remove();
     }
+    
+    // Add modal to body
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('cancelOrderConfirmModal'));
+    modal.show();
+}
+
+// Confirm cancel order
+function confirmCancelOrder(orderId) {
+    // Hide modal
+    const modal = bootstrap.Modal.getInstance(document.getElementById('cancelOrderConfirmModal'));
+    if (modal) {
+        modal.hide();
+    }
+    
+    // Show loading notification
+    showNotification(`جاري إلغاء الطلب #${orderId}...`, 'info');
+    
+    fetch(`/admin/orders/${orderId}/cancel`, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show success notification
+            showCancelOrderSuccessNotification(orderId);
+            
+            // Update UI immediately
+            updateOrderStatusInUI(orderId, 'cancelled', 'ملغي');
+            
+            // Refresh data after a short delay
+            setTimeout(() => {
+                refreshTimeSlots(true);
+            }, 1000);
+        } else {
+            showNotification(t('order_cancel_error'), 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification(t('order_cancel_error'), 'error');
+    })
+    .finally(() => {
+        // Clean up modal
+        setTimeout(() => {
+            const modalElement = document.getElementById('cancelOrderConfirmModal');
+            if (modalElement) {
+                modalElement.remove();
+            }
+        }, 300);
+    });
+}
+
+// Show cancel order success notification
+function showCancelOrderSuccessNotification(orderId) {
+    const notification = document.createElement('div');
+    notification.className = 'alert alert-warning alert-dismissible fade show position-fixed';
+    notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 400px; border-left: 4px solid #ffc107;';
+    notification.innerHTML = `
+        <div class="d-flex align-items-center">
+            <div class="me-3">
+                <i class="bi bi-check-circle-fill text-warning" style="font-size: 1.5rem;"></i>
+            </div>
+            <div class="flex-grow-1">
+                <strong>تم إلغاء الطلب بنجاح!</strong><br>
+                <small>الطلب #${orderId} تم إلغاؤه وتم إشعار العميل</small>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Add animation
+    notification.style.transform = 'translateX(100%)';
+    notification.style.transition = 'transform 0.3s ease';
+    
+    setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+    }, 100);
+    
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 300);
+        }
+    }, 5000);
 }
 
 // Filter orders by status
@@ -1143,10 +1730,10 @@ function toggleTimeSlot(hour, date) {
 
 // Show confirmation modal for time slot toggle
 function showTimeSlotConfirmationModal(hour, date, isCurrentlyUnavailable, onConfirm) {
-    const action = isCurrentlyUnavailable ? 'تفعيل' : 'إيقاف';
+    const action = isCurrentlyUnavailable ? t('enable_hour') : t('disable_hour');
     const actionIcon = isCurrentlyUnavailable ? 'bi-check-circle' : 'bi-power';
     const actionColor = isCurrentlyUnavailable ? 'success' : 'warning';
-    const actionText = isCurrentlyUnavailable ? 'متاح' : 'غير متاح';
+    const actionText = isCurrentlyUnavailable ? t('available') : t('unavailable');
     
     const modalHtml = `
         <div class="modal fade" id="timeSlotConfirmModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
@@ -1165,7 +1752,7 @@ function showTimeSlotConfirmationModal(hour, date, isCurrentlyUnavailable, onCon
                         <h6 class="mb-3">هل تريد ${action} الساعة <strong>${hour}:00</strong> لليوم <strong>${date}</strong>؟</h6>
                         <p class="text-muted mb-0">
                             ستصبح الساعة <span class="badge bg-${actionColor === 'success' ? 'success' : 'warning'}">${actionText}</span> 
-                            ${isCurrentlyUnavailable ? 'للاستقبال الطلبات' : 'ولن تكون متاحة للحجز'}
+                            ${isCurrentlyUnavailable ? t('for_receiving_orders') : t('not_available_for_booking')}
                         </p>
                     </div>
                     <div class="modal-footer border-0 justify-content-center">
@@ -1235,7 +1822,7 @@ function performTimeSlotToggle(hour, date, toggleBtn, originalContent) {
     toggleBtn.disabled = true;
     
     // Show loading notification
-    showNotification(`جاري ${toggleBtn.classList.contains('btn-warning') ? 'تفعيل' : 'إيقاف'} الساعة ${hour}:00...`, 'info');
+    showNotification(`جاري ${toggleBtn.classList.contains('btn-warning') ? t('enabling_hours') : t('disabling_hours')} ${t('hour')} ${hour}:00...`, 'info');
     
     fetch(`/admin/time-slots/${hour}/toggle?date=${date}`, {
         method: 'POST',
@@ -1258,12 +1845,12 @@ function performTimeSlotToggle(hour, date, toggleBtn, originalContent) {
                 refreshTimeSlots(true);
             }, 1000);
         } else {
-            showNotification(data.message || 'حدث خطأ في تغيير حالة الساعة', 'error');
+            showNotification(data.message || t('hour_toggle_error'), 'error');
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        showNotification('حدث خطأ في تغيير حالة الساعة', 'error');
+        showNotification(t('hour_toggle_error'), 'error');
     })
     .finally(() => {
         // Restore button state
@@ -1292,12 +1879,12 @@ function setTimeSlotStatus(hour, isAvailable) {
                 refreshTimeSlots(true);
             }, 1000);
         } else {
-            showNotification(data.message || 'حدث خطأ في تغيير حالة الساعة', 'error');
+            showNotification(data.message || t('hour_toggle_error'), 'error');
         }
     })
     .catch(error => {
         console.error('Error:', error);
-        showNotification('حدث خطأ في تغيير حالة الساعة', 'error');
+        showNotification(t('hour_toggle_error'), 'error');
     });
 }
 
@@ -1436,22 +2023,22 @@ function updateTimeSlotUI(hour, date, isAvailable) {
         if (toggleBtn) {
             toggleBtn.className = 'btn btn-sm toggle-btn btn-success';
             toggleBtn.innerHTML = '<i class="bi bi-check-circle"></i>';
-            toggleBtn.title = 'إيقاف الساعة';
+            toggleBtn.title = t('disable_hour');
         }
         
         if (statusText) {
-            statusText.innerHTML = '<i class="bi bi-check-circle"></i> متاح';
+            statusText.innerHTML = `<i class="bi bi-check-circle"></i> ${t('available')}`;
             statusText.className = 'text-success d-block';
         }
         
         // Remove instruction text if exists
         const instructionSpan = slotElement.querySelector('.text-muted');
-        if (instructionSpan && instructionSpan.textContent === 'اضغط للتفعيل') {
+        if (instructionSpan && instructionSpan.textContent === t('click_to_enable')) {
             instructionSpan.remove();
         }
         
         // Update tooltip
-        slotElement.setAttribute('data-bs-original-title', 'متاح - اضغط للحجز');
+        slotElement.setAttribute('data-bs-original-title', `${t('available')} - ${t('click_to_book')}`);
         
     } else {
         // Make unavailable

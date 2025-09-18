@@ -2,33 +2,33 @@
     <div class="col-md-6">
         <div class="card mb-3">
             <div class="card-header bg-primary text-white">
-                <h6 class="mb-0"><i class="bi bi-person"></i> معلومات العميل</h6>
+                <h6 class="mb-0"><i class="bi bi-person"></i> {{ __('messages.customer_information') }}</h6>
             </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-sm-4">
-                        <strong>الاسم:</strong>
+                        <strong>{{ __('messages.name') }}:</strong>
                     </div>
                     <div class="col-sm-8">
-                        {{ $order->customer->name ?? 'غير محدد' }}
+                        {{ $order->customer->name ?? __('messages.not_specified') }}
                     </div>
                 </div>
                 <hr>
                 <div class="row">
                     <div class="col-sm-4">
-                        <strong>البريد الإلكتروني:</strong>
+                        <strong>{{ __('messages.email') }}:</strong>
                     </div>
                     <div class="col-sm-8">
-                        {{ $order->customer->email ?? 'غير محدد' }}
+                        {{ $order->customer->email ?? __('messages.not_specified') }}
                     </div>
                 </div>
                 <hr>
                 <div class="row">
                     <div class="col-sm-4">
-                        <strong>رقم الهاتف:</strong>
+                        <strong>{{ __('messages.phone_number') }}:</strong>
                     </div>
                     <div class="col-sm-8">
-                        {{ $order->customer->phone ?? 'غير محدد' }}
+                        {{ $order->customer->phone ?? __('messages.not_specified') }}
                     </div>
                 </div>
             </div>
@@ -38,12 +38,12 @@
     <div class="col-md-6">
         <div class="card mb-3">
             <div class="card-header bg-success text-white">
-                <h6 class="mb-0"><i class="bi bi-calendar"></i> تفاصيل الموعد</h6>
+                <h6 class="mb-0"><i class="bi bi-calendar"></i> {{ __('messages.appointment_details') }}</h6>
             </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-sm-4">
-                        <strong>التاريخ:</strong>
+                        <strong>{{ __('messages.date') }}:</strong>
                     </div>
                     <div class="col-sm-8">
                         {{ \Carbon\Carbon::parse($order->scheduled_at)->format('Y-m-d') }}
@@ -52,7 +52,7 @@
                 <hr>
                 <div class="row">
                     <div class="col-sm-4">
-                        <strong>الوقت:</strong>
+                        <strong>{{ __('messages.time') }}:</strong>
                     </div>
                     <div class="col-sm-8">
                         {{ \Carbon\Carbon::parse($order->scheduled_at)->format('h:i A') }}
@@ -61,7 +61,7 @@
                 <hr>
                 <div class="row">
                     <div class="col-sm-4">
-                        <strong>الحالة:</strong>
+                        <strong>{{ __('messages.status') }}:</strong>
                     </div>
                     <div class="col-sm-8">
                         @php
@@ -88,50 +88,50 @@
     <div class="col-md-6">
         <div class="card mb-3">
             <div class="card-header bg-info text-white">
-                <h6 class="mb-0"><i class="bi bi-car-front"></i> معلومات السيارة</h6>
+                <h6 class="mb-0"><i class="bi bi-car-front"></i> {{ __('messages.car_information') }}</h6>
             </div>
             <div class="card-body">
                 @if($order->car)
                     <div class="row">
                         <div class="col-sm-4">
-                            <strong>الماركة:</strong>
+                            <strong>{{ __('messages.make') }}:</strong>
                         </div>
                         <div class="col-sm-8">
-                            {{ $order->car->brand->name ?? 'غير محدد' }}
+                            {{ $order->car->brand->name ?? __('messages.not_specified') }}
                         </div>
                     </div>
                     <hr>
                     <div class="row">
                         <div class="col-sm-4">
-                            <strong>الموديل:</strong>
+                            <strong>{{ __('messages.model') }}:</strong>
                         </div>
                         <div class="col-sm-8">
-                            {{ $order->car->model->name ?? 'غير محدد' }}
+                            {{ $order->car->model->name ?? __('messages.not_specified') }}
                         </div>
                     </div>
                     <hr>
                     <div class="row">
                         <div class="col-sm-4">
-                            <strong>السنة:</strong>
+                            <strong>{{ __('messages.year') }}:</strong>
                         </div>
                         <div class="col-sm-8">
-                            {{ $order->car->year->year ?? 'غير محدد' }}
+                            {{ $order->car->year->year ?? __('messages.not_specified') }}
                         </div>
                     </div>
                     <hr>
                     <div class="row">
                         <div class="col-sm-4">
-                            <strong>اللون:</strong>
+                            <strong>{{ __('messages.color') }}:</strong>
                         </div>
                         <div class="col-sm-8">
-                            {{ $order->car->color ?? 'غير محدد' }}
+                            {{ $order->car->color ?? __('messages.not_specified') }}
                         </div>
                     </div>
                     @if($order->car->license_plate)
                         <hr>
                         <div class="row">
                             <div class="col-sm-4">
-                                <strong>رقم اللوحة:</strong>
+                                <strong>{{ __('messages.license_plate') }}:</strong>
                             </div>
                             <div class="col-sm-8">
                                 {{ $order->car->license_plate }}
@@ -139,7 +139,7 @@
                         </div>
                     @endif
                 @else
-                    <p class="text-muted">لا توجد معلومات سيارة</p>
+                    <p class="text-muted">{{ __('messages.no_car_info') }}</p>
                 @endif
             </div>
         </div>
@@ -148,22 +148,22 @@
     <div class="col-md-6">
         <div class="card mb-3">
             <div class="card-header bg-warning text-dark">
-                <h6 class="mb-0"><i class="bi bi-geo-alt"></i> معلومات الموقع</h6>
+                <h6 class="mb-0"><i class="bi bi-geo-alt"></i> {{ __('messages.location_information') }}</h6>
             </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-sm-4">
-                        <strong>العنوان:</strong>
+                        <strong>{{ __('messages.address') }}:</strong>
                     </div>
                     <div class="col-sm-8">
-                        {{ $order->address ?? 'غير محدد' }}
+                        {{ $order->address ?? __('messages.not_specified') }}
                     </div>
                 </div>
                 @if($order->street)
                     <hr>
                     <div class="row">
                         <div class="col-sm-4">
-                            <strong>الشارع:</strong>
+                            <strong>{{ __('messages.street') }}:</strong>
                         </div>
                         <div class="col-sm-8">
                             {{ $order->street }}
@@ -174,7 +174,7 @@
                     <hr>
                     <div class="row">
                         <div class="col-sm-4">
-                            <strong>المبنى:</strong>
+                            <strong>{{ __('messages.building') }}:</strong>
                         </div>
                         <div class="col-sm-8">
                             {{ $order->building }}
@@ -185,7 +185,7 @@
                     <hr>
                     <div class="row">
                         <div class="col-sm-4">
-                            <strong>الطابق:</strong>
+                            <strong>{{ __('messages.floor') }}:</strong>
                         </div>
                         <div class="col-sm-8">
                             {{ $order->floor }}
@@ -196,7 +196,7 @@
                     <hr>
                     <div class="row">
                         <div class="col-sm-4">
-                            <strong>الشقة:</strong>
+                            <strong>{{ __('messages.apartment') }}:</strong>
                         </div>
                         <div class="col-sm-8">
                             {{ $order->apartment }}
@@ -212,7 +212,7 @@
     <div class="col-12">
         <div class="card mb-3">
             <div class="card-header bg-secondary text-white">
-                <h6 class="mb-0"><i class="bi bi-list-check"></i> الخدمات المطلوبة</h6>
+                <h6 class="mb-0"><i class="bi bi-list-check"></i> {{ __('messages.required_services') }}</h6>
             </div>
             <div class="card-body">
                 @if($order->services->count() > 0)
@@ -229,14 +229,14 @@
                     <hr>
                     <div class="row">
                         <div class="col-md-6">
-                            <strong>المجموع:</strong>
+                            <strong>{{ __('messages.total') }}:</strong>
                         </div>
                         <div class="col-md-6">
                             <span class="fs-5 fw-bold text-success">{{ number_format($order->total, 2) }} AED</span>
                         </div>
                     </div>
                 @else
-                    <p class="text-muted">لا توجد خدمات محددة</p>
+                    <p class="text-muted">{{ __('messages.no_services') }}</p>
                 @endif
             </div>
         </div>
@@ -248,7 +248,7 @@
     <div class="col-12">
         <div class="card mb-3">
             <div class="card-header bg-dark text-white">
-                <h6 class="mb-0"><i class="bi bi-chat-text"></i> ملاحظات الأدمن</h6>
+                <h6 class="mb-0"><i class="bi bi-chat-text"></i> {{ __('messages.admin_notes') }}</h6>
             </div>
             <div class="card-body">
                 <p>{{ $order->admin_notes }}</p>
@@ -262,16 +262,16 @@
     <div class="col-12">
         <div class="card">
             <div class="card-header bg-light">
-                <h6 class="mb-0"><i class="bi bi-clock-history"></i> سجل الطلب</h6>
+                <h6 class="mb-0"><i class="bi bi-clock-history"></i> {{ __('messages.order_log') }}</h6>
             </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-6">
-                        <strong>تاريخ الإنشاء:</strong>
+                        <strong>{{ __('messages.creation_date') }}:</strong>
                         {{ $order->created_at->format('Y-m-d H:i') }}
                     </div>
                     <div class="col-md-6">
-                        <strong>آخر تحديث:</strong>
+                        <strong>{{ __('messages.last_update') }}:</strong>
                         {{ $order->updated_at->format('Y-m-d H:i') }}
                     </div>
                 </div>
