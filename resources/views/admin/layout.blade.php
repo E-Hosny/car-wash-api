@@ -13,31 +13,44 @@
     @endif
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
 
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            background-color: #f8f9fa;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-family: 'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
         }
         
         /* Desktop Sidebar */
         @media (min-width: 768px) {
             .sidebar {
-                width: 250px;
+                width: 280px;
                 height: 100vh;
                 position: fixed;
                 right: 0;
                 top: 0;
-                background-color: #343a40;
-                padding-top: 20px;
+                background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+                backdrop-filter: blur(20px);
+                padding: 0;
                 color: white;
                 overflow-y: auto;
                 z-index: 1000;
+                box-shadow: -5px 0 25px rgba(0, 0, 0, 0.15);
+                border-left: 1px solid rgba(255, 255, 255, 0.1);
             }
             .main-content {
-                margin-right: 250px;
+                margin-right: 280px;
                 padding: 30px;
                 min-height: 100vh;
+                background: rgba(255, 255, 255, 0.1);
+                backdrop-filter: blur(10px);
             }
             .mobile-nav-toggle {
                 display: none;
@@ -47,10 +60,10 @@
         /* Tablet */
         @media (max-width: 991px) and (min-width: 768px) {
             .sidebar {
-                width: 220px;
+                width: 260px;
             }
             .main-content {
-                margin-right: 220px;
+                margin-right: 260px;
                 padding: 25px;
             }
         }
@@ -65,43 +78,247 @@
                 position: sticky;
                 top: 0;
                 z-index: 1001;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                backdrop-filter: blur(20px);
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             }
+        }
+
+        /* Sidebar Header */
+        .sidebar-header {
+            padding: 30px 20px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sidebar-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #f093fb, #f5576c, #4facfe, #00f2fe);
+            background-size: 300% 300%;
+            animation: gradientShift 3s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .sidebar-logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            margin-bottom: 15px;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-logo:hover {
+            transform: scale(1.05);
+        }
+
+        .sidebar-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin: 0;
+            background: linear-gradient(135deg, #ffffff, #f0f0f0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .sidebar-subtitle {
+            font-size: 0.85rem;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar-nav {
+            padding: 20px 0;
+        }
+
+        .nav-section {
+            margin-bottom: 25px;
+        }
+
+        .nav-section-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 0 25px 10px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 10px;
         }
         
         /* Sidebar Links */
         .sidebar a {
-            display: block;
-            padding: 12px 20px;
-            color: white;
+            display: flex;
+            align-items: center;
+            padding: 15px 25px;
+            color: rgba(255, 255, 255, 0.9);
             text-decoration: none;
             transition: all 0.3s ease;
-            border-radius: 5px;
-            margin: 2px 10px;
+            border-radius: 0;
+            margin: 0;
+            position: relative;
+            font-weight: 500;
+            font-size: 0.95rem;
         }
-        .sidebar a:hover,
+
+        .sidebar a i {
+            width: 20px;
+            margin-left: 15px;
+            font-size: 1.1rem;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar a:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            transform: translateX(-5px);
+            padding-right: 30px;
+        }
+
+        .sidebar a:hover i {
+            transform: scale(1.1);
+        }
+
         .sidebar a.active {
-            background-color: #495057;
-            transform: translateX(-2px);
-        }
-        .sidebar h5 {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 0 20px;
-        }
-        
-        /* Mobile Offcanvas */
-        .offcanvas-body a {
-            display: block;
-            padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.2);
             color: white;
+            border-right: 4px solid #f093fb;
+            font-weight: 600;
+        }
+
+        .sidebar a.active::before {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(180deg, #f093fb, #f5576c);
+        }
+
+        /* Mobile Offcanvas */
+        .offcanvas {
+            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+            backdrop-filter: blur(20px);
+        }
+
+        .offcanvas-header {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .offcanvas-title {
+            color: white;
+            font-weight: 700;
+        }
+
+        .offcanvas-body {
+            padding: 20px 0;
+        }
+
+        .offcanvas-body a {
+            display: flex;
+            align-items: center;
+            padding: 15px 25px;
+            color: rgba(255, 255, 255, 0.9);
             text-decoration: none;
             transition: all 0.3s ease;
-            border-radius: 5px;
-            margin: 2px 0;
+            border-radius: 0;
+            margin: 0;
+            font-weight: 500;
+            font-size: 0.95rem;
         }
+
+        .offcanvas-body a i {
+            width: 20px;
+            margin-left: 15px;
+            font-size: 1.1rem;
+            transition: transform 0.3s ease;
+        }
+
         .offcanvas-body a:hover {
-            background-color: #495057;
-            transform: translateX(-2px);
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            transform: translateX(-5px);
+            padding-right: 30px;
+        }
+
+        .offcanvas-body a:hover i {
+            transform: scale(1.1);
+        }
+
+        /* Language Toggle */
+        .language-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1002;
+        }
+
+        .language-toggle .btn-group {
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            border-radius: 25px;
+            overflow: hidden;
+        }
+
+        .language-toggle .btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            color: #667eea;
+            font-weight: 600;
+            padding: 8px 15px;
+            transition: all 0.3s ease;
+        }
+
+        .language-toggle .btn:hover {
+            background: rgba(255, 255, 255, 1);
+            transform: translateY(-2px);
+        }
+
+        .language-toggle .btn.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        @media (max-width: 767px) {
+            .language-toggle {
+                bottom: 10px;
+                right: 10px;
+            }
+        }
+
+        /* Sidebar Scrollbar */
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
         }
         
         /* Responsive Tables */
@@ -208,76 +425,129 @@
         </button>
     </div>
 
-    <div class="offcanvas offcanvas-end text-bg-dark" tabindex="-1" id="mobileSidebar">
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="mobileSidebar">
         <div class="offcanvas-header">
-            <h5 class="offcanvas-title">{{ __('messages.menu') }}</h5>
+            <div class="d-flex align-items-center">
+                <img src="{{ asset('logo.png') }}" alt="شعار النظام" class="sidebar-logo" style="width: 50px; height: 50px; margin-left: 15px;">
+                <div>
+                    <h5 class="offcanvas-title mb-0">{{ __('messages.dashboard') }}</h5>
+                    <small class="text-white-50">لوحة التحكم الإدارية</small>
+                </div>
+            </div>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
         </div>
-        <div class="offcanvas-body d-flex flex-column gap-2">
-            <a href="{{ route('admin.dashboard') }}" class="text-white {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-                <i class="bi bi-house"></i> {{ __('messages.home') }}
-            </a>
-            <a href="{{ route('admin.users.index') }}" class="text-white {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
-                <i class="bi bi-people"></i> {{ __('messages.users') }}
-            </a>
-            <a href="{{ route('admin.orders.time-slots') }}" class="text-white {{ request()->routeIs('admin.orders.time-slots') ? 'active' : '' }}">
-                <i class="bi bi-calendar-clock"></i> {{ __('messages.time_slots_management') }}
-            </a>
-            <a href="{{ route('admin.services.index') }}" class="text-white {{ request()->routeIs('admin.services.*') ? 'active' : '' }}">
-                <i class="bi bi-stars"></i> {{ __('messages.services') }}
-            </a>
-            <a href="{{ route('admin.packages.index') }}" class="text-white {{ request()->routeIs('admin.packages.*') ? 'active' : '' }}">
-                <i class="bi bi-box"></i> {{ __('packages.packages') }}
-            </a>
-            <a href="{{ route('admin.user-packages.index') }}" class="text-white {{ request()->routeIs('admin.user-packages.*') ? 'active' : '' }}">
-                <i class="bi bi-people-fill"></i> {{ __('messages.user_subscriptions') }}
-            </a>
-            <a href="{{ route('admin.settings.index') }}" class="text-white {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
-                <i class="bi bi-gear"></i> {{ __('messages.settings') }}
-            </a>
-            <div class="text-center mt-3 p-2">
-                <div class="btn-group" role="group">
-                    <a href="{{ route('lang.switch', 'ar') }}" class="btn btn-sm btn-outline-light {{ app()->getLocale() === 'ar' ? 'active' : '' }}">
-                        العربية
-                    </a>
-                    <a href="{{ route('lang.switch', 'en') }}" class="btn btn-sm btn-outline-light {{ app()->getLocale() === 'en' ? 'active' : '' }}">
-                        English
-                    </a>
-                </div>
+        <div class="offcanvas-body">
+            <!-- Main Section -->
+            <div class="nav-section">
+                <div class="nav-section-title">الرئيسية</div>
+                <a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+                    <i class="fas fa-home"></i> {{ __('messages.home') }}
+                </a>
+            </div>
+
+            <!-- Users Section -->
+            <div class="nav-section">
+                <div class="nav-section-title">المستخدمين</div>
+                <a href="{{ route('admin.users.index') }}" class="{{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+                    <i class="fas fa-users"></i> {{ __('messages.users') }}
+                </a>
+            </div>
+
+            <!-- Orders Section -->
+            <div class="nav-section">
+                <div class="nav-section-title">الطلبات</div>
+                <a href="{{ route('admin.orders.time-slots') }}" class="{{ request()->routeIs('admin.orders.time-slots') ? 'active' : '' }}">
+                    <i class="fas fa-calendar-alt"></i> {{ __('messages.time_slots_management') }}
+                </a>
+            </div>
+
+            <!-- Services Section -->
+            <div class="nav-section">
+                <div class="nav-section-title">الخدمات</div>
+                <a href="{{ route('admin.services.index') }}" class="{{ request()->routeIs('admin.services.*') ? 'active' : '' }}">
+                    <i class="fas fa-star"></i> {{ __('messages.services') }}
+                </a>
+            </div>
+
+            <!-- Packages Section -->
+            <div class="nav-section">
+                <div class="nav-section-title">الباقات</div>
+                <a href="{{ route('admin.packages.index') }}" class="{{ request()->routeIs('admin.packages.*') ? 'active' : '' }}">
+                    <i class="fas fa-box"></i> {{ __('packages.packages') }}
+                </a>
+                <a href="{{ route('admin.user-packages.index') }}" class="{{ request()->routeIs('admin.user-packages.*') ? 'active' : '' }}">
+                    <i class="fas fa-user-check"></i> {{ __('messages.user_subscriptions') }}
+                </a>
+            </div>
+
+            <!-- Settings Section -->
+            <div class="nav-section">
+                <div class="nav-section-title">الإعدادات</div>
+                <a href="{{ route('admin.settings.index') }}" class="{{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
+                    <i class="fas fa-cog"></i> {{ __('messages.settings') }}
+                </a>
             </div>
         </div>
     </div>
 
     <div class="sidebar d-none d-md-block">
-        <h5><i class="bi bi-speedometer2"></i> {{ __('messages.dashboard') }}</h5>
-        <a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-            <i class="bi bi-house"></i> {{ __('messages.home') }}
-        </a>
-        <a href="{{ route('admin.users.index') }}" class="{{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
-            <i class="bi bi-people"></i> {{ __('messages.users') }}
-        </a>
-        <a href="{{ route('admin.orders.time-slots') }}" class="{{ request()->routeIs('admin.orders.time-slots') ? 'active' : '' }}">
-            <i class="bi bi-calendar-clock"></i> {{ __('messages.time_slots_management') }}
-        </a>
-        <a href="{{ route('admin.services.index') }}" class="{{ request()->routeIs('admin.services.*') ? 'active' : '' }}">
-            <i class="bi bi-stars"></i> {{ __('messages.services') }}
-        </a>
-        <a href="{{ route('admin.packages.index') }}" class="{{ request()->routeIs('admin.packages.*') ? 'active' : '' }}">
-            <i class="bi bi-box"></i> {{ __('packages.packages') }}
-        </a>
-        <a href="{{ route('admin.user-packages.index') }}" class="{{ request()->routeIs('admin.user-packages.*') ? 'active' : '' }}">
-            <i class="bi bi-people-fill"></i> {{ __('messages.user_subscriptions') }}
-        </a>
-        <a href="{{ route('admin.settings.index') }}" class="{{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
-            <i class="bi bi-gear"></i> {{ __('messages.settings') }}
-        </a>
-        <div class="text-center mt-3 p-2">
-            <div class="btn-group" role="group">
-                <a href="{{ route('lang.switch', 'ar') }}" class="btn btn-sm btn-outline-light {{ app()->getLocale() === 'ar' ? 'active' : '' }}">
-                    العربية
+        <!-- Sidebar Header -->
+        <div class="sidebar-header">
+            <img src="{{ asset('logo.png') }}" alt="شعار النظام" class="sidebar-logo">
+            <h5 class="sidebar-title">{{ __('messages.dashboard') }}</h5>
+            <p class="sidebar-subtitle">لوحة التحكم الإدارية</p>
+        </div>
+
+        <!-- Sidebar Navigation -->
+        <div class="sidebar-nav">
+            <!-- Main Section -->
+            <div class="nav-section">
+                <div class="nav-section-title">الرئيسية</div>
+                <a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+                    <i class="fas fa-home"></i> {{ __('messages.home') }}
                 </a>
-                <a href="{{ route('lang.switch', 'en') }}" class="btn btn-sm btn-outline-light {{ app()->getLocale() === 'en' ? 'active' : '' }}">
-                    English
+            </div>
+
+            <!-- Users Section -->
+            <div class="nav-section">
+                <div class="nav-section-title">المستخدمين</div>
+                <a href="{{ route('admin.users.index') }}" class="{{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+                    <i class="fas fa-users"></i> {{ __('messages.users') }}
+                </a>
+            </div>
+
+            <!-- Orders Section -->
+            <div class="nav-section">
+                <div class="nav-section-title">الطلبات</div>
+                <a href="{{ route('admin.orders.time-slots') }}" class="{{ request()->routeIs('admin.orders.time-slots') ? 'active' : '' }}">
+                    <i class="fas fa-calendar-alt"></i> {{ __('messages.time_slots_management') }}
+                </a>
+            </div>
+
+            <!-- Services Section -->
+            <div class="nav-section">
+                <div class="nav-section-title">الخدمات</div>
+                <a href="{{ route('admin.services.index') }}" class="{{ request()->routeIs('admin.services.*') ? 'active' : '' }}">
+                    <i class="fas fa-star"></i> {{ __('messages.services') }}
+                </a>
+            </div>
+
+            <!-- Packages Section -->
+            <div class="nav-section">
+                <div class="nav-section-title">الباقات</div>
+                <a href="{{ route('admin.packages.index') }}" class="{{ request()->routeIs('admin.packages.*') ? 'active' : '' }}">
+                    <i class="fas fa-box"></i> {{ __('packages.packages') }}
+                </a>
+                <a href="{{ route('admin.user-packages.index') }}" class="{{ request()->routeIs('admin.user-packages.*') ? 'active' : '' }}">
+                    <i class="fas fa-user-check"></i> {{ __('messages.user_subscriptions') }}
+                </a>
+            </div>
+
+            <!-- Settings Section -->
+            <div class="nav-section">
+                <div class="nav-section-title">الإعدادات</div>
+                <a href="{{ route('admin.settings.index') }}" class="{{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
+                    <i class="fas fa-cog"></i> {{ __('messages.settings') }}
                 </a>
             </div>
         </div>
@@ -287,6 +557,104 @@
         @yield('content')
     </div>
 
+    <!-- Language Toggle -->
+    <div class="language-toggle">
+        <div class="btn-group" role="group">
+            <a href="{{ route('lang.switch', 'ar') }}" class="btn {{ app()->getLocale() === 'ar' ? 'active' : '' }}">
+                العربية
+            </a>
+            <a href="{{ route('lang.switch', 'en') }}" class="btn {{ app()->getLocale() === 'en' ? 'active' : '' }}">
+                English
+            </a>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Add smooth animations to sidebar links
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebarLinks = document.querySelectorAll('.sidebar a, .offcanvas-body a');
+            
+            sidebarLinks.forEach(link => {
+                link.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateX(-5px)';
+                });
+                
+                link.addEventListener('mouseleave', function() {
+                    if (!this.classList.contains('active')) {
+                        this.style.transform = 'translateX(0)';
+                    }
+                });
+            });
+
+            // Add ripple effect to buttons
+            const buttons = document.querySelectorAll('.btn');
+            buttons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    const ripple = document.createElement('span');
+                    const rect = this.getBoundingClientRect();
+                    const size = Math.max(rect.width, rect.height);
+                    const x = e.clientX - rect.left - size / 2;
+                    const y = e.clientY - rect.top - size / 2;
+                    
+                    ripple.style.width = ripple.style.height = size + 'px';
+                    ripple.style.left = x + 'px';
+                    ripple.style.top = y + 'px';
+                    ripple.classList.add('ripple');
+                    
+                    this.appendChild(ripple);
+                    
+                    setTimeout(() => {
+                        ripple.remove();
+                    }, 600);
+                });
+            });
+        });
+    </script>
+
+    <style>
+        /* Ripple Effect */
+        .btn {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(0);
+            animation: ripple-animation 0.6s linear;
+            pointer-events: none;
+        }
+
+        @keyframes ripple-animation {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        /* Enhanced Mobile Header */
+        .mobile-header {
+            backdrop-filter: blur(20px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .mobile-header .btn {
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-header .btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);
+        }
+    </style>
 </body>
 </html>
