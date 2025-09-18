@@ -113,11 +113,11 @@ class OrderController extends Controller
     {
         switch ($key) {
             case 'today':
-                return 'Today - ' . $date->format('d/m');
+                return __('messages.today') . ' - ' . $date->format('d/m');
             case 'tomorrow':
-                return 'Tomorrow - ' . $date->format('d/m');
+                return __('messages.tomorrow') . ' - ' . $date->format('d/m');
             case 'day_after':
-                return 'Day After - ' . $date->format('d/m');
+                return __('messages.day_after') . ' - ' . $date->format('d/m');
             default:
                 return $date->format('d/m/Y');
         }

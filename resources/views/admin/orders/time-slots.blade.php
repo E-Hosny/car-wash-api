@@ -8,60 +8,60 @@
             <div class="header-section mb-4">
                 <div class="header-content">
                     <div class="header-text">
-                        <h2 class="mb-1">
-                            <i class="bi bi-calendar-clock text-primary"></i>
-                            {{ __('messages.time_slots_management') }}
-                        </h2>
-                        <p class="text-muted mb-0">{{ __('messages.time_slots_description') }}</p>
-                    </div>
+                    <h2 class="mb-1">
+                        <i class="bi bi-calendar-clock text-primary"></i>
+                        {{ __('messages.time_slots_management') }}
+                    </h2>
+                    <p class="text-muted mb-0">{{ __('messages.time_slots_description') }}</p>
+                </div>
                     <div class="header-actions">
                         <div class="action-buttons">
-                            <a href="{{ route('admin.orders.index') }}" class="btn btn-outline-secondary">
+                    <a href="{{ route('admin.orders.index') }}" class="btn btn-outline-secondary">
                                 <i class="bi bi-arrow-left"></i> 
                                 <span class="d-none d-sm-inline">{{ __('messages.back_to_orders') }}</span>
-                            </a>
-                            <button class="btn btn-primary" onclick="refreshTimeSlots()" id="refreshBtn">
+                    </a>
+                    <button class="btn btn-primary" onclick="refreshTimeSlots()" id="refreshBtn">
                                 <i class="bi bi-arrow-clockwise"></i> 
                                 <span class="d-none d-sm-inline">{{ __('messages.refresh') }}</span>
-                            </button>
-                            <button class="btn btn-success" onclick="exportTimeSlots()">
+                    </button>
+                    <button class="btn btn-success" onclick="exportTimeSlots()">
                                 <i class="bi bi-download"></i> 
                                 <span class="d-none d-sm-inline">{{ __('messages.export') }}</span>
-                            </button>
-                            <div class="btn-group">
-                                <button class="btn btn-warning dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    </button>
+                    <div class="btn-group">
+                        <button class="btn btn-warning dropdown-toggle" type="button" data-bs-toggle="dropdown">
                                     <i class="bi bi-gear"></i> 
                                     <span class="d-none d-sm-inline">{{ __('messages.manage_hours') }}</span>
-                                </button>
+                        </button>
                                 <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><h6 class="dropdown-header">{{ __('messages.today') }}</h6></li>
-                                    <li><a class="dropdown-item" href="#" onclick="enableAllTimeSlotsForDate('{{ $timeSlotsData['today']['date_string'] }}')">
-                                        <i class="bi bi-check-circle text-success"></i> {{ __('messages.enable_all_hours') }}
-                                    </a></li>
-                                    <li><a class="dropdown-item" href="#" onclick="disableAllTimeSlotsForDate('{{ $timeSlotsData['today']['date_string'] }}')">
-                                        <i class="bi bi-power text-warning"></i> {{ __('messages.disable_all_hours') }}
-                                    </a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><h6 class="dropdown-header">{{ __('messages.tomorrow') }}</h6></li>
-                                    <li><a class="dropdown-item" href="#" onclick="enableAllTimeSlotsForDate('{{ $timeSlotsData['tomorrow']['date_string'] }}')">
-                                        <i class="bi bi-check-circle text-success"></i> {{ __('messages.enable_all_hours') }}
-                                    </a></li>
-                                    <li><a class="dropdown-item" href="#" onclick="disableAllTimeSlotsForDate('{{ $timeSlotsData['tomorrow']['date_string'] }}')">
-                                        <i class="bi bi-power text-warning"></i> {{ __('messages.disable_all_hours') }}
-                                    </a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><h6 class="dropdown-header">{{ __('messages.day_after') }}</h6></li>
-                                    <li><a class="dropdown-item" href="#" onclick="enableAllTimeSlotsForDate('{{ $timeSlotsData['day_after']['date_string'] }}')">
-                                        <i class="bi bi-check-circle text-success"></i> {{ __('messages.enable_all_hours') }}
-                                    </a></li>
-                                    <li><a class="dropdown-item" href="#" onclick="disableAllTimeSlotsForDate('{{ $timeSlotsData['day_after']['date_string'] }}')">
-                                        <i class="bi bi-power text-warning"></i> {{ __('messages.disable_all_hours') }}
-                                    </a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" href="#" onclick="showTimeSlotsManagement()">
-                                        <i class="bi bi-list-check"></i> {{ __('messages.advanced_management') }}
-                                    </a></li>
-                                </ul>
+                            <li><h6 class="dropdown-header">{{ __('messages.today') }}</h6></li>
+                            <li><a class="dropdown-item" href="#" onclick="enableAllTimeSlotsForDate('{{ $timeSlotsData['today']['date_string'] }}')">
+                                <i class="bi bi-check-circle text-success"></i> {{ __('messages.enable_all_hours') }}
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" onclick="disableAllTimeSlotsForDate('{{ $timeSlotsData['today']['date_string'] }}')">
+                                <i class="bi bi-power text-warning"></i> {{ __('messages.disable_all_hours') }}
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><h6 class="dropdown-header">{{ __('messages.tomorrow') }}</h6></li>
+                            <li><a class="dropdown-item" href="#" onclick="enableAllTimeSlotsForDate('{{ $timeSlotsData['tomorrow']['date_string'] }}')">
+                                <i class="bi bi-check-circle text-success"></i> {{ __('messages.enable_all_hours') }}
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" onclick="disableAllTimeSlotsForDate('{{ $timeSlotsData['tomorrow']['date_string'] }}')">
+                                <i class="bi bi-power text-warning"></i> {{ __('messages.disable_all_hours') }}
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><h6 class="dropdown-header">{{ __('messages.day_after') }}</h6></li>
+                            <li><a class="dropdown-item" href="#" onclick="enableAllTimeSlotsForDate('{{ $timeSlotsData['day_after']['date_string'] }}')">
+                                <i class="bi bi-check-circle text-success"></i> {{ __('messages.enable_all_hours') }}
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" onclick="disableAllTimeSlotsForDate('{{ $timeSlotsData['day_after']['date_string'] }}')">
+                                <i class="bi bi-power text-warning"></i> {{ __('messages.disable_all_hours') }}
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" onclick="showTimeSlotsManagement()">
+                                <i class="bi bi-list-check"></i> {{ __('messages.advanced_management') }}
+                            </a></li>
+                        </ul>
                             </div>
                         </div>
                     </div>
@@ -171,7 +171,7 @@
                                         @if($hourData['is_booked'])
                                             data-bs-toggle="tooltip" 
                                             data-bs-placement="top"
-                                            title="{{ __('messages.booked') }} - {{ $hourData['order']->customer->name ?? __('messages.customer') }} - {{ ucfirst($hourData['order']->status) }}"
+                                            title="{{ __('messages.booked') }} - {{ $hourData['order']->customer->name ?? __('messages.customer') }} - {{ __('messages.' . $hourData['order']->status) }}"
                                         @elseif($hourData['is_unavailable'])
                                             data-bs-toggle="tooltip" 
                                             data-bs-placement="top"
@@ -242,15 +242,15 @@
                         </h5>
                         <div class="table-controls">
                             <div class="table-filters">
-                                <select class="form-select form-select-sm" id="statusFilter" onchange="filterOrders()">
-                                    <option value="">{{ __('messages.all_statuses') }}</option>
-                                    <option value="pending">{{ __('messages.pending') }}</option>
-                                    <option value="accepted">{{ __('messages.accepted') }}</option>
-                                    <option value="in_progress">{{ __('messages.in_progress') }}</option>
-                                    <option value="completed">{{ __('messages.completed') }}</option>
-                                    <option value="cancelled">{{ __('messages.cancelled') }}</option>
-                                </select>
-                                <input type="text" class="form-control form-control-sm" id="searchInput" placeholder="{{ __('messages.search') }}" onkeyup="searchOrders()">
+                            <select class="form-select form-select-sm" id="statusFilter" onchange="filterOrders()">
+                                <option value="">{{ __('messages.all_statuses') }}</option>
+                                <option value="pending">{{ __('messages.pending') }}</option>
+                                <option value="accepted">{{ __('messages.accepted') }}</option>
+                                <option value="in_progress">{{ __('messages.in_progress') }}</option>
+                                <option value="completed">{{ __('messages.completed') }}</option>
+                                <option value="cancelled">{{ __('messages.cancelled') }}</option>
+                            </select>
+                            <input type="text" class="form-control form-control-sm" id="searchInput" placeholder="{{ __('messages.search') }}" onkeyup="searchOrders()">
                             </div>
                         </div>
                     </div>
@@ -262,6 +262,7 @@
                                 <tr>
                                     <th class="d-none d-md-table-cell">{{ __('messages.date') }}</th>
                                     <th>{{ __('messages.time') }}</th>
+                                    <th>{{ __('messages.order_id') }}</th>
                                     <th>{{ __('messages.customer') }}</th>
                                     <th class="d-none d-lg-table-cell">{{ __('messages.phone') }}</th>
                                     <th class="d-none d-xl-table-cell">{{ __('messages.services') }}</th>
@@ -282,6 +283,11 @@
                                             <td>
                                                 <span class="badge bg-secondary">
                                                     {{ \Carbon\Carbon::parse($order->scheduled_at)->format('h:i A') }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span class="order-id-badge">
+                                                    #{{ $order->id }}
                                                 </span>
                                             </td>
                                             <td>
@@ -317,7 +323,7 @@
                                                     };
                                                 @endphp
                                                 <span class="badge bg-{{ $badgeClass }}">
-                                                    {{ ucfirst($order->status) }}
+                                                    {{ __('messages.' . $order->status) }}
                                                 </span>
                                             </td>
                                             <td>
@@ -375,7 +381,7 @@
 
 <!-- Status Update Modal -->
 <div class="modal fade" id="statusUpdateModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-dialog modal-dialog-scrollable modal-lg">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">{{ __('messages.update_order_status') }}</h5>
@@ -386,7 +392,7 @@
                     <input type="hidden" id="orderId" name="order_id">
                     <div class="mb-3">
                         <label for="newStatus" class="form-label">{{ __('messages.new_status') }}</label>
-                        <select class="form-select" id="newStatus" name="status" required>
+                        <select class="form-select form-select-lg" id="newStatus" name="status" required>
                             <option value="pending">{{ __('messages.pending') }}</option>
                             <option value="accepted">{{ __('messages.accepted') }}</option>
                             <option value="in_progress">{{ __('messages.in_progress') }}</option>
@@ -396,7 +402,7 @@
                     </div>
                     <div class="mb-3">
                         <label for="statusNotes" class="form-label">{{ __('messages.notes_optional') }}</label>
-                        <textarea class="form-control" id="statusNotes" name="notes" rows="3"></textarea>
+                        <textarea class="form-control" id="statusNotes" name="notes" rows="4"></textarea>
                     </div>
                 </form>
             </div>
@@ -764,6 +770,24 @@
     font-size: 0.9rem;
 }
 
+.order-id-badge {
+    font-family: 'Courier New', monospace;
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 0.4rem 0.6rem;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #17a2b8, #138496);
+    color: white;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 4px rgba(23, 162, 184, 0.3);
+    transition: all 0.3s ease;
+}
+
+.order-id-badge:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(23, 162, 184, 0.4);
+}
+
 .action-buttons {
     display: flex;
     gap: 0.25rem;
@@ -797,6 +821,39 @@
 .modal-footer {
     padding: 1rem;
     border-top: 1px solid #dee2e6;
+}
+
+/* Status Update Modal Specific Styles */
+#statusUpdateModal .modal-dialog {
+    max-width: 600px;
+}
+
+#statusUpdateModal .form-select-lg {
+    font-size: 1.1rem;
+    padding: 0.75rem 1rem;
+    min-height: 3rem;
+}
+
+#statusUpdateModal .form-select option {
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    white-space: nowrap;
+}
+
+#statusUpdateModal .form-label {
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+#statusUpdateModal .form-control {
+    font-size: 1rem;
+    padding: 0.75rem;
+}
+
+#statusUpdateModal .btn {
+    font-size: 1rem;
+    padding: 0.75rem 1.5rem;
 }
 
 /* Mobile Specific Styles */
@@ -882,6 +939,11 @@
         font-size: 0.8rem;
     }
     
+    .order-id-badge {
+        font-size: 0.75rem;
+        padding: 0.3rem 0.5rem;
+    }
+    
     .action-buttons .btn {
         padding: 0.2rem 0.4rem;
         font-size: 0.7rem;
@@ -896,6 +958,28 @@
     .modal-body,
     .modal-footer {
         padding: 0.75rem;
+    }
+    
+    /* Status Update Modal Mobile */
+    #statusUpdateModal .modal-dialog {
+        margin: 0.25rem;
+        max-width: calc(100% - 0.5rem);
+    }
+    
+    #statusUpdateModal .form-select-lg {
+        font-size: 1rem;
+        padding: 0.5rem 0.75rem;
+        min-height: 2.5rem;
+    }
+    
+    #statusUpdateModal .form-select option {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.9rem;
+    }
+    
+    #statusUpdateModal .btn {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
     }
 }
 
