@@ -5,57 +5,65 @@
     <!-- Header Section -->
     <div class="row">
         <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h2 class="mb-1">
-                        <i class="bi bi-calendar-clock text-primary"></i>
-                        {{ __('messages.time_slots_management') }}
-                    </h2>
-                    <p class="text-muted mb-0">{{ __('messages.time_slots_description') }}</p>
-                </div>
-                <div class="d-flex gap-2">
-                    <a href="{{ route('admin.orders.index') }}" class="btn btn-outline-secondary">
-                        <i class="bi bi-arrow-left"></i> {{ __('messages.back_to_orders') }}
-                    </a>
-                    <button class="btn btn-primary" onclick="refreshTimeSlots()" id="refreshBtn">
-                        <i class="bi bi-arrow-clockwise"></i> {{ __('messages.refresh') }}
-                    </button>
-                    <button class="btn btn-success" onclick="exportTimeSlots()">
-                        <i class="bi bi-download"></i> {{ __('messages.export') }}
-                    </button>
-                    <div class="btn-group">
-                        <button class="btn btn-warning dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-gear"></i> {{ __('messages.manage_hours') }}
-                        </button>
-                        <ul class="dropdown-menu">
-                            <li><h6 class="dropdown-header">{{ __('messages.today') }}</h6></li>
-                            <li><a class="dropdown-item" href="#" onclick="enableAllTimeSlotsForDate('{{ $timeSlotsData['today']['date_string'] }}')">
-                                <i class="bi bi-check-circle text-success"></i> {{ __('messages.enable_all_hours') }}
-                            </a></li>
-                            <li><a class="dropdown-item" href="#" onclick="disableAllTimeSlotsForDate('{{ $timeSlotsData['today']['date_string'] }}')">
-                                <i class="bi bi-power text-warning"></i> {{ __('messages.disable_all_hours') }}
-                            </a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><h6 class="dropdown-header">{{ __('messages.tomorrow') }}</h6></li>
-                            <li><a class="dropdown-item" href="#" onclick="enableAllTimeSlotsForDate('{{ $timeSlotsData['tomorrow']['date_string'] }}')">
-                                <i class="bi bi-check-circle text-success"></i> {{ __('messages.enable_all_hours') }}
-                            </a></li>
-                            <li><a class="dropdown-item" href="#" onclick="disableAllTimeSlotsForDate('{{ $timeSlotsData['tomorrow']['date_string'] }}')">
-                                <i class="bi bi-power text-warning"></i> {{ __('messages.disable_all_hours') }}
-                            </a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><h6 class="dropdown-header">{{ __('messages.day_after') }}</h6></li>
-                            <li><a class="dropdown-item" href="#" onclick="enableAllTimeSlotsForDate('{{ $timeSlotsData['day_after']['date_string'] }}')">
-                                <i class="bi bi-check-circle text-success"></i> {{ __('messages.enable_all_hours') }}
-                            </a></li>
-                            <li><a class="dropdown-item" href="#" onclick="disableAllTimeSlotsForDate('{{ $timeSlotsData['day_after']['date_string'] }}')">
-                                <i class="bi bi-power text-warning"></i> {{ __('messages.disable_all_hours') }}
-                            </a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="#" onclick="showTimeSlotsManagement()">
-                                <i class="bi bi-list-check"></i> {{ __('messages.advanced_management') }}
-                            </a></li>
-                        </ul>
+            <div class="header-section mb-4">
+                <div class="header-content">
+                    <div class="header-text">
+                        <h2 class="mb-1">
+                            <i class="bi bi-calendar-clock text-primary"></i>
+                            {{ __('messages.time_slots_management') }}
+                        </h2>
+                        <p class="text-muted mb-0">{{ __('messages.time_slots_description') }}</p>
+                    </div>
+                    <div class="header-actions">
+                        <div class="action-buttons">
+                            <a href="{{ route('admin.orders.index') }}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> 
+                                <span class="d-none d-sm-inline">{{ __('messages.back_to_orders') }}</span>
+                            </a>
+                            <button class="btn btn-primary" onclick="refreshTimeSlots()" id="refreshBtn">
+                                <i class="bi bi-arrow-clockwise"></i> 
+                                <span class="d-none d-sm-inline">{{ __('messages.refresh') }}</span>
+                            </button>
+                            <button class="btn btn-success" onclick="exportTimeSlots()">
+                                <i class="bi bi-download"></i> 
+                                <span class="d-none d-sm-inline">{{ __('messages.export') }}</span>
+                            </button>
+                            <div class="btn-group">
+                                <button class="btn btn-warning dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                    <i class="bi bi-gear"></i> 
+                                    <span class="d-none d-sm-inline">{{ __('messages.manage_hours') }}</span>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><h6 class="dropdown-header">{{ __('messages.today') }}</h6></li>
+                                    <li><a class="dropdown-item" href="#" onclick="enableAllTimeSlotsForDate('{{ $timeSlotsData['today']['date_string'] }}')">
+                                        <i class="bi bi-check-circle text-success"></i> {{ __('messages.enable_all_hours') }}
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="#" onclick="disableAllTimeSlotsForDate('{{ $timeSlotsData['today']['date_string'] }}')">
+                                        <i class="bi bi-power text-warning"></i> {{ __('messages.disable_all_hours') }}
+                                    </a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><h6 class="dropdown-header">{{ __('messages.tomorrow') }}</h6></li>
+                                    <li><a class="dropdown-item" href="#" onclick="enableAllTimeSlotsForDate('{{ $timeSlotsData['tomorrow']['date_string'] }}')">
+                                        <i class="bi bi-check-circle text-success"></i> {{ __('messages.enable_all_hours') }}
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="#" onclick="disableAllTimeSlotsForDate('{{ $timeSlotsData['tomorrow']['date_string'] }}')">
+                                        <i class="bi bi-power text-warning"></i> {{ __('messages.disable_all_hours') }}
+                                    </a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><h6 class="dropdown-header">{{ __('messages.day_after') }}</h6></li>
+                                    <li><a class="dropdown-item" href="#" onclick="enableAllTimeSlotsForDate('{{ $timeSlotsData['day_after']['date_string'] }}')">
+                                        <i class="bi bi-check-circle text-success"></i> {{ __('messages.enable_all_hours') }}
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="#" onclick="disableAllTimeSlotsForDate('{{ $timeSlotsData['day_after']['date_string'] }}')">
+                                        <i class="bi bi-power text-warning"></i> {{ __('messages.disable_all_hours') }}
+                                    </a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="#" onclick="showTimeSlotsManagement()">
+                                        <i class="bi bi-list-check"></i> {{ __('messages.advanced_management') }}
+                                    </a></li>
+                                </ul>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -63,49 +71,49 @@
     </div>
 
     <!-- Quick Stats -->
-    <div class="row mb-4">
-        <div class="col-md-4">
-            <div class="card bg-gradient-primary text-white shadow-lg">
+    <div class="row mb-4 g-3">
+        <div class="col-lg-4 col-md-6 col-sm-12">
+            <div class="card bg-gradient-primary text-white shadow-lg stats-card">
                 <div class="card-body text-center">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
+                    <div class="stats-content">
+                        <div class="stats-info">
                             <h5 class="card-title mb-1">{{ __('messages.today') }}</h5>
                             <h2 class="mb-0">{{ $timeSlotsData['today']['total_booked'] }}</h2>
                             <small>{{ __('messages.booked_appointments') }}</small>
                         </div>
-                        <div class="fs-1 opacity-75">
+                        <div class="stats-icon">
                             <i class="bi bi-calendar-day"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card bg-gradient-success text-white shadow-lg">
+        <div class="col-lg-4 col-md-6 col-sm-12">
+            <div class="card bg-gradient-success text-white shadow-lg stats-card">
                 <div class="card-body text-center">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
+                    <div class="stats-content">
+                        <div class="stats-info">
                             <h5 class="card-title mb-1">{{ __('messages.tomorrow') }}</h5>
                             <h2 class="mb-0">{{ $timeSlotsData['tomorrow']['total_booked'] }}</h2>
                             <small>{{ __('messages.booked_appointments') }}</small>
                         </div>
-                        <div class="fs-1 opacity-75">
+                        <div class="stats-icon">
                             <i class="bi bi-calendar-plus"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card bg-gradient-info text-white shadow-lg">
+        <div class="col-lg-4 col-md-6 col-sm-12">
+            <div class="card bg-gradient-info text-white shadow-lg stats-card">
                 <div class="card-body text-center">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
+                    <div class="stats-content">
+                        <div class="stats-info">
                             <h5 class="card-title mb-1">{{ __('messages.day_after') }}</h5>
                             <h2 class="mb-0">{{ $timeSlotsData['day_after']['total_booked'] }}</h2>
                             <small>{{ __('messages.booked_appointments') }}</small>
                         </div>
-                        <div class="fs-1 opacity-75">
+                        <div class="stats-icon">
                             <i class="bi bi-calendar-week"></i>
                         </div>
                     </div>
@@ -115,10 +123,10 @@
     </div>
 
     <!-- Time Slots Display -->
-    <div class="row" id="timeSlotsContainer">
+    <div class="row g-3" id="timeSlotsContainer">
         @foreach(['today', 'tomorrow', 'day_after'] as $dayKey)
             @php $dayData = $timeSlotsData[$dayKey]; @endphp
-            <div class="col-lg-4 col-md-6 mb-4">
+            <div class="col-xl-4 col-lg-6 col-md-12 mb-4">
                 <div class="card h-100 shadow-sm border-0">
                     <div class="card-header bg-{{ $dayKey === 'today' ? 'primary' : ($dayKey === 'tomorrow' ? 'success' : 'info') }} text-white position-relative">
                         <div class="d-flex justify-content-between align-items-center">
@@ -227,21 +235,23 @@
         <div class="col-12">
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-white border-bottom">
-                    <div class="d-flex justify-content-between align-items-center">
+                    <div class="table-header">
                         <h5 class="mb-0">
                             <i class="bi bi-list-ul text-primary"></i>
                             {{ __('messages.booked_orders_details') }}
                         </h5>
-                        <div class="d-flex gap-2">
-                            <select class="form-select form-select-sm" id="statusFilter" onchange="filterOrders()">
-                                <option value="">{{ __('messages.all_statuses') }}</option>
-                                <option value="pending">{{ __('messages.pending') }}</option>
-                                <option value="accepted">{{ __('messages.accepted') }}</option>
-                                <option value="in_progress">{{ __('messages.in_progress') }}</option>
-                                <option value="completed">{{ __('messages.completed') }}</option>
-                                <option value="cancelled">{{ __('messages.cancelled') }}</option>
-                            </select>
-                            <input type="text" class="form-control form-control-sm" id="searchInput" placeholder="{{ __('messages.search') }}" onkeyup="searchOrders()">
+                        <div class="table-controls">
+                            <div class="table-filters">
+                                <select class="form-select form-select-sm" id="statusFilter" onchange="filterOrders()">
+                                    <option value="">{{ __('messages.all_statuses') }}</option>
+                                    <option value="pending">{{ __('messages.pending') }}</option>
+                                    <option value="accepted">{{ __('messages.accepted') }}</option>
+                                    <option value="in_progress">{{ __('messages.in_progress') }}</option>
+                                    <option value="completed">{{ __('messages.completed') }}</option>
+                                    <option value="cancelled">{{ __('messages.cancelled') }}</option>
+                                </select>
+                                <input type="text" class="form-control form-control-sm" id="searchInput" placeholder="{{ __('messages.search') }}" onkeyup="searchOrders()">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -250,11 +260,11 @@
                         <table class="table table-hover mb-0" id="ordersTable">
                             <thead class="table-dark">
                                 <tr>
-                                    <th>{{ __('messages.date') }}</th>
+                                    <th class="d-none d-md-table-cell">{{ __('messages.date') }}</th>
                                     <th>{{ __('messages.time') }}</th>
                                     <th>{{ __('messages.customer') }}</th>
-                                    <th>{{ __('messages.phone') }}</th>
-                                    <th>{{ __('messages.services') }}</th>
+                                    <th class="d-none d-lg-table-cell">{{ __('messages.phone') }}</th>
+                                    <th class="d-none d-xl-table-cell">{{ __('messages.services') }}</th>
                                     <th>{{ __('messages.amount') }}</th>
                                     <th>{{ __('messages.status') }}</th>
                                     <th>{{ __('messages.actions') }}</th>
@@ -264,7 +274,7 @@
                                 @foreach(['today', 'tomorrow', 'day_after'] as $dayKey)
                                     @foreach($timeSlotsData[$dayKey]['orders'] as $order)
                                         <tr data-status="{{ $order->status }}" data-customer="{{ $order->customer->name ?? '' }}" data-order-id="{{ $order->id }}" data-customer-name="{{ $order->customer->name ?? 'عميل' }}">
-                                            <td>
+                                            <td class="d-none d-md-table-cell">
                                                 <span class="badge bg-{{ $dayKey === 'today' ? 'primary' : ($dayKey === 'tomorrow' ? 'success' : 'info') }}">
                                                     {{ $timeSlotsData[$dayKey]['label'] }}
                                                 </span>
@@ -275,24 +285,25 @@
                                                 </span>
                                             </td>
                                             <td>
-                                                <div class="d-flex align-items-center">
-                                                    <div class="avatar-sm bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2">
+                                                <div class="customer-info">
+                                                    <div class="customer-avatar">
                                                         {{ substr($order->customer->name ?? 'ع', 0, 1) }}
                                                     </div>
-                                                    <div>
-                                                        <div class="fw-bold">{{ $order->customer->name ?? 'غير محدد' }}</div>
-                                                        <small class="text-muted">{{ $order->customer->email ?? '' }}</small>
+                                                    <div class="customer-details">
+                                                        <div class="customer-name">{{ $order->customer->name ?? 'غير محدد' }}</div>
+                                                        <small class="customer-email d-none d-lg-block">{{ $order->customer->email ?? '' }}</small>
+                                                        <small class="customer-phone d-md-none">{{ $order->customer->phone ?? 'غير محدد' }}</small>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td>{{ $order->customer->phone ?? 'غير محدد' }}</td>
-                                            <td>
+                                            <td class="d-none d-lg-table-cell">{{ $order->customer->phone ?? 'غير محدد' }}</td>
+                                            <td class="d-none d-xl-table-cell">
                                                 @foreach($order->services as $service)
                                                     <span class="badge bg-secondary me-1 mb-1">{{ $service->name }}</span>
                                                 @endforeach
                                             </td>
                                             <td>
-                                                <span class="fw-bold text-success">{{ number_format($order->total, 2) }} AED</span>
+                                                <span class="amount">{{ number_format($order->total, 2) }} AED</span>
                                             </td>
                                             <td>
                                                 @php
@@ -310,18 +321,18 @@
                                                 </span>
                                             </td>
                                             <td>
-                                                <div class="btn-group btn-group-sm">
-                                                    <button class="btn btn-outline-info" 
+                                                <div class="action-buttons">
+                                                    <button class="btn btn-outline-info btn-sm" 
                                                             onclick="viewOrderDetails({{ $order->id }})"
                                                             data-bs-toggle="tooltip" title="{{ __('messages.view_details') }}">
                                                         <i class="bi bi-eye"></i>
                                                     </button>
-                                                    <button class="btn btn-outline-warning" 
+                                                    <button class="btn btn-outline-warning btn-sm" 
                                                             onclick="editOrderStatus({{ $order->id }})"
                                                             data-bs-toggle="tooltip" title="{{ __('messages.edit_status') }}">
                                                         <i class="bi bi-pencil"></i>
                                                     </button>
-                                                    <button class="btn btn-outline-danger" 
+                                                    <button class="btn btn-outline-danger btn-sm" 
                                                             onclick="cancelOrder({{ $order->id }})"
                                                             data-bs-toggle="tooltip" title="{{ __('messages.cancel_order') }}">
                                                         <i class="bi bi-x-circle"></i>
@@ -342,11 +353,11 @@
 
 <!-- Order Details Modal -->
 <div class="modal fade" id="orderDetailsModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">{{ __('messages.order_details') }}</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body" id="orderDetailsContent">
                 <div class="text-center">
@@ -355,17 +366,20 @@
                     </div>
                 </div>
             </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('messages.close') }}</button>
+            </div>
         </div>
     </div>
 </div>
 
 <!-- Status Update Modal -->
 <div class="modal fade" id="statusUpdateModal" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">{{ __('messages.update_order_status') }}</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <form id="statusUpdateForm">
@@ -518,18 +532,613 @@
     animation: pulse 1.5s ease-in-out infinite;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
+/* ===== RESPONSIVE DESIGN ===== */
+
+/* Header Section Responsive */
+.header-section {
+    padding: 1rem 0;
+}
+
+.header-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.header-text h2 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.header-text p {
+    font-size: 0.9rem;
+}
+
+.header-actions {
+    width: 100%;
+}
+
+.action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: flex-start;
+}
+
+.action-buttons .btn {
+    flex: 1;
+    min-width: 120px;
+    font-size: 0.875rem;
+    padding: 0.5rem 0.75rem;
+}
+
+.action-buttons .btn-group {
+    flex: 1;
+    min-width: 140px;
+}
+
+/* Stats Cards Responsive */
+.stats-card {
+    margin-bottom: 1rem;
+}
+
+.stats-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1rem;
+}
+
+.stats-info h5 {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.stats-info h2 {
+    font-size: 2rem;
+    margin-bottom: 0.25rem;
+}
+
+.stats-info small {
+    font-size: 0.8rem;
+}
+
+.stats-icon {
+    font-size: 2.5rem;
+    opacity: 0.8;
+}
+
+/* Time Slots Responsive */
+.time-slot-day-card {
+    margin-bottom: 1.5rem;
+}
+
+.day-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem;
+}
+
+.day-info h5 {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+}
+
+.day-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.day-badges .badge {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.75rem;
+}
+
+.day-icon {
+    font-size: 1.5rem;
+    opacity: 0.8;
+    text-align: center;
+}
+
+.time-slots-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 0.5rem;
+    padding: 0.75rem;
+}
+
+.time-slot-item {
+    width: 100%;
+}
+
+.time-slot-card {
+    min-height: 70px;
+    padding: 0.5rem;
+    border-radius: 8px;
+}
+
+.time-slot-content {
+    text-align: center;
+    padding: 0.25rem;
+}
+
+.time-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.time-status {
+    font-size: 0.7rem;
+    margin-bottom: 0.125rem;
+}
+
+.time-hint {
+    font-size: 0.6rem;
+    color: #6c757d;
+}
+
+.customer-name {
+    font-size: 0.65rem;
+    color: #6c757d;
+    margin-top: 0.125rem;
+}
+
+.toggle-btn-container {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+}
+
+.toggle-btn {
+    width: 20px;
+    height: 20px;
+    font-size: 10px;
+}
+
+/* Table Responsive */
+.table-header {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+}
+
+.table-controls {
+    width: 100%;
+}
+
+.table-filters {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.table-filters .form-select,
+.table-filters .form-control {
+    width: 100%;
+}
+
+.customer-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.customer-avatar {
+    width: 30px;
+    height: 30px;
+    background-color: #007bff;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.customer-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.customer-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 0.125rem;
+}
+
+.customer-email,
+.customer-phone {
+    font-size: 0.75rem;
+    color: #6c757d;
+}
+
+.amount {
+    font-weight: 600;
+    color: #28a745;
+    font-size: 0.9rem;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+}
+
+.action-buttons .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+}
+
+/* Modal Responsive */
+.modal-dialog {
+    margin: 0.5rem;
+    max-width: calc(100% - 1rem);
+}
+
+.modal-content {
+    border-radius: 12px;
+}
+
+.modal-header {
+    padding: 1rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.modal-body {
+    padding: 1rem;
+}
+
+.modal-footer {
+    padding: 1rem;
+    border-top: 1px solid #dee2e6;
+}
+
+/* Mobile Specific Styles */
+@media (max-width: 576px) {
+    .container-fluid {
+        padding: 0.5rem;
+    }
+    
+    .header-text h2 {
+        font-size: 1.25rem;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+    
+    .action-buttons .btn,
+    .action-buttons .btn-group {
+        width: 100%;
+        min-width: auto;
+    }
+    
+    .stats-content {
+        padding: 1rem 0.5rem;
+    }
+    
+    .stats-info h2 {
+        font-size: 1.75rem;
+    }
+    
+    .stats-icon {
+        font-size: 2rem;
+    }
+    
+    .time-slots-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.375rem;
+        padding: 0.5rem;
+    }
+    
     .time-slot-card {
         min-height: 60px;
+        padding: 0.375rem;
     }
     
-    .time-slot-card .fs-6 {
-        font-size: 0.8rem !important;
+    .time-label {
+        font-size: 0.75rem;
     }
     
-    .card-body {
-        padding: 1rem !important;
+    .time-status {
+        font-size: 0.65rem;
+    }
+    
+    .time-hint {
+        font-size: 0.55rem;
+    }
+    
+    .toggle-btn {
+        width: 18px;
+        height: 18px;
+        font-size: 9px;
+    }
+    
+    .table-header {
+        padding: 0.75rem;
+    }
+    
+    .table-filters {
+        gap: 0.375rem;
+    }
+    
+    .customer-avatar {
+        width: 25px;
+        height: 25px;
+        font-size: 0.7rem;
+    }
+    
+    .customer-name {
+        font-size: 0.8rem;
+    }
+    
+    .amount {
+        font-size: 0.8rem;
+    }
+    
+    .action-buttons .btn {
+        padding: 0.2rem 0.4rem;
+        font-size: 0.7rem;
+    }
+    
+    .modal-dialog {
+        margin: 0.25rem;
+        max-width: calc(100% - 0.5rem);
+    }
+    
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        padding: 0.75rem;
+    }
+}
+
+/* Tablet Specific Styles */
+@media (min-width: 577px) and (max-width: 768px) {
+    .header-content {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+    
+    .header-actions {
+        width: auto;
+    }
+    
+    .action-buttons {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+    
+    .stats-content {
+        flex-direction: row;
+        justify-content: space-between;
+        text-align: left;
+    }
+    
+    .time-slots-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    
+    .table-header {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .table-filters {
+        flex-direction: row;
+        gap: 0.5rem;
+    }
+    
+    .table-filters .form-select,
+    .table-filters .form-control {
+        width: auto;
+        min-width: 150px;
+    }
+}
+
+/* Desktop Specific Styles */
+@media (min-width: 769px) {
+    .header-content {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .header-actions {
+        width: auto;
+    }
+    
+    .action-buttons {
+        flex-direction: row;
+        gap: 0.5rem;
+    }
+    
+    .action-buttons .btn {
+        flex: none;
+        min-width: auto;
+    }
+    
+    .stats-content {
+        flex-direction: row;
+        justify-content: space-between;
+        text-align: left;
+    }
+    
+    .day-header {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .time-slots-grid {
+        grid-template-columns: repeat(5, 1fr);
+        gap: 0.5rem;
+    }
+    
+    .time-slot-card {
+        min-height: 80px;
+    }
+    
+    .time-label {
+        font-size: 0.9rem;
+    }
+    
+    .time-status {
+        font-size: 0.75rem;
+    }
+    
+    .time-hint {
+        font-size: 0.65rem;
+    }
+    
+    .toggle-btn {
+        width: 24px;
+        height: 24px;
+        font-size: 12px;
+    }
+    
+    .table-header {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .table-filters {
+        flex-direction: row;
+        gap: 0.5rem;
+    }
+    
+    .table-filters .form-select,
+    .table-filters .form-control {
+        width: auto;
+        min-width: 150px;
+    }
+    
+    .modal-dialog {
+        margin: 1.75rem auto;
+        max-width: 500px;
+    }
+}
+
+/* Large Desktop Specific Styles */
+@media (min-width: 1200px) {
+    .time-slots-grid {
+        grid-template-columns: repeat(6, 1fr);
+    }
+    
+    .time-slot-card {
+        min-height: 85px;
+    }
+    
+    .modal-dialog {
+        max-width: 600px;
+    }
+}
+
+/* Extra Large Desktop Specific Styles */
+@media (min-width: 1400px) {
+    .time-slots-grid {
+        grid-template-columns: repeat(7, 1fr);
+    }
+    
+    .time-slot-card {
+        min-height: 90px;
+    }
+    
+    .modal-dialog {
+        max-width: 800px;
+    }
+}
+
+/* Touch Device Optimizations */
+@media (hover: none) and (pointer: coarse) {
+    .time-slot-card:hover {
+        transform: none;
+    }
+    
+    .time-slot-card:active {
+        transform: scale(0.98);
+    }
+    
+    .btn:hover {
+        transform: none;
+    }
+    
+    .btn:active {
+        transform: scale(0.98);
+    }
+    
+    .toggle-btn:hover {
+        transform: none;
+    }
+    
+    .toggle-btn:active {
+        transform: scale(0.9);
+    }
+    
+    /* Increase touch targets */
+    .time-slot-card {
+        min-height: 80px;
+    }
+    
+    .toggle-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 14px;
+    }
+    
+    .action-buttons .btn {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.875rem;
+    }
+}
+
+/* High DPI Display Optimizations */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .time-slot-card {
+        border-width: 1px;
+    }
+    
+    .card {
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .btn {
+        border-width: 1px;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .header-actions,
+    .action-buttons,
+    .toggle-btn-container,
+    .action-buttons,
+    .modal {
+        display: none !important;
+    }
+    
+    .time-slot-card {
+        border: 1px solid #000 !important;
+        background: white !important;
+        color: black !important;
+    }
+    
+    .card {
+        border: 1px solid #000 !important;
+        box-shadow: none !important;
+    }
+    
+    .table {
+        font-size: 0.8rem;
     }
 }
 
@@ -999,8 +1608,7 @@ function initializeSoundEffects() {
 
 // Initialize real-time updates
 function initializeRealTimeUpdates() {
-    // Add visual indicators for real-time updates
-    addRealTimeIndicators();
+    // Visual indicators removed - no longer showing real-time indicator
     
     // Listen for visibility changes to pause/resume updates
     document.addEventListener('visibilitychange', function() {
@@ -1016,33 +1624,7 @@ function initializeRealTimeUpdates() {
     });
 }
 
-// Add real-time indicators
-function addRealTimeIndicators() {
-    // Add a small indicator showing the page is live
-    const indicator = document.createElement('div');
-    indicator.id = 'realTimeIndicator';
-    indicator.className = 'position-fixed';
-    indicator.style.cssText = 'bottom: 20px; right: 20px; z-index: 1000;';
-    indicator.innerHTML = `
-        <div class="d-flex align-items-center bg-success text-white px-3 py-2 rounded-pill shadow-sm">
-            <div class="me-2">
-                <div class="spinner-border spinner-border-sm" role="status">
-                    <span class="visually-hidden">${t('loading')}</span>
-                </div>
-            </div>
-            <small>${t('real_time_updates_active')}</small>
-        </div>
-    `;
-    
-    document.body.appendChild(indicator);
-    
-    // Hide indicator after 5 seconds
-    setTimeout(() => {
-        if (indicator.parentNode) {
-            indicator.style.opacity = '0.7';
-        }
-    }, 5000);
-}
+// Real-time indicators function removed - no longer needed
 
 // Play success sound
 function playSuccessSound() {
