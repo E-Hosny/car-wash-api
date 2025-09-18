@@ -1782,12 +1782,15 @@ function stopAutoRefresh() {
 
 // Refresh time slots
 function refreshTimeSlots(silent = false) {
+    console.log('refreshTimeSlots called with silent:', silent);
+    
     if (!silent) {
         const refreshBtn = document.getElementById('refreshBtn');
         refreshBtn.innerHTML = `<i class="bi bi-arrow-clockwise spin"></i> ${t('updating')}`;
         refreshBtn.disabled = true;
     }
     
+    console.log('Making fetch request to:', '{{ route("admin.orders.time-slots") }}');
     fetch('{{ route("admin.orders.time-slots") }}', {
         method: 'GET',
         headers: {
@@ -1795,13 +1798,20 @@ function refreshTimeSlots(silent = false) {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         }
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('Fetch response received:', response);
+        return response.json();
+    })
     .then(data => {
+        console.log('Parsed data:', data);
         if (data.success) {
+            console.log('Data is successful, calling updateTimeSlotsDisplay...');
             updateTimeSlotsDisplay(data.data);
             if (!silent) {
                 showNotification(t('refresh_success'), 'success');
             }
+        } else {
+            console.error('Data success is false:', data);
         }
     })
     .catch(error => {
@@ -1821,15 +1831,26 @@ function refreshTimeSlots(silent = false) {
 
 // Update time slots display
 function updateTimeSlotsDisplay(data) {
+    console.log('updateTimeSlotsDisplay called with data:', data);
+    
     // Update stats cards
-    document.querySelector('.col-md-4:nth-child(1) h2').textContent = data.today.total_booked;
-    document.querySelector('.col-md-4:nth-child(2) h2').textContent = data.tomorrow.total_booked;
-    document.querySelector('.col-md-4:nth-child(3) h2').textContent = data.day_after.total_booked;
+    const statsCard1 = document.querySelector('.col-xl-4:nth-child(1) h2');
+    const statsCard2 = document.querySelector('.col-xl-4:nth-child(2) h2');
+    const statsCard3 = document.querySelector('.col-xl-4:nth-child(3) h2');
+    
+    console.log('Stats cards found:', {statsCard1, statsCard2, statsCard3});
+    
+    if (statsCard1) statsCard1.textContent = data.today.total_booked;
+    if (statsCard2) statsCard2.textContent = data.tomorrow.total_booked;
+    if (statsCard3) statsCard3.textContent = data.day_after.total_booked;
     
     // Update time slots
     ['today', 'tomorrow', 'day_after'].forEach(dayKey => {
         const dayData = data[dayKey];
-        const dayContainer = document.querySelector(`[data-day="${dayKey}"]`).closest('.col-lg-4');
+        console.log(`Processing ${dayKey}:`, dayData);
+        
+        const dayContainer = document.querySelector(`[data-day="${dayKey}"]`).closest('.col-xl-4');
+        console.log(`Day container for ${dayKey}:`, dayContainer);
         
         // Update badges
         const badges = dayContainer.querySelectorAll('.badge');
@@ -1946,7 +1967,105 @@ function updateTimeSlotsDisplay(data) {
         });
     });
     
+    // Update orders table
+    updateOrdersTable(data);
+    
     // Reinitialize tooltips after update
+    setTimeout(() => {
+        initializeTooltips();
+    }, 100);
+}
+
+// Update orders table with fresh data
+function updateOrdersTable(data) {
+    console.log('updateOrdersTable called with data:', data);
+    
+    const tbody = document.querySelector('#ordersTable tbody');
+    console.log('Table tbody found:', tbody);
+    if (!tbody) {
+        console.error('Table tbody not found!');
+        return;
+    }
+    
+    // Clear existing rows
+    tbody.innerHTML = '';
+    
+    // Add new rows
+    ['today', 'tomorrow', 'day_after'].forEach(dayKey => {
+        const dayData = data[dayKey];
+        dayData.orders.forEach(order => {
+            const row = document.createElement('tr');
+            row.setAttribute('data-status', order.status);
+            row.setAttribute('data-customer', order.customer?.name || '');
+            row.setAttribute('data-order-id', order.id);
+            row.setAttribute('data-customer-name', order.customer?.name || 'عميل');
+            
+            const badgeClass = {
+                'today': 'primary',
+                'tomorrow': 'success', 
+                'day_after': 'info'
+            }[dayKey];
+            
+            const statusBadgeClass = {
+                'pending': 'warning',
+                'accepted': 'info',
+                'in_progress': 'primary',
+                'completed': 'success',
+                'cancelled': 'danger'
+            }[order.status] || 'secondary';
+            
+            row.innerHTML = `
+                <td class="d-none d-md-table-cell">
+                    <span class="badge bg-${badgeClass}">${dayData.label}</span>
+                </td>
+                <td>
+                    <span class="badge bg-secondary">${new Date(order.scheduled_at).toLocaleTimeString('en-US', {hour: 'numeric', minute: '2-digit', hour12: true})}</span>
+                </td>
+                <td>
+                    <span class="order-id-badge">
+                        #${order.id}
+                    </span>
+                </td>
+                <td>
+                    <div class="customer-info">
+                        <div class="customer-avatar">${(order.customer?.name || 'ع').charAt(0)}</div>
+                        <div class="customer-details">
+                            <div class="customer-name">${order.customer?.name || 'غير محدد'}</div>
+                            <small class="customer-email d-none d-lg-block">${order.customer?.email || ''}</small>
+                            <small class="customer-phone d-md-none">${order.customer?.phone || 'غير محدد'}</small>
+                        </div>
+                    </div>
+                </td>
+                <td class="d-none d-lg-table-cell">${order.customer?.phone || 'غير محدد'}</td>
+                <td class="d-none d-xl-table-cell">
+                    ${order.services?.map(service => `<span class="badge bg-secondary me-1 mb-1">${service.name}</span>`).join('') || ''}
+                </td>
+                <td>
+                    <span class="amount">${parseFloat(order.total).toFixed(2)} AED</span>
+                </td>
+                <td>
+                    <span class="badge bg-${statusBadgeClass}">${order.status.charAt(0).toUpperCase() + order.status.slice(1)}</span>
+                </td>
+                <td>
+                    <div class="action-buttons">
+                        <button class="btn btn-outline-info btn-sm" onclick="viewOrderDetails(${order.id})" data-bs-toggle="tooltip" title="${t('view_details')}">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                        <button class="btn btn-outline-warning btn-sm" onclick="editOrderStatus(${order.id})" data-bs-toggle="tooltip" title="${t('edit_status')}">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm" onclick="cancelOrder(${order.id})" data-bs-toggle="tooltip" title="${t('cancel_order')}">
+                            <i class="bi bi-x-circle"></i>
+                        </button>
+                    </div>
+                </td>
+            `;
+            
+            tbody.appendChild(row);
+        });
+    });
+    
+    // Reinitialize tooltips for action buttons
     setTimeout(() => {
         initializeTooltips();
     }, 100);
@@ -2973,6 +3092,7 @@ function performBulkTimeSlotAction(date, enable) {
                 
                 // Update UI
                 setTimeout(() => {
+                    console.log('Calling refreshTimeSlots after successful bulk action...');
                     refreshTimeSlots(true);
                 }, 500);
             }
@@ -2993,6 +3113,7 @@ function performBulkTimeSlotAction(date, enable) {
                 
                 // Update UI
                 setTimeout(() => {
+                    console.log('Calling refreshTimeSlots after bulk action with errors...');
                     refreshTimeSlots(true);
                 }, 500);
             }
