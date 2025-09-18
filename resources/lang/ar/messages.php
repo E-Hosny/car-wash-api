@@ -14,6 +14,8 @@ return [
     'location' => 'الموقع',
     'status' => 'الحالة',
     'date' => 'التاريخ',
+    'time' => 'الوقت',
+    'amount' => 'المبلغ',
     'pending' => 'قيد الانتظار',
     'accepted' => 'تم القبول',
     'in_progress' => 'قيد التنفيذ',

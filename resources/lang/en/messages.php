@@ -15,6 +15,8 @@ return [
     'location' => 'Location',
     'status' => 'Status',
     'date' => 'Date',
+    'time' => 'Time',
+    'amount' => 'Amount',
     'pending' => 'Pending',
     'accepted' => 'Accepted',
     'in_progress' => 'In Progress',
