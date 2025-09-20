@@ -1573,7 +1573,9 @@ function t(key) {
             'available_slots': 'الساعات المتاحة',
             'unavailable_slots': 'الساعات غير المتاحة',
             'save_changes': 'حفظ التغييرات',
-            'changes_saved_successfully': 'تم حفظ التغييرات بنجاح'
+            'changes_saved_successfully': 'تم حفظ التغييرات بنجاح',
+            'completed': 'مكتمل',
+            'cancelled': 'ملغي'
         },
         'en': {
             'refresh_btn_text': 'Refresh',
@@ -1664,7 +1666,9 @@ function t(key) {
             'available_slots': 'Available Slots',
             'unavailable_slots': 'Unavailable Slots',
             'save_changes': 'Save Changes',
-            'changes_saved_successfully': 'Changes saved successfully'
+            'changes_saved_successfully': 'Changes saved successfully',
+            'completed': 'Completed',
+            'cancelled': 'Cancelled'
         }
     };
     
@@ -2016,10 +2020,8 @@ function updateOrdersTable(data) {
     ['today', 'tomorrow', 'day_after'].forEach(dayKey => {
         const dayData = data[dayKey];
         dayData.orders.forEach(order => {
-            // Skip cancelled orders but keep completed orders
-            if (order.status === 'cancelled') {
-                return;
-            }
+            // Show all orders including completed and cancelled
+            // No need to skip any orders
             const row = document.createElement('tr');
             row.setAttribute('data-status', order.status);
             row.setAttribute('data-customer', order.customer?.name || '');
@@ -2330,10 +2332,13 @@ function updateOrderStatusInUI(orderId, newStatus, statusText) {
                 statusCell.style.transform = 'scale(1)';
             }, 300);
             
-            // If status is completed, add special styling
+            // If status is completed or cancelled, add special styling
             if (newStatus === 'completed') {
                 orderRow.style.backgroundColor = '#f8f9fa';
                 orderRow.style.borderLeft = '4px solid #28a745';
+            } else if (newStatus === 'cancelled') {
+                orderRow.style.backgroundColor = '#fff5f5';
+                orderRow.style.borderLeft = '4px solid #dc3545';
             }
         }
         
@@ -3413,6 +3418,31 @@ style.textContent = `
         box-shadow: 0 6px 20px rgba(40, 167, 69, 0.3);
     }
     
+    /* Cancelled orders styling */
+    .time-slot-card.cancelled {
+        background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+        border: 2px solid #dc3545 !important;
+        box-shadow: 0 4px 15px rgba(220, 53, 69, 0.2);
+        opacity: 0.8;
+    }
+    
+    .time-slot-card.cancelled:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(220, 53, 69, 0.3);
+    }
+    
+    /* Table row styling for completed and cancelled orders */
+    .table tbody tr[data-status="completed"] {
+        background-color: #f8f9fa !important;
+        border-left: 4px solid #28a745 !important;
+    }
+    
+    .table tbody tr[data-status="cancelled"] {
+        background-color: #fff5f5 !important;
+        border-left: 4px solid #dc3545 !important;
+        opacity: 0.9;
+    }
+    
     /* Beautiful Modal Styles */
     .modal-content {
         border-radius: 15px;
@@ -3606,6 +3636,24 @@ function updateTimeSlotCardStatus(orderId, newStatus) {
                 
                 // Update tooltip
                 card.setAttribute('data-bs-original-title', `${t('completed')} - ${card.getAttribute('data-customer-name') || t('customer')}`);
+            } else if (newStatus === 'cancelled') {
+                card.className = 'time-slot-card cancelled border-danger';
+                
+                // Update status text
+                const statusText = card.querySelector('small');
+                if (statusText) {
+                    statusText.innerHTML = `<i class="bi bi-x-circle"></i> ${t('cancelled')}`;
+                    statusText.className = 'text-danger d-block';
+                }
+                
+                // Update time text color
+                const timeText = card.querySelector('.fw-bold');
+                if (timeText) {
+                    timeText.className = 'fw-bold text-danger fs-6';
+                }
+                
+                // Update tooltip
+                card.setAttribute('data-bs-original-title', `${t('cancelled')} - ${card.getAttribute('data-customer-name') || t('customer')}`);
             }
         }
     });

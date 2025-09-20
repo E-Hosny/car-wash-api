@@ -34,15 +34,17 @@ class OrderController extends Controller
         foreach ($dates as $key => $date) {
             $dateString = $date->toDateString();
             
-            // الحصول على الطلبات المحجوزة لليوم المحدد
+            // الحصول على جميع الطلبات لليوم المحدد (بما في ذلك المكتملة والملغية)
             $bookedOrders = Order::whereDate('scheduled_at', $dateString)
-                ->whereIn('status', ['pending', 'accepted', 'in_progress'])
+                ->whereIn('status', ['pending', 'accepted', 'in_progress', 'completed', 'cancelled'])
                 ->with(['customer', 'services'])
                 ->orderBy('scheduled_at')
                 ->get();
             
-            // استخراج الساعات المحجوزة
-            $bookedHours = $bookedOrders->map(function ($order) {
+            // استخراج الساعات المحجوزة (فقط الطلبات النشطة)
+            $bookedHours = $bookedOrders->filter(function ($order) {
+                return in_array($order->status, ['pending', 'accepted', 'in_progress']);
+            })->map(function ($order) {
                 return Carbon::parse($order->scheduled_at)->hour;
             })->toArray();
             
@@ -62,12 +64,13 @@ class OrderController extends Controller
                 $displayHour = $hour > 12 ? $hour - 12 : $hour;
                 if ($hour == 12) $displayHour = 12;
                 
-                $order = null;
-                if ($isBooked) {
-                    $order = $bookedOrders->firstWhere(function($order) use ($hour) {
-                        return Carbon::parse($order->scheduled_at)->hour == $hour;
-                    });
-                }
+                // البحث عن الطلب لهذه الساعة (بغض النظر عن الحالة)
+                $order = $bookedOrders->firstWhere(function($order) use ($hour) {
+                    return Carbon::parse($order->scheduled_at)->hour == $hour;
+                });
+                
+                // تحديد ما إذا كانت الساعة محجوزة فعلياً (فقط للطلبات النشطة)
+                $isBooked = $order && in_array($order->status, ['pending', 'accepted', 'in_progress']);
                 
                 // الحصول على معلومات الساعة من جدول time_slots
                 $timeSlot = TimeSlot::where('hour', $hour)->first();
