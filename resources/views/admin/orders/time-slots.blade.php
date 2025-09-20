@@ -241,6 +241,24 @@
                             {{ __('messages.booked_orders_details') }}
                         </h5>
                         <div class="table-controls">
+                            <!-- Day Filter Buttons -->
+                            <div class="day-filter-buttons mb-3">
+                                <div class="btn-group" role="group" aria-label="Day filter">
+                                    <button type="button" class="btn btn-outline-primary active" id="filterToday" onclick="filterByDay('today')">
+                                        <i class="bi bi-calendar-day"></i> {{ __('messages.today') }}
+                                    </button>
+                                    <button type="button" class="btn btn-outline-success" id="filterTomorrow" onclick="filterByDay('tomorrow')">
+                                        <i class="bi bi-calendar-plus"></i> {{ __('messages.tomorrow') }}
+                                    </button>
+                                    <button type="button" class="btn btn-outline-info" id="filterDayAfter" onclick="filterByDay('day_after')">
+                                        <i class="bi bi-calendar-week"></i> {{ __('messages.day_after') }}
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary" id="filterAll" onclick="filterByDay('all')">
+                                        <i class="bi bi-calendar3"></i> All Days
+                                    </button>
+                                </div>
+                            </div>
+                            
                             <div class="table-filters">
                             <select class="form-select form-select-sm" id="statusFilter" onchange="filterOrders()">
                                 <option value="">{{ __('messages.all_statuses') }}</option>
@@ -274,7 +292,7 @@
                             <tbody>
                                 @foreach(['today', 'tomorrow', 'day_after'] as $dayKey)
                                     @foreach($timeSlotsData[$dayKey]['orders'] as $order)
-                                        <tr data-status="{{ $order->status }}" data-customer="{{ $order->customer->name ?? '' }}" data-order-id="{{ $order->id }}" data-customer-name="{{ $order->customer->name ?? 'عميل' }}">
+                                        <tr data-status="{{ $order->status }}" data-customer="{{ $order->customer->name ?? '' }}" data-order-id="{{ $order->id }}" data-customer-name="{{ $order->customer->name ?? 'عميل' }}" data-day="{{ $dayKey }}">
                                             <td class="d-none d-md-table-cell">
                                                 <span class="badge bg-{{ $dayKey === 'today' ? 'primary' : ($dayKey === 'tomorrow' ? 'success' : 'info') }}">
                                                     {{ $timeSlotsData[$dayKey]['label'] }}
@@ -705,6 +723,46 @@
     font-size: 10px;
 }
 
+/* Day Filter Buttons */
+.day-filter-buttons {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.day-filter-buttons .btn-group {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.day-filter-buttons .btn {
+    border-radius: 0;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    min-width: 120px;
+}
+
+.day-filter-buttons .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.day-filter-buttons .btn.active {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+}
+
+.day-filter-buttons .btn:first-child {
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+}
+
+.day-filter-buttons .btn:last-child {
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
 /* Table Responsive */
 .table-header {
     display: flex;
@@ -874,6 +932,22 @@
     .action-buttons .btn-group {
         width: 100%;
         min-width: auto;
+    }
+    
+    /* Day filter buttons mobile */
+    .day-filter-buttons .btn-group {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .day-filter-buttons .btn {
+        min-width: auto;
+        border-radius: 8px !important;
+        margin-bottom: 0.25rem;
+    }
+    
+    .day-filter-buttons .btn:last-child {
+        margin-bottom: 0;
     }
     
     .stats-content {
@@ -1480,6 +1554,7 @@
 let currentOrderId = null;
 let refreshInterval = null;
 let currentLocale = '{{ app()->getLocale() }}';
+let currentDayFilter = 'today'; // Default filter
 
 // Translation helper function
 function t(key) {
@@ -1575,7 +1650,8 @@ function t(key) {
             'save_changes': 'حفظ التغييرات',
             'changes_saved_successfully': 'تم حفظ التغييرات بنجاح',
             'completed': 'مكتمل',
-            'cancelled': 'ملغي'
+            'cancelled': 'ملغي',
+            'all_days': 'جميع الأيام'
         },
         'en': {
             'refresh_btn_text': 'Refresh',
@@ -1668,7 +1744,8 @@ function t(key) {
             'save_changes': 'Save Changes',
             'changes_saved_successfully': 'Changes saved successfully',
             'completed': 'Completed',
-            'cancelled': 'Cancelled'
+            'cancelled': 'Cancelled',
+            'all_days': 'All Days'
         }
     };
     
@@ -1681,6 +1758,11 @@ document.addEventListener('DOMContentLoaded', function() {
     startSmartAutoRefresh(); // Use smart auto refresh instead
     initializeSoundEffects();
     initializeRealTimeUpdates();
+    
+    // Initialize filters
+    setTimeout(() => {
+        applyAllFilters();
+    }, 1000);
 });
 
 // Initialize sound effects
@@ -2027,6 +2109,7 @@ function updateOrdersTable(data) {
             row.setAttribute('data-customer', order.customer?.name || '');
             row.setAttribute('data-order-id', order.id);
             row.setAttribute('data-customer-name', order.customer?.name || 'عميل');
+            row.setAttribute('data-day', dayKey); // Add day filter attribute
             
             const badgeClass = {
                 'today': 'primary',
@@ -2097,6 +2180,11 @@ function updateOrdersTable(data) {
     setTimeout(() => {
         initializeTooltips();
     }, 100);
+    
+    // Apply current filters after data update
+    setTimeout(() => {
+        applyAllFilters();
+    }, 200);
 }
 
 // Handle time slot click
@@ -2541,34 +2629,90 @@ function showCancelOrderSuccessNotification(orderId) {
     }, 5000);
 }
 
+// Filter orders by day
+function filterByDay(day) {
+    currentDayFilter = day;
+    
+    // Update button states
+    document.querySelectorAll('.day-filter-buttons .btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    
+    const buttonMap = {
+        'today': 'filterToday',
+        'tomorrow': 'filterTomorrow', 
+        'day_after': 'filterDayAfter',
+        'all': 'filterAll'
+    };
+    
+    const activeButton = document.getElementById(buttonMap[day]);
+    if (activeButton) {
+        activeButton.classList.add('active');
+    }
+    
+    // Apply filters
+    applyAllFilters();
+}
+
 // Filter orders by status
 function filterOrders() {
+    applyAllFilters();
+}
+
+// Apply all filters (day + status + search)
+function applyAllFilters() {
+    console.log('Applying filters, currentDayFilter:', currentDayFilter);
+    
     const statusFilter = document.getElementById('statusFilter').value;
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
     const rows = document.querySelectorAll('#ordersTable tbody tr');
+    
+    console.log('Found rows:', rows.length);
+    console.log('Status filter:', statusFilter);
+    console.log('Search term:', searchTerm);
+    
+    let visibleCount = 0;
     
     rows.forEach(row => {
         const status = row.getAttribute('data-status');
-        if (statusFilter === '' || status === statusFilter) {
+        const customerName = row.getAttribute('data-customer').toLowerCase();
+        const dayData = row.getAttribute('data-day');
+        
+        console.log('Row data:', { status, customerName, dayData });
+        
+        // Day filter
+        let dayMatch = true;
+        if (currentDayFilter !== 'all') {
+            dayMatch = dayData === currentDayFilter;
+        }
+        
+        // Status filter
+        let statusMatch = true;
+        if (statusFilter !== '') {
+            statusMatch = status === statusFilter;
+        }
+        
+        // Search filter
+        let searchMatch = true;
+        if (searchTerm !== '') {
+            searchMatch = customerName.includes(searchTerm);
+        }
+        
+        // Show row if all filters match
+        if (dayMatch && statusMatch && searchMatch) {
             row.style.display = '';
+            visibleCount++;
         } else {
             row.style.display = 'none';
         }
     });
+    
+    console.log('Visible rows after filtering:', visibleCount);
 }
 
 // Search orders
 function searchOrders() {
-    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-    const rows = document.querySelectorAll('#ordersTable tbody tr');
-    
-    rows.forEach(row => {
-        const customerName = row.getAttribute('data-customer').toLowerCase();
-        if (customerName.includes(searchTerm)) {
-            row.style.display = '';
-        } else {
-            row.style.display = 'none';
-        }
-    });
+    applyAllFilters();
 }
 
 // Toggle time slot availability
@@ -3543,6 +3687,23 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('cancelOrder:', typeof cancelOrder);
         console.log('showModal:', typeof showModal);
         console.log('hideModal:', typeof hideModal);
+    };
+    
+    // Test filter function
+    window.testFilter = function() {
+        console.log('Testing filter...');
+        console.log('Current day filter:', currentDayFilter);
+        const rows = document.querySelectorAll('#ordersTable tbody tr');
+        console.log('Total rows:', rows.length);
+        rows.forEach((row, index) => {
+            console.log(`Row ${index}:`, {
+                day: row.getAttribute('data-day'),
+                status: row.getAttribute('data-status'),
+                customer: row.getAttribute('data-customer'),
+                display: row.style.display
+            });
+        });
+        applyAllFilters();
     };
     
 });
