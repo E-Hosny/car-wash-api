@@ -53,6 +53,11 @@ Route::middleware([
     Route::post('/delete-account', [App\Http\Controllers\DeleteAccountController::class, 'requestDeletion'])->name('delete.account.request');
     Route::get('/delete-account/confirm/{token}', [App\Http\Controllers\DeleteAccountController::class, 'confirmDeletion'])->name('delete.account.confirm');
 
+    // ✅ صفحة تحميل التطبيق
+    Route::get('/download', function () {
+        return view('download');
+    })->name('download');
+
     // ✅ تسجيل دخول الأدمن
     Route::get('admin/login', [AuthController::class, 'showLoginForm'])->name('admin.login');
     Route::post('admin/login', [AuthController::class, 'login'])->name('admin.login.submit');
