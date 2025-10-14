@@ -33,7 +33,7 @@ Route::middleware([
 
     // ✅ الصفحة الرئيسية
     Route::get('/', function () {
-        return view('welcome'); 
+        return view('download'); 
     });
 
     // ✅ QR Code redirect إلى Google Play
