@@ -46,7 +46,27 @@ class PaymentController extends Controller
 
             if (!$ephemeralKeyResponse->successful()) {
                 Log::error('Ephemeral Key Error: ' . $ephemeralKeyResponse->body());
-                throw new \Exception('Failed to create ephemeral key');
+                $errorData = $ephemeralKeyResponse->json();
+                
+                // إذا كان الخطأ بسبب customer غير موجود، أنشئ customer جديد
+                if (isset($errorData['error']['code']) && $errorData['error']['code'] === 'resource_missing') {
+                    Log::info('Customer not found, creating new customer');
+                    $customerId = $this->getOrCreateStripeCustomer($user);
+                    
+                    // جرب إنشاء ephemeral key مرة أخرى
+                    $ephemeralKeyResponse = Http::withHeaders([
+                        'Authorization' => 'Bearer ' . $this->stripeSecretKey,
+                        'Stripe-Version' => '2024-10-28.acacia',
+                    ])->asForm()->post('https://api.stripe.com/v1/ephemeral_keys', [
+                        'customer' => $customerId,
+                    ]);
+                    
+                    if (!$ephemeralKeyResponse->successful()) {
+                        throw new \Exception('Failed to create ephemeral key after customer recreation');
+                    }
+                } else {
+                    throw new \Exception('Failed to create ephemeral key');
+                }
             }
 
             // إنشاء Payment Intent
@@ -93,7 +113,19 @@ class PaymentController extends Controller
     {
         // التحقق من وجود stripe_customer_id في قاعدة البيانات
         if ($user->stripe_customer_id) {
-            return $user->stripe_customer_id;
+            // التحقق من أن Customer موجود في Live Mode
+            $customerResponse = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $this->stripeSecretKey,
+            ])->get("https://api.stripe.com/v1/customers/{$user->stripe_customer_id}");
+            
+            if ($customerResponse->successful()) {
+                return $user->stripe_customer_id;
+            } else {
+                // Customer غير موجود في Live Mode، احذفه من قاعدة البيانات
+                Log::info("Customer {$user->stripe_customer_id} not found in live mode, creating new one");
+                $user->stripe_customer_id = null;
+                $user->save();
+            }
         }
 
         // إنشاء عميل جديد في Stripe
