@@ -20,7 +20,7 @@ class PaymentController extends Controller
     }
 
     /**
-     * إنشاء Payment Intent
+     * إنشاء Payment Intent مع دعم PaymentSheet
      */
     public function createPaymentIntent(Request $request)
     {
@@ -31,17 +31,45 @@ class PaymentController extends Controller
                 'order_id' => 'required|string',
             ]);
 
+            $user = auth()->user();
+
+            // إنشاء أو الحصول على Stripe Customer
+            $customerId = $this->getOrCreateStripeCustomer($user);
+
+            // إنشاء Ephemeral Key
+            $ephemeralKeyResponse = Http::withHeaders([
+                'Authorization' => 'Bearer ' . $this->stripeSecretKey,
+                'Stripe-Version' => '2024-10-28.acacia',
+            ])->asForm()->post('https://api.stripe.com/v1/ephemeral_keys', [
+                'customer' => $customerId,
+            ]);
+
+            if (!$ephemeralKeyResponse->successful()) {
+                Log::error('Ephemeral Key Error: ' . $ephemeralKeyResponse->body());
+                throw new \Exception('Failed to create ephemeral key');
+            }
+
+            // إنشاء Payment Intent
             $response = Http::withHeaders([
                 'Authorization' => 'Bearer ' . $this->stripeSecretKey,
             ])->asForm()->post('https://api.stripe.com/v1/payment_intents', [
                 'amount' => (int)($request->amount * 100), // تحويل إلى أصغر وحدة عملة
                 'currency' => strtolower($request->currency),
+                'customer' => $customerId,
                 'metadata[order_id]' => $request->order_id,
                 'automatic_payment_methods[enabled]' => 'true',
+                'automatic_payment_methods[allow_redirects]' => 'never',
             ]);
 
             if ($response->successful()) {
-                return response()->json($response->json());
+                $paymentIntentData = $response->json();
+                
+                return response()->json([
+                    'client_secret' => $paymentIntentData['client_secret'],
+                    'ephemeral_key' => $ephemeralKeyResponse->json()['secret'],
+                    'customer' => $customerId,
+                    'payment_intent_id' => $paymentIntentData['id'],
+                ]);
             } else {
                 Log::error('Stripe API Error: ' . $response->body());
                 return response()->json([
@@ -56,6 +84,38 @@ class PaymentController extends Controller
                 'message' => $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * الحصول على أو إنشاء Stripe Customer
+     */
+    private function getOrCreateStripeCustomer($user)
+    {
+        // التحقق من وجود stripe_customer_id في قاعدة البيانات
+        if ($user->stripe_customer_id) {
+            return $user->stripe_customer_id;
+        }
+
+        // إنشاء عميل جديد في Stripe
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer ' . $this->stripeSecretKey,
+        ])->asForm()->post('https://api.stripe.com/v1/customers', [
+            'email' => $user->email,
+            'name' => $user->name,
+            'phone' => $user->phone_number ?? '',
+            'metadata[user_id]' => $user->id,
+        ]);
+
+        if ($response->successful()) {
+            $customer = $response->json();
+            
+            // حفظ customer_id في قاعدة البيانات
+            $user->update(['stripe_customer_id' => $customer['id']]);
+            
+            return $customer['id'];
+        }
+
+        throw new \Exception('Failed to create Stripe customer');
     }
 
     /**
