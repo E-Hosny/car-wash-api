@@ -35,4 +35,14 @@ return [
         ],
     ],
 
+    // WhatsApp (Meta) configuration
+    'whatsapp' => [
+        'token' => env('WHATSAPP_TOKEN'),
+        'phone_number_id' => env('WHATSAPP_PHONE_NUMBER_ID'),
+        'template_name' => env('WHATSAPP_TEMPLATE_NAME', 'carwash_order'),
+        'template_lang' => env('WHATSAPP_TEMPLATE_LANG', 'en'),
+        // Comma-separated E.164 numbers to notify, e.g. "9715XXXXXXX,9665XXXXXXX"
+        'notify_recipients' => env('WHATSAPP_NOTIFY_RECIPIENTS', ''),
+    ],
+
 ];

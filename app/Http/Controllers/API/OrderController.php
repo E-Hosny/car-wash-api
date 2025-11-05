@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use App\Services\FirebaseNotificationService;
 use App\Models\FcmToken;
+use App\Services\WhatsAppService;
 
 class OrderController extends Controller
 {
@@ -99,6 +100,27 @@ class OrderController extends Controller
     ]);
 
     $order->services()->attach($request->services);
+    // 🟢 إرسال رسالة واتساب بقالب Meta إلى مستلمين محددين (يدعم عدة أرقام مستقبلًا)
+    try {
+        $recipientsCsv = (string) config('services.whatsapp.notify_recipients', '');
+        $recipients = array_filter(array_map('trim', explode(',', $recipientsCsv)));
+        if (!empty($recipients)) {
+            // إذا كان القالب لا يحتوي متغيرات، اترك components فارغة
+            $components = [];
+            // مثال تمرير متغيرات إن احتجت لاحقًا:
+            // $components = [[
+            //     'type' => 'body',
+            //     'parameters' => [
+            //         ['type' => 'text', 'text' => (string) $order->id],
+            //         ['type' => 'text', 'text' => number_format($total, 2)],
+            //     ],
+            // ]];
+            app(WhatsAppService::class)->sendTemplateToMany($recipients, $components);
+        }
+    } catch (\Throwable $e) {
+        \Log::error('Failed to send WhatsApp template after order create', ['error' => $e->getMessage()]);
+    }
+
 
     // If using package, create package order and update remaining points
     if ($request->use_package && $userPackage) {
@@ -642,6 +664,18 @@ public function updateStatus(Request $request, $id)
 
         // Send notification to providers
         $this->sendOrderNotification([$order]);
+
+        // 🟢 إرسال رسالة واتساب بقالب Meta إلى مستلمين محددين (يدعم عدة أرقام مستقبلًا)
+        try {
+            $recipientsCsv = (string) config('services.whatsapp.notify_recipients', '');
+            $recipients = array_filter(array_map('trim', explode(',', $recipientsCsv)));
+            if (!empty($recipients)) {
+                $components = [];
+                app(\App\Services\WhatsAppService::class)->sendTemplateToMany($recipients, $components);
+            }
+        } catch (\Throwable $e) {
+            \Log::error('Failed to send WhatsApp template after multi-car order create', ['error' => $e->getMessage()]);
+        }
 
         return response()->json([
             'success' => true,
