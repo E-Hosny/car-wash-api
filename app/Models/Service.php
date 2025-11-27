@@ -13,6 +13,7 @@ class Service extends Model
         'name',
         'description',
         'price',
+        'image',
         'sort_order',
     ];
 

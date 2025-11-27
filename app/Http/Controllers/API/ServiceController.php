@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Service;
+use Illuminate\Support\Facades\Storage;
 
 
 class ServiceController extends Controller
@@ -13,7 +14,21 @@ class ServiceController extends Controller
     public function index()
     {
         // استخدام scope ordered() للحصول على الخدمات مرتبة حسب sort_order
-        return response()->json(Service::ordered()->get());
+        $services = Service::ordered()->get()->map(function ($service) {
+            if ($service->image) {
+                $imagePath = Storage::url($service->image);
+                $service->image_url = url($imagePath);
+            } else {
+                $service->image_url = null;
+            }
+            // Add updated_at timestamp for cache invalidation
+            $service->updated_at_timestamp = $service->updated_at ? $service->updated_at->timestamp : null;
+            return $service;
+        });
+        
+        // Return services directly (keep old format for compatibility)
+        // Cache version is handled via TTL in Flutter
+        return response()->json($services);
     }
 
     // ✅ إنشاء خدمة جديدة
@@ -37,6 +52,11 @@ class ServiceController extends Controller
     public function show($id)
     {
         $service = Service::findOrFail($id);
+        if ($service->image) {
+            $service->image_url = url(Storage::url($service->image));
+        } else {
+            $service->image_url = null;
+        }
         return response()->json($service);
     }
 

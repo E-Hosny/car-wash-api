@@ -23,7 +23,17 @@
                             <div class="col-md-1">
                                 <i class="fas fa-grip-vertical handle" style="cursor: move; color: #6c757d;" title="{{ __('messages.drag_handle') }}"></i>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-1">
+                                @if($service->image)
+                                    <img src="{{ Storage::url($service->image) }}" alt="{{ $service->name }}" 
+                                         style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd;">
+                                @else
+                                    <div style="width: 60px; height: 60px; background-color: #e9ecef; border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 1px solid #ddd;">
+                                        <i class="fas fa-image" style="color: #adb5bd; font-size: 24px;"></i>
+                                    </div>
+                                @endif
+                            </div>
+                            <div class="col-md-2">
                                 <strong>{{ $service->name }}</strong>
                             </div>
                             <div class="col-md-3">

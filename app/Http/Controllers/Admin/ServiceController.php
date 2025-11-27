@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Service;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class ServiceController extends Controller
 {
@@ -26,16 +27,25 @@ class ServiceController extends Controller
             'name' => 'required',
             'description' => 'nullable',
             'price' => 'required|numeric',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'sort_order' => 'required|integer|min:1',
         ]);
 
         // If sort_order is provided, use it; otherwise, get the highest and increment
         $sortOrder = $request->sort_order ?? (Service::max('sort_order') ?? 0) + 1;
         
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $image = $request->file('image');
+            $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+            $imagePath = $image->storeAs('services', $imageName, 'public');
+        }
+        
         Service::create([
             'name' => $request->name,
             'description' => $request->description,
             'price' => $request->price,
+            'image' => $imagePath,
             'sort_order' => $sortOrder,
         ]);
 
@@ -54,11 +64,33 @@ class ServiceController extends Controller
             'name' => 'required',
             'description' => 'nullable',
             'price' => 'required|numeric',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'sort_order' => 'required|integer|min:1',
         ]);
 
         $service = Service::findOrFail($id);
-        $service->update($request->all());
+        
+        // Handle image upload
+        if ($request->hasFile('image')) {
+            // Delete old image if exists
+            if ($service->image) {
+                Storage::disk('public')->delete($service->image);
+            }
+            
+            $image = $request->file('image');
+            $imageName = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+            $imagePath = $image->storeAs('services', $imageName, 'public');
+            
+            $service->update([
+                'name' => $request->name,
+                'description' => $request->description,
+                'price' => $request->price,
+                'image' => $imagePath,
+                'sort_order' => $request->sort_order,
+            ]);
+        } else {
+            $service->update($request->except('image'));
+        }
 
         return redirect()->route('admin.services.index')->with('success', __('messages.service_updated_successfully'));
     }
