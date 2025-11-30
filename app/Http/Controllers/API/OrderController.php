@@ -164,10 +164,15 @@ class OrderController extends Controller
 
     public function myOrders()
 {
-    $orders = Order::where('customer_id', auth()->id())
+    $userId = auth()->id();
+    Log::info("Fetching orders for user ID: $userId");
+    
+    $orders = Order::where('customer_id', $userId)
         ->with(['services', 'car.brand', 'car.model', 'car.year', 'orderCars.car.brand', 'orderCars.car.model', 'orderCars.car.year', 'orderCars.services']) // ✅ تأكد من تضمين العلاقات هنا
         ->latest()
         ->get();
+    
+    Log::info("Found {$orders->count()} orders for user ID: $userId");
 
     // Add multi-car information to each order
     $orders->each(function ($order) {
