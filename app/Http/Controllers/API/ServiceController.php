@@ -13,14 +13,48 @@ class ServiceController extends Controller
     //
     public function index()
     {
+        // التحقق من وجود مستخدم مصادق عليه وعدد طلباته
+        $user = auth()->user();
+        $hasOrders = false;
+        
+        if ($user) {
+            $hasOrders = $user->customerOrders()->count() > 0;
+        }
+        
+        // تطبيق خصم 50% إذا كان المستخدم غير مصادق عليه أو ليس لديه طلبات
+        $shouldApplyDiscount = !$user || !$hasOrders;
+        
         // استخدام scope ordered() للحصول على الخدمات مرتبة حسب sort_order
-        $services = Service::ordered()->get()->map(function ($service) {
+        $services = Service::ordered()->get()->map(function ($service) use ($shouldApplyDiscount) {
             if ($service->image) {
                 $imagePath = Storage::url($service->image);
                 $service->image_url = url($imagePath);
             } else {
                 $service->image_url = null;
             }
+            
+            // إضافة معلومات الخصم
+            $originalPrice = $service->price;
+            $originalName = $service->name;
+            
+            if ($shouldApplyDiscount) {
+                $service->has_discount = true;
+                $service->discount_percentage = 50;
+                $service->discount_label = "- 50% off";
+                $service->original_price = $originalPrice;
+                $service->discounted_price = $originalPrice / 2;
+                $service->price = $service->discounted_price;
+                // إضافة "- 50% off" بجانب عنوان الخدمة
+                $service->name = $originalName . " - 50% off";
+                $service->original_name = $originalName;
+            } else {
+                $service->has_discount = false;
+                $service->original_price = $originalPrice;
+                $service->discounted_price = $originalPrice;
+                $service->price = $originalPrice;
+                $service->original_name = $originalName;
+            }
+            
             // Add updated_at timestamp for cache invalidation
             $service->updated_at_timestamp = $service->updated_at ? $service->updated_at->timestamp : null;
             return $service;
@@ -57,6 +91,40 @@ class ServiceController extends Controller
         } else {
             $service->image_url = null;
         }
+        
+        // التحقق من وجود مستخدم مصادق عليه وعدد طلباته
+        $user = auth()->user();
+        $hasOrders = false;
+        
+        if ($user) {
+            $hasOrders = $user->customerOrders()->count() > 0;
+        }
+        
+        // تطبيق خصم 50% إذا كان المستخدم غير مصادق عليه أو ليس لديه طلبات
+        $shouldApplyDiscount = !$user || !$hasOrders;
+        
+        // إضافة معلومات الخصم
+        $originalPrice = $service->price;
+        $originalName = $service->name;
+        
+        if ($shouldApplyDiscount) {
+            $service->has_discount = true;
+            $service->discount_percentage = 50;
+            $service->discount_label = "- 50% off";
+            $service->original_price = $originalPrice;
+            $service->discounted_price = $originalPrice / 2;
+            $service->price = $service->discounted_price;
+            // إضافة "- 50% off" بجانب عنوان الخدمة
+            $service->name = $originalName . " - 50% off";
+            $service->original_name = $originalName;
+        } else {
+            $service->has_discount = false;
+            $service->original_price = $originalPrice;
+            $service->discounted_price = $originalPrice;
+            $service->price = $originalPrice;
+            $service->original_name = $originalName;
+        }
+        
         return response()->json($service);
     }
 
