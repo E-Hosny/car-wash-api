@@ -40,7 +40,16 @@
                                 {{ $service->description ?: __('messages.no_description') }}
                             </div>
                             <div class="col-md-2">
-                                {{ $service->price }} {{ __('messages.currency') }}
+                                @if(!$userHasCompletedOrders)
+                                    <div>
+                                        <span class="text-decoration-line-through text-muted">{{ $service->price }} {{ __('messages.currency') }}</span>
+                                        <br>
+                                        <strong class="text-danger">{{ $service->price / 2 }} {{ __('messages.currency') }}</strong>
+                                        <span class="badge badge-danger ml-1">- 50% off</span>
+                                    </div>
+                                @else
+                                    <strong>{{ $service->price }} {{ __('messages.currency') }}</strong>
+                                @endif
                             </div>
                             <div class="col-md-3">
                                 <div class="btn-group btn-group-sm" role="group">

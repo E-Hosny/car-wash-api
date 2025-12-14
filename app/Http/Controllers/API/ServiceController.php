@@ -5,7 +5,9 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Service;
+use App\Models\Order;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 
 
 class ServiceController extends Controller
@@ -13,14 +15,35 @@ class ServiceController extends Controller
     //
     public function index()
     {
+        // Check if user has completed orders
+        $userHasCompletedOrders = false;
+        if (Auth::check()) {
+            $userHasCompletedOrders = Order::where('customer_id', Auth::id())
+                ->where('status', 'completed')
+                ->exists();
+        }
+        
         // استخدام scope ordered() للحصول على الخدمات مرتبة حسب sort_order
-        $services = Service::ordered()->get()->map(function ($service) {
+        $services = Service::ordered()->get()->map(function ($service) use ($userHasCompletedOrders) {
             if ($service->image) {
                 $imagePath = Storage::url($service->image);
                 $service->image_url = url($imagePath);
             } else {
                 $service->image_url = null;
             }
+            
+            // Apply discount if user has no completed orders
+            $originalPrice = $service->price;
+            if (!$userHasCompletedOrders) {
+                $service->original_price = $originalPrice;
+                $service->price = $originalPrice / 2;
+                $service->discount_label = "- 50% off";
+                $service->has_discount = true;
+            } else {
+                $service->original_price = $originalPrice;
+                $service->has_discount = false;
+            }
+            
             // Add updated_at timestamp for cache invalidation
             $service->updated_at_timestamp = $service->updated_at ? $service->updated_at->timestamp : null;
             return $service;
@@ -57,6 +80,27 @@ class ServiceController extends Controller
         } else {
             $service->image_url = null;
         }
+        
+        // Check if user has completed orders
+        $userHasCompletedOrders = false;
+        if (Auth::check()) {
+            $userHasCompletedOrders = Order::where('customer_id', Auth::id())
+                ->where('status', 'completed')
+                ->exists();
+        }
+        
+        // Apply discount if user has no completed orders
+        $originalPrice = $service->price;
+        if (!$userHasCompletedOrders) {
+            $service->original_price = $originalPrice;
+            $service->price = $originalPrice / 2;
+            $service->discount_label = "- 50% off";
+            $service->has_discount = true;
+        } else {
+            $service->original_price = $originalPrice;
+            $service->has_discount = false;
+        }
+        
         return response()->json($service);
     }
 

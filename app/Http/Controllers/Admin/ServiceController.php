@@ -5,15 +5,26 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Service;
+use App\Models\Order;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 
 class ServiceController extends Controller
 {
     public function index()
     {
         $services = Service::ordered()->get();
-        return view('admin.services.index', compact('services'));
+        
+        // Check if current user has completed orders
+        $userHasCompletedOrders = false;
+        if (Auth::check()) {
+            $userHasCompletedOrders = Order::where('customer_id', Auth::id())
+                ->where('status', 'completed')
+                ->exists();
+        }
+        
+        return view('admin.services.index', compact('services', 'userHasCompletedOrders'));
     }
 
     public function create()
