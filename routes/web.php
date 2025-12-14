@@ -61,6 +61,11 @@ Route::middleware([
     // ✅ تسجيل دخول الأدمن
     Route::get('admin/login', [AuthController::class, 'showLoginForm'])->name('admin.login');
     Route::post('admin/login', [AuthController::class, 'login'])->name('admin.login.submit');
+    
+    // ✅ Route باسم 'login' للتوافق مع Laravel's default authentication redirect
+    Route::get('login', function () {
+        return redirect()->route('admin.login');
+    })->name('login');
 
     // ✅ لوحة تحكم الأدمن وكل الصفحات الداخلية
     Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {

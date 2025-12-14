@@ -64,7 +64,7 @@ Route::middleware('auth:sanctum')->group(function () {
     //location
     Route::post('/orders/location', [OrderController::class, 'saveLocation']);
 
-    Route::get('/users', [UserController::class, 'index'])->name('admin.users.index');
+    Route::get('/users', [UserController::class, 'index']);
 
     Route::post('/fcm/save-token', [FcmTokenController::class, 'store']);
 
