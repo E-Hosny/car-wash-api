@@ -40,12 +40,12 @@ class ServiceController extends Controller
             if ($shouldApplyDiscount) {
                 $service->has_discount = true;
                 $service->discount_percentage = 50;
-                $service->discount_label = "- 50% off";
+                $service->discount_label = "🔥 - 50% off";
                 $service->original_price = $originalPrice;
                 $service->discounted_price = $originalPrice / 2;
                 $service->price = $service->discounted_price;
-                // إضافة "- 50% off" بجانب عنوان الخدمة
-                $service->name = $originalName . " - 50% off";
+                // إضافة "🔥 - 50% off" بجانب عنوان الخدمة
+                $service->name = $originalName . " 🔥 - 50% off";
                 $service->original_name = $originalName;
             } else {
                 $service->has_discount = false;
@@ -110,12 +110,12 @@ class ServiceController extends Controller
         if ($shouldApplyDiscount) {
             $service->has_discount = true;
             $service->discount_percentage = 50;
-            $service->discount_label = "- 50% off";
+            $service->discount_label = "🔥 - 50% off";
             $service->original_price = $originalPrice;
             $service->discounted_price = $originalPrice / 2;
             $service->price = $service->discounted_price;
-            // إضافة "- 50% off" بجانب عنوان الخدمة
-            $service->name = $originalName . " - 50% off";
+            // إضافة "🔥 - 50% off" بجانب عنوان الخدمة
+            $service->name = $originalName . " 🔥 - 50% off";
             $service->original_name = $originalName;
         } else {
             $service->has_discount = false;
