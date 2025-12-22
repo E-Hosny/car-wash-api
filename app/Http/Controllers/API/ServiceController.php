@@ -14,11 +14,16 @@ class ServiceController extends Controller
     public function index()
     {
         // التحقق من وجود مستخدم مصادق عليه وعدد طلباته
-        $user = auth()->user();
+        // استخدام auth('sanctum') للتحقق من التوكن على المسارات العامة
+        $user = auth('sanctum')->user();
+        
         $hasOrders = false;
+        $orderCount = 0;
         
         if ($user) {
-            $hasOrders = $user->customerOrders()->count() > 0;
+            // التحقق من عدد الطلبات
+            $orderCount = $user->customerOrders()->count();
+            $hasOrders = $orderCount > 0;
         }
         
         // تطبيق خصم 50% إذا كان المستخدم غير مصادق عليه أو ليس لديه طلبات
@@ -60,9 +65,16 @@ class ServiceController extends Controller
             return $service;
         });
         
-        // Return services directly (keep old format for compatibility)
-        // Cache version is handled via TTL in Flutter
-        return response()->json($services);
+        // حساب cache_version بناءً على حالة المستخدم
+        // إذا كان المستخدم لديه طلبات (لا خصم) = 1، إذا لم يكن لديه طلبات (خصم) = 0
+        // هذا يجبر Flutter على إبطال cache عند تغيير حالة المستخدم
+        $cacheVersion = $user && $hasOrders ? 1 : 0;
+        
+        // Return services with cache_version to force cache invalidation when user status changes
+        return response()->json([
+            'services' => $services,
+            'cache_version' => $cacheVersion,
+        ]);
     }
 
     // ✅ إنشاء خدمة جديدة
@@ -93,7 +105,9 @@ class ServiceController extends Controller
         }
         
         // التحقق من وجود مستخدم مصادق عليه وعدد طلباته
-        $user = auth()->user();
+        // استخدام auth('sanctum') للتحقق من التوكن على المسارات العامة
+        $user = auth('sanctum')->user();
+        
         $hasOrders = false;
         
         if ($user) {
@@ -124,6 +138,12 @@ class ServiceController extends Controller
             $service->price = $originalPrice;
             $service->original_name = $originalName;
         }
+        
+        // حساب cache_version بناءً على حالة المستخدم
+        $cacheVersion = $user && $hasOrders ? 1 : 0;
+        
+        // إضافة cache_version إلى الاستجابة
+        $service->cache_version = $cacheVersion;
         
         return response()->json($service);
     }
