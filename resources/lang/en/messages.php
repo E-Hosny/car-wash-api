@@ -16,6 +16,7 @@ return [
     'status' => 'Status',
     'date' => 'Date',
     'time' => 'Time',
+    'scheduled_at' => 'Scheduled At',
     'amount' => 'Amount',
     'order_id' => 'Order ID',
     'today' => 'Today',
