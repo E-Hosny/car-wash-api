@@ -176,4 +176,8 @@ return [
     'user_subscriptions' => 'اشتراكات المستخدمين',
     'settings' => 'الإعدادات',
     'manage_users_description' => 'إدارة المستخدمين في النظام',
+    'updated_successfully' => 'تم التحديث بنجاح',
+    'max_slots_per_hour' => 'عدد المواعيد المتاحة لكل ساعة',
+    'max_slots_per_hour_label' => 'عدد المواعيد المتاحة لكل ساعة',
+    'max_slots_per_hour_help' => 'حدد عدد المواعيد التي يمكن حجزها في كل ساعة (من 1 إلى 10)',
 ];

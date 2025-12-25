@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\Models\User;
 use App\Models\Service;
 use App\Models\DailyTimeSlot;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -724,7 +725,10 @@ public function updateStatus(Request $request, $id)
     {
         $date = $request->get('date', now()->toDateString());
         
-        Log::info('Fetching booked time slots for date: ' . $date);
+        // عدد المواعيد المتاحة لكل ساعة من الإعدادات
+        $maxSlotsPerHour = (int) Setting::getValue('max_slots_per_hour', 2);
+        
+        Log::info('Fetching booked time slots for date: ' . $date . ' (max slots per hour: ' . $maxSlotsPerHour . ')');
         
         // الحصول على الطلبات المحجوزة لليوم المحدد
         $bookedOrders = Order::whereDate('scheduled_at', $date)
@@ -733,20 +737,32 @@ public function updateStatus(Request $request, $id)
         
         Log::info('Found ' . $bookedOrders->count() . ' booked orders');
         
-        // استخراج الساعات المحجوزة
-        $bookedHours = $bookedOrders->map(function ($order) {
+        // عد الطلبات لكل ساعة بدلاً من إضافة الساعة مباشرة
+        $hourlyBookings = [];
+        foreach ($bookedOrders as $order) {
             $hour = Carbon::parse($order->scheduled_at)->hour;
+            $hourlyBookings[$hour] = ($hourlyBookings[$hour] ?? 0) + 1;
             Log::info("Order at {$order->scheduled_at} (status: {$order->status}) -> hour: {$hour}");
-            return $hour;
-        })->toArray();
+        }
+        
+        // الساعات المحجوزة بالكامل هي التي وصلت للحد الأقصى
+        $bookedHours = [];
+        foreach ($hourlyBookings as $hour => $count) {
+            if ($count >= $maxSlotsPerHour) {
+                $bookedHours[] = $hour;
+                Log::info("Hour {$hour} is fully booked ({$count}/{$maxSlotsPerHour})");
+            } else {
+                Log::info("Hour {$hour} has {$count}/{$maxSlotsPerHour} bookings (still available)");
+            }
+        }
         
         // الحصول على الساعات غير المتاحة من إعدادات الأدمن
         $unavailableHours = DailyTimeSlot::getUnavailableHoursForDate($date);
         
-        Log::info('Booked hours: ' . json_encode($bookedHours));
+        Log::info('Booked hours (fully booked): ' . json_encode($bookedHours));
         Log::info('Unavailable hours: ' . json_encode($unavailableHours));
         
-        // الساعات المتاحة = جميع الساعات - المحجوزة - غير المتاحة
+        // الساعات المتاحة = جميع الساعات - المحجوزة بالكامل - غير المتاحة
         $allHours = range(10, 23);
         $unavailableHours = array_merge($bookedHours, $unavailableHours);
         $availableHours = array_diff($allHours, $unavailableHours);
@@ -756,12 +772,14 @@ public function updateStatus(Request $request, $id)
         return response()->json([
             'success' => true,
             'date' => $date,
-            'booked_hours' => $bookedHours,
+            'booked_hours' => $bookedHours, // الساعات المحجوزة بالكامل فقط
             'unavailable_hours' => DailyTimeSlot::getUnavailableHoursForDate($date),
             'available_hours' => $availableHours,
             'total_booked' => count($bookedHours),
             'total_unavailable' => count(DailyTimeSlot::getUnavailableHoursForDate($date)),
-            'total_available' => count($availableHours)
+            'total_available' => count($availableHours),
+            'hourly_bookings' => $hourlyBookings, // معلومات إضافية: عدد الطلبات لكل ساعة
+            'max_slots_per_hour' => $maxSlotsPerHour // معلومات إضافية: الحد الأقصى لكل ساعة
         ]);
     }
 }

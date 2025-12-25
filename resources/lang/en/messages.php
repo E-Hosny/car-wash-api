@@ -176,4 +176,8 @@ return [
     'user_subscriptions' => 'User Subscriptions',
     'settings' => 'Settings',
     'manage_users_description' => 'Manage users in the system',
+    'updated_successfully' => 'Updated successfully',
+    'max_slots_per_hour' => 'Max Slots Per Hour',
+    'max_slots_per_hour_label' => 'Max Slots Per Hour',
+    'max_slots_per_hour_help' => 'Set the number of appointments that can be booked per hour (1 to 10)',
 ];

@@ -8,9 +8,14 @@
 	@endif
 	<form method="POST" action="{{ route('admin.settings.update') }}">
 		@csrf
-		<div class="form-check form-switch">
+		<div class="form-check form-switch mb-3">
 			<input class="form-check-input" type="checkbox" id="packages_enabled" name="packages_enabled" value="1" {{ $packagesEnabled ? 'checked' : '' }}>
 			<label class="form-check-label" for="packages_enabled">تفعيل الباقات (Packages)</label>
+		</div>
+		<div class="mb-3">
+			<label for="max_slots_per_hour" class="form-label">{{ __('messages.max_slots_per_hour_label') }}</label>
+			<input type="number" class="form-control" id="max_slots_per_hour" name="max_slots_per_hour" value="{{ $maxSlotsPerHour }}" min="1" max="10" required>
+			<small class="form-text text-muted">{{ __('messages.max_slots_per_hour_help') }}</small>
 		</div>
 		<button type="submit" class="btn btn-primary mt-3">حفظ</button>
 	</form>
