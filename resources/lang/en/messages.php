@@ -180,4 +180,5 @@ return [
     'max_slots_per_hour' => 'Max Slots Per Hour',
     'max_slots_per_hour_label' => 'Max Slots Per Hour',
     'max_slots_per_hour_help' => 'Set the number of appointments that can be booked per hour (1 to 10)',
+    'fully_booked' => 'Fully Booked',
 ];

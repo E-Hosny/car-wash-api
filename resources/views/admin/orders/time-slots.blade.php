@@ -160,42 +160,48 @@
                         <div class="row g-2">
                             @foreach($dayData['hours_data'] as $hourData)
                                 <div class="col-4">
+                                    @php
+                                        $bookingsCount = $hourData['bookings_count'] ?? 0;
+                                        $maxSlots = $hourData['max_slots'] ?? 2;
+                                        $isFullyBooked = $hourData['is_fully_booked'] ?? false;
+                                        $isPartiallyBooked = $bookingsCount > 0 && !$isFullyBooked;
+                                    @endphp
                                     <div class="time-slot-card 
-                                        {{ $hourData['is_booked'] ? 'booked' : ($hourData['is_unavailable'] ? 'unavailable' : 'available') }} 
-                                        {{ $hourData['is_booked'] ? 'border-danger' : ($hourData['is_unavailable'] ? 'border-warning' : 'border-success') }}"
+                                        {{ $isFullyBooked ? 'booked' : ($hourData['is_unavailable'] ? 'unavailable' : ($isPartiallyBooked ? 'partially-booked' : 'available')) }} 
+                                        {{ $isFullyBooked ? 'border-danger' : ($hourData['is_unavailable'] ? 'border-warning' : ($isPartiallyBooked ? 'border-warning' : 'border-success')) }}"
                                         data-hour="{{ $hourData['hour'] }}"
                                         data-date="{{ $dayData['date_string'] }}"
                                         data-day="{{ $dayKey }}"
                                         data-order-id="{{ $hourData['order']->id ?? '' }}"
                                         data-customer-name="{{ $hourData['order']->customer->name ?? 'عميل' }}"
-                                        @if($hourData['is_booked'])
+                                        @php
+                                            $bookingsCount = $hourData['bookings_count'] ?? 0;
+                                            $maxSlots = $hourData['max_slots'] ?? 2;
+                                            $isFullyBooked = $hourData['is_fully_booked'] ?? false;
+                                        @endphp
+                                        @if($isFullyBooked)
                                             data-bs-toggle="tooltip" 
                                             data-bs-placement="top"
-                                            title="{{ __('messages.booked') }} - {{ $hourData['order']->customer->name ?? __('messages.customer') }} - {{ __('messages.' . $hourData['order']->status) }}"
+                                            title="{{ $bookingsCount }}/{{ $maxSlots }} {{ __('messages.booked') }}"
                                         @elseif($hourData['is_unavailable'])
                                             data-bs-toggle="tooltip" 
                                             data-bs-placement="top"
                                             title="{{ __('messages.unavailable') }} - {{ __('messages.click_to_enable') }}"
+                                        @elseif($bookingsCount > 0)
+                                            data-bs-toggle="tooltip" 
+                                            data-bs-placement="top"
+                                            title="{{ $bookingsCount }}/{{ $maxSlots }} {{ __('messages.booked') }} - {{ ($maxSlots - $bookingsCount) }} {{ __('messages.available') }}"
                                         @else
                                             data-bs-toggle="tooltip" 
                                             data-bs-placement="top"
-                                            title="{{ __('messages.available') }} - {{ __('messages.click_to_book') }}"
+                                            title="{{ __('messages.available') }} (0/{{ $maxSlots }}) - {{ __('messages.click_to_book') }}"
                                         @endif
-                                        onclick="handleTimeSlotClick('{{ $dayKey }}', {{ $hourData['hour'] }}, {{ $hourData['is_booked'] ? 'true' : 'false' }}, {{ $hourData['is_unavailable'] ? 'true' : 'false' }}, '{{ $dayData['date_string'] }}')">
+                                        onclick="handleTimeSlotClick('{{ $dayKey }}', {{ $hourData['hour'] }}, {{ $isFullyBooked ? 'true' : 'false' }}, {{ $hourData['is_unavailable'] ? 'true' : 'false' }}, '{{ $dayData['date_string'] }}')">
                                         <div class="text-center p-2">
                                             <div class="fw-bold {{ $hourData['is_booked'] ? 'text-danger' : ($hourData['is_unavailable'] ? 'text-warning' : 'text-success') }} fs-6">
                                                 {{ $hourData['label'] }}
                                             </div>
-                                            @if($hourData['is_booked'])
-                                                <small class="text-danger d-block">
-                                                    <i class="bi bi-x-circle"></i> {{ __('messages.booked') }}
-                                                </small>
-                                                @if($hourData['order'])
-                                                    <small class="text-muted d-block" style="font-size: 0.7rem;">
-                                                        {{ $hourData['order']->customer->name ?? __('messages.customer') }}
-                                                    </small>
-                                                @endif
-                                            @elseif($hourData['is_unavailable'])
+                                            @if($hourData['is_unavailable'])
                                                 <small class="text-warning d-block">
                                                     <i class="bi bi-power"></i> {{ __('messages.off') }}
                                                 </small>
@@ -203,14 +209,32 @@
                                                     {{ __('messages.click_to_enable') }}
                                                 </small>
                                             @else
-                                                <small class="text-success d-block">
-                                                    <i class="bi bi-check-circle"></i> {{ __('messages.available') }}
-                                                </small>
+                                                @php
+                                                    $bookingsCount = $hourData['bookings_count'] ?? 0;
+                                                    $maxSlots = $hourData['max_slots'] ?? 2;
+                                                    $isFullyBooked = $hourData['is_fully_booked'] ?? false;
+                                                @endphp
+                                                @if($isFullyBooked)
+                                                    <small class="text-danger d-block">
+                                                        <i class="bi bi-x-circle"></i> {{ $bookingsCount }}/{{ $maxSlots }} {{ __('messages.booked') }}
+                                                    </small>
+                                                @elseif($bookingsCount > 0)
+                                                    <small class="text-warning d-block">
+                                                        <i class="bi bi-clock-history"></i> {{ $bookingsCount }}/{{ $maxSlots }} {{ __('messages.booked') }}
+                                                    </small>
+                                                    <small class="text-muted d-block" style="font-size: 0.65rem;">
+                                                        {{ ($maxSlots - $bookingsCount) }} {{ __('messages.available') }}
+                                                    </small>
+                                                @else
+                                                    <small class="text-success d-block">
+                                                        <i class="bi bi-check-circle"></i> {{ __('messages.available') }} (0/{{ $maxSlots }})
+                                                    </small>
+                                                @endif
                                             @endif
                                         </div>
                                         
                                         <!-- Toggle Button for Admin -->
-                                        @if(!$hourData['is_booked'])
+                                        @if(!$hourData['is_fully_booked'] && !$hourData['is_unavailable'])
                                             <div class="toggle-btn-container">
                                                 <button class="btn btn-sm toggle-btn {{ $hourData['is_unavailable'] ? 'btn-warning' : 'btn-success' }}"
                                                         onclick="event.stopPropagation(); toggleTimeSlot({{ $hourData['hour'] }}, '{{ $dayData['date_string'] }}')"
@@ -495,6 +519,17 @@
     background: linear-gradient(135deg, #f5c6cb, #f1b0b7);
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(220, 53, 69, 0.3);
+}
+
+.time-slot-card.partially-booked {
+    background: linear-gradient(135deg, #fff8e1, #ffe082);
+    border-color: #ffb300;
+}
+
+.time-slot-card.partially-booked:hover {
+    background: linear-gradient(135deg, #ffe082, #ffd54f);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 179, 0, 0.3);
 }
 
 .time-slot-card.unavailable {

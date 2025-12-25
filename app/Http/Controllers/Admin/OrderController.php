@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\TimeSlot;
 use App\Models\DailyTimeSlot;
+use App\Models\Setting;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -22,6 +23,9 @@ class OrderController extends Controller
         $today = Carbon::now();
         $tomorrow = Carbon::now()->addDay();
         $dayAfter = Carbon::now()->addDays(2);
+        
+        // عدد المواعيد المتاحة لكل ساعة من الإعدادات
+        $maxSlotsPerHour = (int) Setting::getValue('max_slots_per_hour', 2);
         
         $dates = [
             'today' => $today,
@@ -41,12 +45,22 @@ class OrderController extends Controller
                 ->orderBy('scheduled_at')
                 ->get();
             
-            // استخراج الساعات المحجوزة (فقط الطلبات النشطة)
-            $bookedHours = $bookedOrders->filter(function ($order) {
-                return in_array($order->status, ['pending', 'accepted', 'in_progress']);
-            })->map(function ($order) {
-                return Carbon::parse($order->scheduled_at)->hour;
-            })->toArray();
+            // عد الطلبات لكل ساعة (فقط الطلبات النشطة)
+            $hourlyBookings = [];
+            foreach ($bookedOrders as $order) {
+                if (in_array($order->status, ['pending', 'accepted', 'in_progress'])) {
+                    $hour = Carbon::parse($order->scheduled_at)->hour;
+                    $hourlyBookings[$hour] = ($hourlyBookings[$hour] ?? 0) + 1;
+                }
+            }
+            
+            // استخراج الساعات المحجوزة بالكامل (التي وصلت للحد الأقصى)
+            $bookedHours = [];
+            foreach ($hourlyBookings as $hour => $count) {
+                if ($count >= $maxSlotsPerHour) {
+                    $bookedHours[] = $hour;
+                }
+            }
             
             // الحصول على الساعات غير المتاحة من إعدادات الأدمن لهذا التاريخ
             $unavailableTimeSlots = DailyTimeSlot::getUnavailableHoursForDate($dateString);
@@ -58,19 +72,22 @@ class OrderController extends Controller
             // تنظيم بيانات الساعات
             $hoursData = [];
             foreach ($allHours as $hour) {
-                $isBooked = in_array($hour, $bookedHours);
+                $bookingsCount = $hourlyBookings[$hour] ?? 0;
+                $isFullyBooked = $bookingsCount >= $maxSlotsPerHour;
                 $isUnavailable = in_array($hour, $unavailableTimeSlots);
                 $period = $hour < 12 ? 'AM' : 'PM';
                 $displayHour = $hour > 12 ? $hour - 12 : $hour;
                 if ($hour == 12) $displayHour = 12;
                 
-                // البحث عن الطلب لهذه الساعة (بغض النظر عن الحالة)
-                $order = $bookedOrders->firstWhere(function($order) use ($hour) {
+                // البحث عن الطلبات لهذه الساعة (بغض النظر عن الحالة)
+                $ordersForHour = $bookedOrders->filter(function($order) use ($hour) {
                     return Carbon::parse($order->scheduled_at)->hour == $hour;
                 });
                 
-                // تحديد ما إذا كانت الساعة محجوزة فعلياً (فقط للطلبات النشطة)
-                $isBooked = $order && in_array($order->status, ['pending', 'accepted', 'in_progress']);
+                // الحصول على الطلب الأول النشط لهذه الساعة (للعرض)
+                $order = $ordersForHour->firstWhere(function($order) {
+                    return in_array($order->status, ['pending', 'accepted', 'in_progress']);
+                });
                 
                 // الحصول على معلومات الساعة من جدول time_slots
                 $timeSlot = TimeSlot::where('hour', $hour)->first();
@@ -80,11 +97,15 @@ class OrderController extends Controller
                     'display_hour' => $displayHour,
                     'period' => $period,
                     'label' => $displayHour . ':00 ' . $period,
-                    'is_booked' => $isBooked,
+                    'is_booked' => $isFullyBooked,
                     'is_unavailable' => $isUnavailable,
-                    'is_available' => !$isUnavailable && !$isBooked,
+                    'is_available' => !$isUnavailable && !$isFullyBooked,
                     'order' => $order,
-                    'time_slot' => $timeSlot
+                    'orders' => $ordersForHour->values(), // جميع الطلبات لهذه الساعة
+                    'time_slot' => $timeSlot,
+                    'bookings_count' => $bookingsCount,
+                    'max_slots' => $maxSlotsPerHour,
+                    'is_fully_booked' => $isFullyBooked
                 ];
             }
             
