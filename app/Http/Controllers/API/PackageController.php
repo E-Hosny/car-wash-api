@@ -49,7 +49,7 @@ class PackageController extends Controller
                 'name' => $package->name,
                 'description' => $package->description,
                 'price' => $package->price,
-                'image' => $package->image ? asset('storage/' . $package->image) : null,
+                'image' => $package->image, // This should be like 'packages/image.jpg'
                 'is_active' => $package->is_active,
                 'services' => $services,
                 'created_at' => $package->created_at,
@@ -93,7 +93,7 @@ class PackageController extends Controller
                     'name' => $package->name,
                     'description' => $package->description,
                     'price' => $package->price,
-                    'image' => $package->image ? asset('storage/' . $package->image) : null,
+                    'image' => $package->image,
                     'is_active' => $package->is_active,
                 ],
                 'services' => $services
