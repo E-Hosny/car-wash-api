@@ -60,21 +60,7 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="points" class="form-label">
-                                        <i class="fas fa-star"></i> {{ __('packages.package_points') }} <span class="text-danger">*</span>
-                                    </label>
-                                    <div class="input-group">
-                                        <input type="number" class="form-control form-control-lg" id="points" name="points" 
-                                               value="{{ old('points', $package->points) }}" min="1" required
-                                               placeholder="100">
-                                        <span class="input-group-text">{{ __('packages.points_unit') }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="col-md-6">
+                            <div class="col-md-12">
                                 <div class="form-group mb-3">
                                     <label for="image" class="form-label">
                                         <i class="fas fa-image"></i> {{ __('packages.package_image') }}
@@ -113,8 +99,9 @@
                         <div class="card mb-4">
                             <div class="card-header">
                                 <h5 class="card-title mb-0">
-                                    <i class="fas fa-cogs"></i> {{ __('packages.service_points') }}
+                                    <i class="fas fa-cogs"></i> {{ __('packages.package_services') }}
                                 </h5>
+                                <small class="text-muted">{{ __('packages.set_quantity_per_service') }}</small>
                             </div>
                             <div class="card-body">
                                 <div class="table-responsive">
@@ -122,12 +109,15 @@
                                         <thead class="table-dark">
                                             <tr>
                                                 <th>{{ __('messages.services') }}</th>
-                                                <th>{{ __('packages.points_required') }}</th>
+                                                <th>{{ __('packages.quantity') }}</th>
                                                 <th>{{ __('packages.status') }}</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             @foreach($services as $service)
+                                            @php
+                                                $currentQuantity = isset($packageServices[$service->id]) ? $packageServices[$service->id]->quantity : 0;
+                                            @endphp
                                             <tr>
                                                 <td>
                                                     <div class="d-flex align-items-center">
@@ -140,19 +130,20 @@
                                                            value="{{ $service->id }}">
                                                     <div class="input-group">
                                                         <input type="number" class="form-control" 
-                                                               name="services[{{ $loop->index }}][points_required]" 
-                                                               value="{{ old("services.{$loop->index}.points_required", $service->servicePoint ? $service->servicePoint->points_required : 0) }}" 
-                                                               min="0" required>
-                                                        <span class="input-group-text">{{ __('packages.points_unit') }}</span>
+                                                               name="services[{{ $loop->index }}][quantity]" 
+                                                               value="{{ old("services.{$loop->index}.quantity", $currentQuantity) }}" 
+                                                               min="0" required
+                                                               onchange="updateServiceStatus(this)">
+                                                        <span class="input-group-text">{{ __('packages.times') }}</span>
                                                     </div>
                                                 </td>
                                                 <td>
-                                                    @if($service->servicePoint && $service->servicePoint->points_required > 0)
-                                                        <span class="badge bg-success">
-                                                            <i class="fas fa-check"></i> {{ __('packages.available') }}
+                                                    @if($currentQuantity > 0)
+                                                        <span class="badge bg-success service-status">
+                                                            <i class="fas fa-check"></i> {{ __('packages.available') }} ({{ $currentQuantity }})
                                                         </span>
                                                     @else
-                                                        <span class="badge bg-secondary">
+                                                        <span class="badge bg-secondary service-status">
                                                             <i class="fas fa-times"></i> {{ __('packages.not_available') }}
                                                         </span>
                                                     @endif
@@ -225,8 +216,8 @@
                             <div class="col-6">
                                 <div class="card bg-info text-white">
                                     <div class="card-body">
-                                        <h5 id="previewPoints">{{ $package->points }} {{ __('packages.points_unit') }}</h5>
-                                        <small>{{ __('packages.points') }}</small>
+                                        <h5 id="previewPoints">0 {{ __('packages.services') }}</h5>
+                                        <small>{{ __('packages.services_count') }}</small>
                                     </div>
                                 </div>
                             </div>
@@ -255,16 +246,37 @@ function previewImage(input) {
     }
 }
 
+function updateServiceStatus(input) {
+    const row = input.closest('tr');
+    const statusBadge = row.querySelector('.service-status');
+    const quantity = parseInt(input.value) || 0;
+    
+    if (quantity > 0) {
+        statusBadge.className = 'badge bg-success service-status';
+        statusBadge.innerHTML = '<i class="fas fa-check"></i> {{ __('packages.available') }} (' + quantity + ')';
+    } else {
+        statusBadge.className = 'badge bg-secondary service-status';
+        statusBadge.innerHTML = '<i class="fas fa-times"></i> {{ __('packages.not_available') }}';
+    }
+}
+
 function previewPackage() {
     const name = document.getElementById('name').value;
     const description = document.getElementById('description').value;
     const price = document.getElementById('price').value;
-    const points = document.getElementById('points').value;
     
     document.getElementById('previewName').textContent = name || '{{ __('packages.package_name') }}';
     document.getElementById('previewDescription').textContent = description || '{{ __('packages.package_description') }}';
     document.getElementById('previewPrice').textContent = (price || '0') + ' {{ __('packages.currency') }}';
-    document.getElementById('previewPoints').textContent = (points || '0') + ' {{ __('packages.points_unit') }}';
+    
+    // Count services with quantity > 0
+    let servicesCount = 0;
+    document.querySelectorAll('input[name*="[quantity]"]').forEach(function(input) {
+        if (parseInt(input.value) > 0) {
+            servicesCount++;
+        }
+    });
+    document.getElementById('previewPoints').textContent = servicesCount + ' {{ __('packages.services') }}';
     
     const modal = new bootstrap.Modal(document.getElementById('previewModal'));
     modal.show();

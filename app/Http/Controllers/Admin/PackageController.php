@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Package;
 use App\Models\Service;
-use App\Models\ServicePoint;
+use App\Models\PackageService;
 use App\Models\UserPackage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -15,14 +15,16 @@ class PackageController extends Controller
 {
     public function index()
     {
-        $packages = Package::withCount('userPackages')->get();
+        $packages = Package::withCount('userPackages')
+            ->with('packageServices.service')
+            ->get();
         
         return view('admin.packages.index', compact('packages'));
     }
 
     public function create()
     {
-        $services = Service::all();
+        $services = Service::ordered()->get();
         return view('admin.packages.create', compact('services'));
     }
 
@@ -32,11 +34,10 @@ class PackageController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
-            'points' => 'required|integer|min:1',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'services' => 'required|array',
             'services.*.service_id' => 'required|exists:services,id',
-            'services.*.points_required' => 'required|integer|min:1',
+            'services.*.quantity' => 'required|integer|min:0',
         ]);
 
         DB::beginTransaction();
@@ -45,7 +46,6 @@ class PackageController extends Controller
                 'name' => $request->name,
                 'description' => $request->description,
                 'price' => $request->price,
-                'points' => $request->points,
                 'image' => null,
             ]);
 
@@ -55,12 +55,15 @@ class PackageController extends Controller
                 $package->update(['image' => $imagePath]);
             }
 
-            // Create service points
+            // Create package services with quantities
             foreach ($request->services as $serviceData) {
-                ServicePoint::updateOrCreate(
-                    ['service_id' => $serviceData['service_id']],
-                    ['points_required' => $serviceData['points_required']]
-                );
+                if (isset($serviceData['quantity']) && $serviceData['quantity'] > 0) {
+                    PackageService::create([
+                        'package_id' => $package->id,
+                        'service_id' => $serviceData['service_id'],
+                        'quantity' => $serviceData['quantity'],
+                    ]);
+                }
             }
 
             DB::commit();
@@ -76,10 +79,13 @@ class PackageController extends Controller
 
     public function edit($id)
     {
-        $package = Package::findOrFail($id);
-        $services = Service::ordered()->with('servicePoint')->get();
+        $package = Package::with('packageServices')->findOrFail($id);
+        $services = Service::ordered()->get();
         
-        return view('admin.packages.edit', compact('package', 'services'));
+        // Get current quantities for each service
+        $packageServices = $package->packageServices->keyBy('service_id');
+        
+        return view('admin.packages.edit', compact('package', 'services', 'packageServices'));
     }
 
     public function update(Request $request, $id)
@@ -88,11 +94,10 @@ class PackageController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:0',
-            'points' => 'required|integer|min:1',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'services' => 'required|array',
             'services.*.service_id' => 'required|exists:services,id',
-            'services.*.points_required' => 'required|integer|min:1',
+            'services.*.quantity' => 'required|integer|min:0',
         ]);
 
         $package = Package::findOrFail($id);
@@ -103,7 +108,6 @@ class PackageController extends Controller
                 'name' => $request->name,
                 'description' => $request->description,
                 'price' => $request->price,
-                'points' => $request->points,
             ]);
 
             // Handle image upload
@@ -117,12 +121,18 @@ class PackageController extends Controller
                 $package->update(['image' => $imagePath]);
             }
 
-            // Update service points
+            // Delete existing package services
+            $package->packageServices()->delete();
+
+            // Create/update package services with quantities
             foreach ($request->services as $serviceData) {
-                ServicePoint::updateOrCreate(
-                    ['service_id' => $serviceData['service_id']],
-                    ['points_required' => $serviceData['points_required']]
-                );
+                if (isset($serviceData['quantity']) && $serviceData['quantity'] > 0) {
+                    PackageService::create([
+                        'package_id' => $package->id,
+                        'service_id' => $serviceData['service_id'],
+                        'quantity' => $serviceData['quantity'],
+                    ]);
+                }
             }
 
             DB::commit();

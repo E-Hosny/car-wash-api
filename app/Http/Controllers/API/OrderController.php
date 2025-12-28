@@ -46,7 +46,7 @@ class OrderController extends Controller
 
     $user = auth()->user();
     $total = 0;
-    $pointsUsed = 0;
+    $servicesUsed = [];
     $userPackage = null;
 
     // Check if user wants to use package
@@ -54,30 +54,54 @@ class OrderController extends Controller
         $userPackage = \App\Models\UserPackage::where('user_id', $user->id)
             ->where('status', 'active')
             ->where('expires_at', '>=', now()->toDateString())
-            ->where('remaining_points', '>', 0)
+            ->with('packageServices')
             ->first();
 
         if (!$userPackage) {
             return response()->json([
                 'success' => false,
-                'message' => 'لا توجد باقة نشطة أو نقاط متبقية'
+                'message' => 'لا توجد باقة نشطة'
             ], 400);
         }
 
-        // Calculate points needed for selected services
-        $services = Service::with('servicePoint')->whereIn('id', $request->services)->get();
-        $totalPointsNeeded = $services->sum(function($service) {
-            return $service->servicePoint ? $service->servicePoint->points_required : 0;
-        });
-
-        if ($totalPointsNeeded > $userPackage->remaining_points) {
+        // Check if user has remaining services
+        if (!$userPackage->hasRemainingServices()) {
             return response()->json([
                 'success' => false,
-                'message' => 'النقاط المتبقية غير كافية للخدمات المطلوبة'
+                'message' => 'لا توجد خدمات متبقية في الباقة'
             ], 400);
         }
 
-        $pointsUsed = $totalPointsNeeded;
+        // Verify and use services from package
+        $requestedServices = $request->services;
+        foreach ($requestedServices as $serviceId) {
+            if (!$userPackage->hasServiceAvailable($serviceId, 1)) {
+                $service = Service::find($serviceId);
+                return response()->json([
+                    'success' => false,
+                    'message' => 'لا توجد كمية متبقية للخدمة: ' . ($service ? $service->name : 'غير معروف')
+                ], 400);
+            }
+        }
+
+        // Use services from package
+        foreach ($requestedServices as $serviceId) {
+            try {
+                $userPackageService = $userPackage->useService($serviceId, 1);
+                $servicesUsed[] = [
+                    'service_id' => $serviceId,
+                    'service_name' => $userPackageService->service->name ?? '',
+                    'quantity_used' => 1,
+                ];
+            } catch (\Exception $e) {
+                // Rollback if any service fails
+                return response()->json([
+                    'success' => false,
+                    'message' => 'حدث خطأ أثناء استخدام الخدمة: ' . $e->getMessage()
+                ], 400);
+            }
+        }
+
         $total = 0; // Free when using package
     } else {
         // Calculate total from service prices
@@ -123,16 +147,12 @@ class OrderController extends Controller
     }
 
 
-    // If using package, create package order and update remaining points
-    if ($request->use_package && $userPackage) {
+    // If using package, create package order and save services used
+    if ($request->use_package && $userPackage && !empty($servicesUsed)) {
         \App\Models\PackageOrder::create([
             'user_package_id' => $userPackage->id,
             'order_id' => $order->id,
-            'points_used' => $pointsUsed,
-        ]);
-
-        $userPackage->update([
-            'remaining_points' => $userPackage->remaining_points - $pointsUsed
+            'services_used' => $servicesUsed,
         ]);
     }
 
@@ -154,9 +174,18 @@ class OrderController extends Controller
     ];
 
     if ($request->use_package && $userPackage) {
+        // Get remaining services
+        $remainingServices = $userPackage->getRemainingServices();
         $responseData['package_info'] = [
-            'remaining_points' => $userPackage->remaining_points,
-            'points_used' => $pointsUsed
+            'services_used' => $servicesUsed,
+            'remaining_services' => $remainingServices->map(function($item) {
+                return [
+                    'service_id' => $item['service_id'],
+                    'service_name' => $item['service']['name'] ?? '',
+                    'remaining_quantity' => $item['remaining_quantity'],
+                    'total_quantity' => $item['total_quantity'],
+                ];
+            })
         ];
     }
 
@@ -551,7 +580,7 @@ public function updateStatus(Request $request, $id)
 
         $user = auth()->user();
         $total = 0;
-        $pointsUsed = 0;
+        $servicesUsed = [];
         $userPackage = null;
         $orderCars = [];
 
@@ -560,33 +589,44 @@ public function updateStatus(Request $request, $id)
             $userPackage = \App\Models\UserPackage::where('user_id', $user->id)
                 ->where('status', 'active')
                 ->where('expires_at', '>=', now()->toDateString())
-                ->where('remaining_points', '>', 0)
+                ->with('packageServices')
                 ->first();
 
             if (!$userPackage) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'لا توجد باقة نشطة أو نقاط متبقية'
+                    'message' => 'لا توجد باقة نشطة'
                 ], 400);
             }
 
-            // Calculate total points needed for all cars
-            $totalPointsNeeded = 0;
-            foreach ($request->cars as $carData) {
-                $services = Service::with('servicePoint')->whereIn('id', $carData['services'])->get();
-                $totalPointsNeeded += $services->sum(function($service) {
-                    return $service->servicePoint ? $service->servicePoint->points_required : 0;
-                });
-            }
-
-            if ($totalPointsNeeded > $userPackage->remaining_points) {
+            if (!$userPackage->hasRemainingServices()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'النقاط المتبقية غير كافية للخدمات المطلوبة'
+                    'message' => 'لا توجد خدمات متبقية في الباقة'
                 ], 400);
             }
 
-            $pointsUsed = $totalPointsNeeded;
+            // Collect all requested services
+            $allRequestedServices = [];
+            foreach ($request->cars as $carData) {
+                foreach ($carData['services'] as $serviceId) {
+                    $allRequestedServices[] = $serviceId;
+                }
+            }
+
+            // Count service occurrences
+            $serviceCounts = array_count_values($allRequestedServices);
+
+            // Verify and use services from package
+            foreach ($serviceCounts as $serviceId => $count) {
+                if (!$userPackage->hasServiceAvailable($serviceId, $count)) {
+                    $service = Service::find($serviceId);
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'لا توجد كمية كافية للخدمة: ' . ($service ? $service->name : 'غير معروف') . ' (مطلوب: ' . $count . ')'
+                    ], 400);
+                }
+            }
         }
 
         // Verify all cars belong to user and calculate totals
@@ -604,13 +644,30 @@ public function updateStatus(Request $request, $id)
 
             // Calculate total for this car
             $carTotal = 0;
-            $carPointsUsed = 0;
+            $carServicesUsed = [];
 
             if ($request->use_package) {
-                $services = Service::with('servicePoint')->whereIn('id', $carData['services'])->get();
-                $carPointsUsed = $services->sum(function($service) {
-                    return $service->servicePoint ? $service->servicePoint->points_required : 0;
-                });
+                // Use services from package for this car
+                foreach ($carData['services'] as $serviceId) {
+                    try {
+                        $userPackageService = $userPackage->useService($serviceId, 1);
+                        $carServicesUsed[] = [
+                            'service_id' => $serviceId,
+                            'service_name' => $userPackageService->service->name ?? '',
+                            'quantity_used' => 1,
+                        ];
+                        $servicesUsed[] = [
+                            'service_id' => $serviceId,
+                            'service_name' => $userPackageService->service->name ?? '',
+                            'quantity_used' => 1,
+                        ];
+                    } catch (\Exception $e) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'حدث خطأ أثناء استخدام الخدمة: ' . $e->getMessage()
+                        ], 400);
+                    }
+                }
                 $carTotal = 0; // Free when using package
             } else {
                 $carTotal = Service::whereIn('id', $carData['services'])->sum('price');
@@ -621,7 +678,7 @@ public function updateStatus(Request $request, $id)
                 'car_id' => $car->id,
                 'services' => $carData['services'],
                 'subtotal' => $carTotal,
-                'points_used' => $carPointsUsed,
+                'services_used' => $carServicesUsed,
             ];
         }
 
@@ -647,7 +704,7 @@ public function updateStatus(Request $request, $id)
                 'order_id' => $order->id,
                 'car_id' => $carData['car_id'],
                 'subtotal' => $carData['subtotal'],
-                'points_used' => $carData['points_used'],
+                'points_used' => 0, // Keep for backward compatibility, but not used
             ]);
 
             // Attach services for this car
@@ -655,17 +712,12 @@ public function updateStatus(Request $request, $id)
         }
 
         // If using package, create package order
-        if ($request->use_package && $userPackage) {
+        if ($request->use_package && $userPackage && !empty($servicesUsed)) {
             \App\Models\PackageOrder::create([
                 'user_package_id' => $userPackage->id,
                 'order_id' => $order->id,
-                'points_used' => $pointsUsed,
-                'services' => json_encode(array_merge(...array_column($orderCars, 'services'))),
+                'services_used' => $servicesUsed,
             ]);
-
-            // Update remaining points
-            $userPackage->remaining_points -= $pointsUsed;
-            $userPackage->save();
         }
 
         // Send notification to providers

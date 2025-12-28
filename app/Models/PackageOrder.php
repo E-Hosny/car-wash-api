@@ -12,8 +12,11 @@ class PackageOrder extends Model
     protected $fillable = [
         'user_package_id',
         'order_id',
-        'points_used',
-        'services',
+        'services_used',
+    ];
+
+    protected $casts = [
+        'services_used' => 'array',
     ];
 
     public function userPackage()

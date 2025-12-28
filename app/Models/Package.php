@@ -13,7 +13,6 @@ class Package extends Model
         'name',
         'description',
         'price',
-        'points',
         'image',
         'is_active',
     ];
@@ -26,6 +25,29 @@ class Package extends Model
     public function userPackages()
     {
         return $this->hasMany(UserPackage::class);
+    }
+
+    public function packageServices()
+    {
+        return $this->hasMany(PackageService::class);
+    }
+
+    public function services()
+    {
+        return $this->belongsToMany(Service::class, 'package_services')
+                    ->withPivot('quantity')
+                    ->withTimestamps();
+    }
+
+    public function getServicesWithQuantities()
+    {
+        return $this->packageServices()->with('service')->get()->map(function ($packageService) {
+            return [
+                'service_id' => $packageService->service_id,
+                'service' => $packageService->service,
+                'quantity' => $packageService->quantity,
+            ];
+        });
     }
 
     public function scopeActive($query)

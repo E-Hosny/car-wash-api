@@ -10,7 +10,7 @@ return [
     'package_name' => 'Package Name',
     'package_description' => 'Package Description',
     'package_price' => 'Package Price',
-    'package_points' => 'Package Points',
+    'package_services' => 'Package Services',
     'package_image' => 'Package Image',
     'package_status' => 'Package Status',
     'active' => 'Active',
@@ -34,16 +34,17 @@ return [
     'package_status_updated' => 'Package status updated successfully',
     'package_purchased_successfully' => 'Package purchased successfully',
     'no_active_package' => 'No active package found',
-    'insufficient_points' => 'Insufficient points',
+    'insufficient_quantity' => 'Insufficient quantity',
     'package_expired' => 'Package has expired',
     'package_already_active' => 'You already have an active package',
 
-    // Service Points
-    'service_points' => 'Service Points',
-    'points_required' => 'Points Required',
-    'remaining_points' => 'Remaining Points',
-    'total_points' => 'Total Points',
-    'points_used' => 'Points Used',
+    // Service Quantities
+    'quantity' => 'Quantity',
+    'remaining_quantity' => 'Remaining Quantity',
+    'total_quantity' => 'Total Quantity',
+    'services_count' => 'Services Count',
+    'set_quantity_per_service' => 'Set quantity for each service',
+    'times' => 'times',
 
     // User Package
     'my_package' => 'My Package',
@@ -67,9 +68,9 @@ return [
     'price_required' => 'Package price is required',
     'price_numeric' => 'Price must be a number',
     'price_min' => 'Price must be greater than zero',
-    'points_required' => 'Points are required',
-    'points_integer' => 'Points must be an integer',
-    'points_min' => 'Points must be greater than zero',
+    'quantity_required' => 'Quantity is required',
+    'quantity_integer' => 'Quantity must be an integer',
+    'quantity_min' => 'Quantity must be greater than or equal to zero',
     'image_image' => 'File must be an image',
     'image_max' => 'Image size must be less than 2MB',
 
@@ -87,7 +88,7 @@ return [
     'name' => 'Name',
     'description' => 'Description',
     'price' => 'Price',
-    'points' => 'Points',
+    'services' => 'Services',
     'subscribers_count' => 'Subscribers Count',
     'status' => 'Status',
     'actions' => 'Actions',
@@ -108,7 +109,6 @@ return [
     'enter_package_name' => 'Enter package name',
     'enter_package_description' => 'Enter package description',
     'enter_package_price' => 'Enter package price',
-    'enter_package_points' => 'Enter package points',
     'select_package_image' => 'Select package image',
 
     // Info Messages
@@ -157,7 +157,6 @@ return [
     'correct_errors' => 'Please correct the following errors',
     'optional' => 'optional',
     'max_size_2mb' => 'Maximum 2MB',
-    'set_points_per_service' => 'Set the number of points required for each service',
     'not_available' => 'Not Available',
     'available' => 'Available',
     'preview' => 'Preview',

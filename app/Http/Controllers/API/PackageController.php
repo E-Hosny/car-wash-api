@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Package;
 use App\Models\Service;
 use App\Models\UserPackage;
+use App\Models\UserPackageService;
 use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -30,11 +31,35 @@ class PackageController extends Controller
             ]);
         }
 
-        $packages = Package::active()->get();
+        $packages = Package::active()->with('packageServices.service')->get();
+        
+        // Format packages with services and quantities
+        $formattedPackages = $packages->map(function($package) {
+            $services = $package->packageServices->map(function($packageService) {
+                return [
+                    'id' => $packageService->service_id,
+                    'name' => $packageService->service->name ?? '',
+                    'description' => $packageService->service->description ?? '',
+                    'quantity' => $packageService->quantity,
+                ];
+            });
+            
+            return [
+                'id' => $package->id,
+                'name' => $package->name,
+                'description' => $package->description,
+                'price' => $package->price,
+                'image' => $package->image ? asset('storage/' . $package->image) : null,
+                'is_active' => $package->is_active,
+                'services' => $services,
+                'created_at' => $package->created_at,
+                'updated_at' => $package->updated_at,
+            ];
+        });
         
         return response()->json([
             'success' => true,
-            'data' => $packages,
+            'data' => $formattedPackages,
             'packages_enabled' => true,
         ]);
     }
@@ -48,13 +73,29 @@ class PackageController extends Controller
             ], 403);
         }
 
-        $package = Package::active()->findOrFail($id);
-        $services = Service::with('servicePoint')->get();
+        $package = Package::active()->with('packageServices.service')->findOrFail($id);
+        
+        $services = $package->packageServices->map(function($packageService) {
+            return [
+                'id' => $packageService->service_id,
+                'name' => $packageService->service->name ?? '',
+                'description' => $packageService->service->description ?? '',
+                'price' => $packageService->service->price ?? 0,
+                'quantity' => $packageService->quantity,
+            ];
+        });
         
         return response()->json([
             'success' => true,
             'data' => [
-                'package' => $package,
+                'package' => [
+                    'id' => $package->id,
+                    'name' => $package->name,
+                    'description' => $package->description,
+                    'price' => $package->price,
+                    'image' => $package->image ? asset('storage/' . $package->image) : null,
+                    'is_active' => $package->is_active,
+                ],
                 'services' => $services
             ]
         ]);
@@ -94,8 +135,6 @@ class PackageController extends Controller
             $userPackage = UserPackage::create([
                 'user_id' => $user->id,
                 'package_id' => $package->id,
-                'remaining_points' => $package->points,
-                'total_points' => $package->points,
                 'expires_at' => now()->addMonth(),
                 'status' => 'active',
                 'payment_intent_id' => $request->payment_intent_id,
@@ -103,19 +142,30 @@ class PackageController extends Controller
                 'purchased_at' => now(),
             ]);
 
+            // Create user package services from package services
+            $packageServices = $package->packageServices;
+            foreach ($packageServices as $packageService) {
+                UserPackageService::create([
+                    'user_package_id' => $userPackage->id,
+                    'service_id' => $packageService->service_id,
+                    'total_quantity' => $packageService->quantity,
+                    'remaining_quantity' => $packageService->quantity,
+                ]);
+            }
+
             DB::commit();
 
             return response()->json([
                 'success' => true,
                 'message' => 'تم شراء الباقة بنجاح',
-                'data' => $userPackage->load('package')
+                'data' => $userPackage->load(['package', 'packageServices.service'])
             ]);
 
         } catch (\Exception $e) {
             DB::rollback();
             return response()->json([
                 'success' => false,
-                'message' => 'حدث خطأ أثناء شراء الباقة'
+                'message' => 'حدث خطأ أثناء شراء الباقة: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -134,7 +184,7 @@ class PackageController extends Controller
         $userPackage = UserPackage::where('user_id', $user->id)
             ->where('status', 'active')
             ->where('expires_at', '>=', now()->toDateString())
-            ->with('package')
+            ->with(['package', 'packageServices.service'])
             ->first();
 
         if (!$userPackage) {
@@ -144,9 +194,32 @@ class PackageController extends Controller
             ], 404);
         }
 
+        // Format services with remaining quantities
+        $services = $userPackage->packageServices->map(function($userPackageService) {
+            return [
+                'id' => $userPackageService->service_id,
+                'name' => $userPackageService->service->name ?? '',
+                'description' => $userPackageService->service->description ?? '',
+                'price' => $userPackageService->service->price ?? 0,
+                'total_quantity' => $userPackageService->total_quantity,
+                'remaining_quantity' => $userPackageService->remaining_quantity,
+            ];
+        });
+
         return response()->json([
             'success' => true,
-            'data' => $userPackage
+            'data' => [
+                'id' => $userPackage->id,
+                'package' => [
+                    'id' => $userPackage->package->id,
+                    'name' => $userPackage->package->name,
+                    'description' => $userPackage->package->description,
+                    'price' => $userPackage->package->price,
+                ],
+                'expires_at' => $userPackage->expires_at,
+                'status' => $userPackage->status,
+                'services' => $services,
+            ]
         ]);
     }
 
@@ -164,36 +237,44 @@ class PackageController extends Controller
         $userPackage = UserPackage::where('user_id', $user->id)
             ->where('status', 'active')
             ->where('expires_at', '>=', now()->toDateString())
-            ->where('remaining_points', '>', 0)
+            ->with('packageServices.service')
             ->first();
 
         if (!$userPackage) {
             return response()->json([
                 'success' => false,
-                'message' => 'No active package or remaining points'
+                'message' => 'No active package found'
             ], 404);
         }
 
-        $services = Service::with('servicePoint')
-            ->whereHas('servicePoint', function($query) use ($userPackage) {
-                $query->where('points_required', '<=', $userPackage->remaining_points);
-            })
+        // Get services with remaining quantities
+        $availableServices = $userPackage->packageServices()
+            ->where('remaining_quantity', '>', 0)
+            ->with('service')
             ->get()
-            ->map(function($service) {
+            ->map(function($userPackageService) {
                 return [
-                    'id' => $service->id,
-                    'name' => $service->name,
-                    'description' => $service->description,
-                    'price' => $service->price,
-                    'points_required' => $service->servicePoint ? $service->servicePoint->points_required : 0
+                    'id' => $userPackageService->service_id,
+                    'name' => $userPackageService->service->name ?? '',
+                    'description' => $userPackageService->service->description ?? '',
+                    'price' => $userPackageService->service->price ?? 0,
+                    'total_quantity' => $userPackageService->total_quantity,
+                    'remaining_quantity' => $userPackageService->remaining_quantity,
                 ];
             });
 
         return response()->json([
             'success' => true,
             'data' => [
-                'user_package' => $userPackage,
-                'available_services' => $services
+                'user_package' => [
+                    'id' => $userPackage->id,
+                    'package' => [
+                        'id' => $userPackage->package->id,
+                        'name' => $userPackage->package->name,
+                    ],
+                    'expires_at' => $userPackage->expires_at,
+                ],
+                'available_services' => $availableServices
             ]
         ]);
     }

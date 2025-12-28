@@ -40,7 +40,7 @@
                                     <th>{{ __('packages.name') }}</th>
                                     <th>{{ __('packages.description') }}</th>
                                     <th>{{ __('packages.price') }}</th>
-                                    <th>{{ __('packages.points') }}</th>
+                                    <th>{{ __('packages.services') }}</th>
                                     <th>{{ __('packages.subscribers_count') }}</th>
                                     <th>{{ __('packages.status') }}</th>
                                     <th>{{ __('packages.actions') }}</th>
@@ -80,9 +80,21 @@
                                         </span>
                                     </td>
                                     <td>
-                                        <span class="badge bg-info fs-6">
-                                            {{ $package->points }} {{ __('packages.points_unit') }}
-                                        </span>
+                                        @php
+                                            $servicesCount = $package->packageServices->count();
+                                            $totalQuantity = $package->packageServices->sum('quantity');
+                                        @endphp
+                                        <div>
+                                            <span class="badge bg-info fs-6 mb-1">
+                                                {{ $servicesCount }} {{ __('packages.services') }}
+                                            </span>
+                                            @if($totalQuantity > 0)
+                                                <br>
+                                                <small class="text-muted">
+                                                    {{ $totalQuantity }} {{ __('packages.total_quantity') }}
+                                                </small>
+                                            @endif
+                                        </div>
                                     </td>
                                     <td>
                                         <span class="badge bg-primary fs-6">

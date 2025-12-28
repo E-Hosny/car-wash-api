@@ -22,14 +22,14 @@ class Service extends Model
         return $this->belongsToMany(Order::class, 'order_service');
     }
 
-    public function servicePoint()
+    public function packageServices()
     {
-        return $this->hasOne(ServicePoint::class);
+        return $this->hasMany(PackageService::class);
     }
 
-    public function getPointsRequiredAttribute()
+    public function userPackageServices()
     {
-        return $this->servicePoint ? $this->servicePoint->points_required : 0;
+        return $this->hasMany(UserPackageService::class);
     }
 
     /**

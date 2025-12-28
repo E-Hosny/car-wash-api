@@ -10,7 +10,7 @@ return [
     'package_name' => 'اسم الباقة',
     'package_description' => 'وصف الباقة',
     'package_price' => 'سعر الباقة',
-    'package_points' => 'نقاط الباقة',
+    'package_services' => 'خدمات الباقة',
     'package_image' => 'صورة الباقة',
     'package_status' => 'حالة الباقة',
     'active' => 'نشط',
@@ -34,16 +34,17 @@ return [
     'package_status_updated' => 'تم تحديث حالة الباقة بنجاح',
     'package_purchased_successfully' => 'تم شراء الباقة بنجاح',
     'no_active_package' => 'لا توجد باقة نشطة',
-    'insufficient_points' => 'النقاط غير كافية',
+    'insufficient_quantity' => 'الكمية غير كافية',
     'package_expired' => 'الباقة منتهية الصلاحية',
     'package_already_active' => 'لديك باقة نشطة بالفعل',
 
-    // Service Points
-    'service_points' => 'نقاط الخدمات',
-    'points_required' => 'النقاط المطلوبة',
-    'remaining_points' => 'النقاط المتبقية',
-    'total_points' => 'إجمالي النقاط',
-    'points_used' => 'النقاط المستخدمة',
+    // Service Quantities
+    'quantity' => 'الكمية',
+    'remaining_quantity' => 'الكمية المتبقية',
+    'total_quantity' => 'إجمالي الكمية',
+    'services_count' => 'عدد الخدمات',
+    'set_quantity_per_service' => 'حدد الكمية لكل خدمة',
+    'times' => 'مرة',
 
     // User Package
     'my_package' => 'باقتي',
@@ -67,9 +68,9 @@ return [
     'price_required' => 'سعر الباقة مطلوب',
     'price_numeric' => 'السعر يجب أن يكون رقم',
     'price_min' => 'السعر يجب أن يكون أكبر من صفر',
-    'points_required' => 'عدد النقاط مطلوب',
-    'points_integer' => 'النقاط يجب أن تكون رقم صحيح',
-    'points_min' => 'النقاط يجب أن تكون أكبر من صفر',
+    'quantity_required' => 'الكمية مطلوبة',
+    'quantity_integer' => 'الكمية يجب أن تكون رقم صحيح',
+    'quantity_min' => 'الكمية يجب أن تكون أكبر من أو تساوي صفر',
     'image_image' => 'الملف يجب أن يكون صورة',
     'image_max' => 'حجم الصورة يجب أن يكون أقل من 2 ميجابايت',
 
@@ -87,7 +88,7 @@ return [
     'name' => 'الاسم',
     'description' => 'الوصف',
     'price' => 'السعر',
-    'points' => 'النقاط',
+    'services' => 'الخدمات',
     'subscribers_count' => 'عدد المشتركين',
     'status' => 'الحالة',
     'actions' => 'الإجراءات',
@@ -108,7 +109,6 @@ return [
     'enter_package_name' => 'أدخل اسم الباقة',
     'enter_package_description' => 'أدخل وصف الباقة',
     'enter_package_price' => 'أدخل سعر الباقة',
-    'enter_package_points' => 'أدخل عدد النقاط',
     'select_package_image' => 'اختر صورة الباقة',
 
     // Info Messages
@@ -157,7 +157,6 @@ return [
     'correct_errors' => 'يرجى تصحيح الأخطاء التالية',
     'optional' => 'اختياري',
     'max_size_2mb' => 'الحد الأقصى 2 ميجابايت',
-    'set_points_per_service' => 'حدد عدد النقاط المطلوبة لكل خدمة',
     'not_available' => 'غير متاح',
     'available' => 'متاح',
     'preview' => 'معاينة',
