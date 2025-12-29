@@ -583,6 +583,7 @@ public function updateStatus(Request $request, $id)
         $servicesUsed = [];
         $userPackage = null;
         $orderCars = [];
+        $pointsUsed = 0;
 
         // Check if user wants to use package
         if ($request->use_package) {
