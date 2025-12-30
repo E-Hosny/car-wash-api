@@ -17,6 +17,11 @@
 			<input type="number" class="form-control" id="max_slots_per_hour" name="max_slots_per_hour" value="{{ $maxSlotsPerHour }}" min="1" max="10" required>
 			<small class="form-text text-muted">{{ __('messages.max_slots_per_hour_help') }}</small>
 		</div>
+		<div class="mb-3">
+			<label for="support_whatsapp" class="form-label">رقم واتساب الدعم</label>
+			<input type="text" class="form-control" id="support_whatsapp" name="support_whatsapp" value="{{ $supportWhatsapp }}" placeholder="966542327025" required>
+			<small class="form-text text-muted">أدخل رقم واتساب الدعم (بدون + في البداية، مثال: 966542327025)</small>
+		</div>
 		<button type="submit" class="btn btn-primary mt-3">حفظ</button>
 	</form>
 </div>

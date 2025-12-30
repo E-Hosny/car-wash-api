@@ -12,6 +12,7 @@ use App\Http\Controllers\API\PaymentController;
 use App\Http\Controllers\API\PackageController;
 use App\Http\Controllers\API\ConfigController;
 use App\Http\Controllers\API\TimeSlotController;
+use App\Http\Controllers\SupportController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -36,6 +37,10 @@ Route::get('/config', [ConfigController::class, 'appConfig']);
 
 // ✅ Public packages endpoint for guest browsing
 Route::get('/packages', [PackageController::class, 'index']);
+
+// ✅ Support endpoints (public)
+Route::get('/support/contact-info', [SupportController::class, 'getContactInfo']);
+Route::get('/support/faq', [SupportController::class, 'getFAQ']);
 
 
 

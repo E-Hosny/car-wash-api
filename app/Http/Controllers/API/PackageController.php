@@ -33,6 +33,35 @@ class PackageController extends Controller
 
         $packages = Package::active()->with('packageServices.service')->get();
         
+        // Get current user package if authenticated
+        $currentPackage = null;
+        $canUpgrade = false;
+        
+        if (Auth::check()) {
+            $user = Auth::user();
+            $userPackage = UserPackage::where('user_id', $user->id)
+                ->where('status', 'active')
+                ->with(['package', 'packageServices.service'])
+                ->orderBy('expires_at', 'desc')
+                ->first();
+            
+            if ($userPackage) {
+                $isExpired = $userPackage->expires_at < now()->toDateString();
+                $hasRemainingServices = $userPackage->hasRemainingServices();
+                $canUpgrade = $isExpired || !$hasRemainingServices;
+                
+                $currentPackage = [
+                    'id' => $userPackage->package->id,
+                    'name' => $userPackage->package->name,
+                    'description' => $userPackage->package->description,
+                    'price' => $userPackage->package->price,
+                    'expires_at' => $userPackage->expires_at,
+                    'status' => $userPackage->status,
+                    'can_upgrade' => $canUpgrade,
+                ];
+            }
+        }
+        
         // Format packages with services and quantities
         $formattedPackages = $packages->map(function($package) {
             $services = $package->packageServices->map(function($packageService) {
@@ -61,6 +90,7 @@ class PackageController extends Controller
             'success' => true,
             'data' => $formattedPackages,
             'packages_enabled' => true,
+            'current_package' => $currentPackage,
         ]);
     }
 
@@ -121,13 +151,21 @@ class PackageController extends Controller
         $activePackage = UserPackage::where('user_id', $user->id)
             ->where('status', 'active')
             ->where('expires_at', '>=', now()->toDateString())
+            ->with('packageServices')
             ->first();
 
+        // Allow purchase if package is expired or all services are consumed
         if ($activePackage) {
-            return response()->json([
-                'success' => false,
-                'message' => 'لديك باقة نشطة بالفعل'
-            ], 400);
+            $isExpired = $activePackage->expires_at < now()->toDateString();
+            $hasRemainingServices = $activePackage->hasRemainingServices();
+            
+            // Only block if package is active, not expired, and has remaining services
+            if (!$isExpired && $hasRemainingServices) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'لديك باقة نشطة بالفعل'
+                ], 400);
+            }
         }
 
         DB::beginTransaction();
@@ -181,10 +219,11 @@ class PackageController extends Controller
 
         $user = Auth::user();
         
+        // Get the most recent package (active or expired)
         $userPackage = UserPackage::where('user_id', $user->id)
             ->where('status', 'active')
-            ->where('expires_at', '>=', now()->toDateString())
             ->with(['package', 'packageServices.service'])
+            ->orderBy('expires_at', 'desc')
             ->first();
 
         if (!$userPackage) {
@@ -193,6 +232,11 @@ class PackageController extends Controller
                 'message' => 'لا توجد باقة نشطة'
             ], 404);
         }
+
+        // Check if package can be upgraded
+        $isExpired = $userPackage->expires_at < now()->toDateString();
+        $hasRemainingServices = $userPackage->hasRemainingServices();
+        $canUpgrade = $isExpired || !$hasRemainingServices;
 
         // Format services with remaining quantities
         $services = $userPackage->packageServices->map(function($userPackageService) {
@@ -219,6 +263,7 @@ class PackageController extends Controller
                 'expires_at' => $userPackage->expires_at,
                 'status' => $userPackage->status,
                 'services' => $services,
+                'can_upgrade' => $canUpgrade,
             ]
         ]);
     }

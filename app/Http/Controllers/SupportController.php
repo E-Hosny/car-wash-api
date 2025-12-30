@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use App\Models\Setting;
 
 class SupportController extends Controller
 {
@@ -82,7 +83,7 @@ class SupportController extends Controller
             [
                 'id' => 2,
                 'question' => 'What payment methods do you accept?',
-                'answer' => 'We accept all major credit cards, debit cards, and digital payment methods through our secure payment gateway. You can also purchase service packages in advance.',
+                'answer' => 'We accept all major credit cards, debit cards, and digital payment methods through our secure payment gateway.',
                 'category' => 'payment'
             ],
             [
@@ -102,12 +103,6 @@ class SupportController extends Controller
                 'question' => 'Do you provide services in all weather conditions?',
                 'answer' => 'We provide services in most weather conditions. However, for safety reasons, services may be postponed during severe weather. We\'ll notify you in advance and help reschedule.',
                 'category' => 'service'
-            ],
-            [
-                'id' => 6,
-                'question' => 'How do I track my service request?',
-                'answer' => 'You can track your service request in real-time through the app. You\'ll receive notifications when our team is on the way and when the service is complete.',
-                'category' => 'tracking'
             ]
         ];
 
@@ -122,13 +117,19 @@ class SupportController extends Controller
      */
     public function getContactInfo()
     {
+        $whatsappNumber = Setting::getValue('support_whatsapp', '966542327025');
+        // Ensure the number starts with + if it doesn't
+        if (!str_starts_with($whatsappNumber, '+')) {
+            $whatsappNumber = '+' . $whatsappNumber;
+        }
+        
         $contactInfo = [
-            'phone' => '+971502711549',
+            'phone' => $whatsappNumber,
             'email' => 'info@washluxuria.com',
-            'support_email' => 'support@washluxuria.com',
+            'support_email' => 'info@washluxuria.com',
             'billing_email' => 'billing@washluxuria.com',
-            'emergency_phone' => '+971502711549',
-            'whatsapp' => '+971502711549',
+            'emergency_phone' => $whatsappNumber,
+            'whatsapp' => $whatsappNumber,
             'address' => 'Dubai, United Arab Emirates',
             'support_hours' => [
                 'customer_support' => '8:00 AM - 10:00 PM (Daily)',

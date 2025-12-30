@@ -25,6 +25,9 @@ class AppServiceProvider extends ServiceProvider
                 if (Setting::where('key', 'packages_enabled')->doesntExist()) {
                     Setting::setValue('packages_enabled', true);
                 }
+                if (Setting::where('key', 'support_whatsapp')->doesntExist()) {
+                    Setting::setValue('support_whatsapp', '966542327025');
+                }
             }
         } catch (\Throwable $e) {
             // ignore during migration
