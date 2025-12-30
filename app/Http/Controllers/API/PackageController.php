@@ -42,7 +42,7 @@ class PackageController extends Controller
             $userPackage = UserPackage::where('user_id', $user->id)
                 ->where('status', 'active')
                 ->with(['package', 'packageServices.service'])
-                ->orderBy('expires_at', 'desc')
+                ->orderBy('created_at', 'desc')
                 ->first();
             
             if ($userPackage) {
@@ -170,6 +170,11 @@ class PackageController extends Controller
 
         DB::beginTransaction();
         try {
+            // Disable old active packages when purchasing a new one
+            UserPackage::where('user_id', $user->id)
+                ->where('status', 'active')
+                ->update(['status' => 'expired']);
+            
             $userPackage = UserPackage::create([
                 'user_id' => $user->id,
                 'package_id' => $package->id,
@@ -223,7 +228,7 @@ class PackageController extends Controller
         $userPackage = UserPackage::where('user_id', $user->id)
             ->where('status', 'active')
             ->with(['package', 'packageServices.service'])
-            ->orderBy('expires_at', 'desc')
+            ->orderBy('created_at', 'desc')
             ->first();
 
         if (!$userPackage) {
@@ -283,6 +288,7 @@ class PackageController extends Controller
             ->where('status', 'active')
             ->where('expires_at', '>=', now()->toDateString())
             ->with('packageServices.service')
+            ->orderBy('created_at', 'desc')
             ->first();
 
         if (!$userPackage) {
