@@ -354,6 +354,25 @@ public function assignToWorker(Request $request, $id)
         $firebase->sendToToken($token, '🧽 New assignment', 'A new order has been assigned to you');
     }
 
+    // 🟢 إرسال إشعار واتساب للعامل عند توجيه الطلب إليه
+    try {
+        if ($worker->phone) {
+            $workerPhone = trim($worker->phone);
+            // Ensure E.164 format (add + if not present)
+            if (!str_starts_with($workerPhone, '+')) {
+                $workerPhone = '+' . $workerPhone;
+            }
+            // Send WhatsApp notification with same template as order creation
+            $components = []; // Same empty components as in store/storeMultiCar
+            app(WhatsAppService::class)->sendTemplate($workerPhone, $components);
+        }
+    } catch (\Throwable $e) {
+        \Log::error('Failed to send WhatsApp notification to worker after assignment', [
+            'error' => $e->getMessage(),
+            'worker_id' => $worker->id,
+            'order_id' => $order->id
+        ]);
+    }
 
     return response()->json(['message' => 'Order assigned to worker successfully']);
 }
