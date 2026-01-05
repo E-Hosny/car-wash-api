@@ -253,11 +253,23 @@ class OrderController extends Controller
             $order->is_multi_car = $order->orderCars->count() > 1;
             $order->cars_count = $order->orderCars->count();
             $order->all_cars = $order->orderCars->map(function ($orderCar) {
+                // التحقق من وجود car و brand و model و year
+                if (!$orderCar->car || !$orderCar->car->brand || !$orderCar->car->model) {
+                    return [
+                        'id' => $orderCar->car_id ?? null,
+                        'brand' => 'Unknown',
+                        'model' => 'Unknown',
+                        'year' => $orderCar->car && $orderCar->car->year ? $orderCar->car->year->year : null,
+                        'services' => $orderCar->services->pluck('name'),
+                        'subtotal' => $orderCar->subtotal ?? 0,
+                        'points_used' => $orderCar->points_used ?? 0,
+                    ];
+                }
                 return [
                     'id' => $orderCar->car->id,
                     'brand' => $orderCar->car->brand->name,
                     'model' => $orderCar->car->model->name,
-                    'year' => $orderCar->car->year->year,
+                    'year' => $orderCar->car->year ? $orderCar->car->year->year : null,
                     'services' => $orderCar->services->pluck('name'),
                     'subtotal' => $orderCar->subtotal,
                     'points_used' => $orderCar->points_used,
@@ -266,16 +278,29 @@ class OrderController extends Controller
         } else {
             $order->is_multi_car = false;
             $order->cars_count = 1;
-            // For orders without orderCars, use the main car and services
-            $order->all_cars = [[
-                'id' => $order->car->id,
-                'brand' => $order->car->brand->name,
-                'model' => $order->car->model->name,
-                'year' => $order->car->year->year,
-                'services' => $order->services->pluck('name'),
-                'subtotal' => $order->total,
-                'points_used' => 0,
-            ]];
+            // التحقق من وجود car قبل الوصول إليه
+            if ($order->car && $order->car->brand && $order->car->model) {
+                $order->all_cars = [[
+                    'id' => $order->car->id,
+                    'brand' => $order->car->brand->name,
+                    'model' => $order->car->model->name,
+                    'year' => $order->car->year ? $order->car->year->year : null,
+                    'services' => $order->services->pluck('name'),
+                    'subtotal' => $order->total,
+                    'points_used' => 0,
+                ]];
+            } else {
+                // إذا لم تكن هناك car، إرجاع بيانات افتراضية
+                $order->all_cars = [[
+                    'id' => $order->car_id ?? null,
+                    'brand' => 'Unknown',
+                    'model' => 'Unknown',
+                    'year' => null,
+                    'services' => $order->services->pluck('name'),
+                    'subtotal' => $order->total ?? 0,
+                    'points_used' => 0,
+                ]];
+            }
         }
     });
 
@@ -295,11 +320,23 @@ class OrderController extends Controller
             $order->is_multi_car = $order->orderCars->count() > 1;
             $order->cars_count = $order->orderCars->count();
             $order->all_cars = $order->orderCars->map(function ($orderCar) {
+                // التحقق من وجود car و brand و model و year
+                if (!$orderCar->car || !$orderCar->car->brand || !$orderCar->car->model) {
+                    return [
+                        'id' => $orderCar->car_id ?? null,
+                        'brand' => 'Unknown',
+                        'model' => 'Unknown',
+                        'year' => $orderCar->car && $orderCar->car->year ? $orderCar->car->year->year : null,
+                        'services' => $orderCar->services->pluck('name'),
+                        'subtotal' => $orderCar->subtotal ?? 0,
+                        'points_used' => $orderCar->points_used ?? 0,
+                    ];
+                }
                 return [
                     'id' => $orderCar->car->id,
                     'brand' => $orderCar->car->brand->name,
                     'model' => $orderCar->car->model->name,
-                    'year' => $orderCar->car->year->year,
+                    'year' => $orderCar->car->year ? $orderCar->car->year->year : null,
                     'services' => $orderCar->services->pluck('name'),
                     'subtotal' => $orderCar->subtotal,
                     'points_used' => $orderCar->points_used,
@@ -308,16 +345,29 @@ class OrderController extends Controller
         } else {
             $order->is_multi_car = false;
             $order->cars_count = 1;
-            // For orders without orderCars, use the main car and services
-            $order->all_cars = [[
-                'id' => $order->car->id,
-                'brand' => $order->car->brand->name,
-                'model' => $order->car->model->name,
-                'year' => $order->car->year->year,
-                'services' => $order->services->pluck('name'),
-                'subtotal' => $order->total,
-                'points_used' => 0,
-            ]];
+            // التحقق من وجود car قبل الوصول إليه
+            if ($order->car && $order->car->brand && $order->car->model) {
+                $order->all_cars = [[
+                    'id' => $order->car->id,
+                    'brand' => $order->car->brand->name,
+                    'model' => $order->car->model->name,
+                    'year' => $order->car->year ? $order->car->year->year : null,
+                    'services' => $order->services->pluck('name'),
+                    'subtotal' => $order->total,
+                    'points_used' => 0,
+                ]];
+            } else {
+                // إذا لم تكن هناك car، إرجاع بيانات افتراضية
+                $order->all_cars = [[
+                    'id' => $order->car_id ?? null,
+                    'brand' => 'Unknown',
+                    'model' => 'Unknown',
+                    'year' => null,
+                    'services' => $order->services->pluck('name'),
+                    'subtotal' => $order->total ?? 0,
+                    'points_used' => 0,
+                ]];
+            }
         }
         
         return response()->json($order);
@@ -348,6 +398,16 @@ class OrderController extends Controller
             $order->is_multi_car = $order->orderCars->count() > 1;
             $order->cars_count = $order->orderCars->count();
             $order->all_cars = $order->orderCars->map(function ($orderCar) {
+                // التحقق من وجود car و brand و model
+                if (!$orderCar->car || !$orderCar->car->brand || !$orderCar->car->model) {
+                    return [
+                        'id' => $orderCar->car_id ?? null,
+                        'brand' => 'Unknown',
+                        'model' => 'Unknown',
+                        'services' => $orderCar->services->pluck('name'),
+                        'subtotal' => $orderCar->subtotal ?? 0,
+                    ];
+                }
                 return [
                     'id' => $orderCar->car->id,
                     'brand' => $orderCar->car->brand->name,
@@ -359,14 +419,25 @@ class OrderController extends Controller
         } else {
             $order->is_multi_car = false;
             $order->cars_count = 1;
-            // For orders without orderCars, use the main car and services
-            $order->all_cars = [[
-                'id' => $order->car->id,
-                'brand' => $order->car->brand->name,
-                'model' => $order->car->model->name,
-                'services' => $order->services->pluck('name'),
-                'subtotal' => $order->total,
-            ]];
+            // التحقق من وجود car قبل الوصول إليه
+            if ($order->car && $order->car->brand && $order->car->model) {
+                $order->all_cars = [[
+                    'id' => $order->car->id,
+                    'brand' => $order->car->brand->name,
+                    'model' => $order->car->model->name,
+                    'services' => $order->services->pluck('name'),
+                    'subtotal' => $order->total,
+                ]];
+            } else {
+                // إذا لم تكن هناك car، إرجاع بيانات افتراضية
+                $order->all_cars = [[
+                    'id' => $order->car_id ?? null,
+                    'brand' => 'Unknown',
+                    'model' => 'Unknown',
+                    'services' => $order->services->pluck('name'),
+                    'subtotal' => $order->total ?? 0,
+                ]];
+            }
         }
     });
    
@@ -444,6 +515,16 @@ public function assignToWorker(Request $request, $id)
                     $order->is_multi_car = $order->orderCars->count() > 1;
                     $order->cars_count = $order->orderCars->count();
                     $order->all_cars = $order->orderCars->map(function ($orderCar) {
+                        // التحقق من وجود car و brand و model
+                        if (!$orderCar->car || !$orderCar->car->brand || !$orderCar->car->model) {
+                            return [
+                                'id' => $orderCar->car_id ?? null,
+                                'brand' => 'Unknown',
+                                'model' => 'Unknown',
+                                'services' => $orderCar->services->pluck('name'),
+                                'subtotal' => $orderCar->subtotal ?? 0,
+                            ];
+                        }
                         return [
                             'id' => $orderCar->car->id,
                             'brand' => $orderCar->car->brand->name,
@@ -455,14 +536,25 @@ public function assignToWorker(Request $request, $id)
                 } else {
                     $order->is_multi_car = false;
                     $order->cars_count = 1;
-                    // For orders without orderCars, use the main car and services
-                    $order->all_cars = [[
-                        'id' => $order->car->id,
-                        'brand' => $order->car->brand->name,
-                        'model' => $order->car->model->name,
-                        'services' => $order->services->pluck('name'),
-                        'subtotal' => $order->total,
-                    ]];
+                    // التحقق من وجود car قبل الوصول إليه
+                    if ($order->car && $order->car->brand && $order->car->model) {
+                        $order->all_cars = [[
+                            'id' => $order->car->id,
+                            'brand' => $order->car->brand->name,
+                            'model' => $order->car->model->name,
+                            'services' => $order->services->pluck('name'),
+                            'subtotal' => $order->total,
+                        ]];
+                    } else {
+                        // إذا لم تكن هناك car، إرجاع بيانات افتراضية
+                        $order->all_cars = [[
+                            'id' => $order->car_id ?? null,
+                            'brand' => 'Unknown',
+                            'model' => 'Unknown',
+                            'services' => $order->services->pluck('name'),
+                            'subtotal' => $order->total ?? 0,
+                        ]];
+                    }
                 }
             });
 
@@ -492,6 +584,16 @@ public function assignToWorker(Request $request, $id)
                 $order->is_multi_car = $order->orderCars->count() > 1;
                 $order->cars_count = $order->orderCars->count();
                 $order->all_cars = $order->orderCars->map(function ($orderCar) {
+                    // التحقق من وجود car و brand و model
+                    if (!$orderCar->car || !$orderCar->car->brand || !$orderCar->car->model) {
+                        return [
+                            'id' => $orderCar->car_id ?? null,
+                            'brand' => 'Unknown',
+                            'model' => 'Unknown',
+                            'services' => $orderCar->services->pluck('name'),
+                            'subtotal' => $orderCar->subtotal ?? 0,
+                        ];
+                    }
                     return [
                         'id' => $orderCar->car->id,
                         'brand' => $orderCar->car->brand->name,
@@ -503,14 +605,25 @@ public function assignToWorker(Request $request, $id)
             } else {
                 $order->is_multi_car = false;
                 $order->cars_count = 1;
-                // For orders without orderCars, use the main car and services
-                $order->all_cars = [[
-                    'id' => $order->car->id,
-                    'brand' => $order->car->brand->name,
-                    'model' => $order->car->model->name,
-                    'services' => $order->services->pluck('name'),
-                    'subtotal' => $order->total,
-                ]];
+                // التحقق من وجود car قبل الوصول إليه
+                if ($order->car && $order->car->brand && $order->car->model) {
+                    $order->all_cars = [[
+                        'id' => $order->car->id,
+                        'brand' => $order->car->brand->name,
+                        'model' => $order->car->model->name,
+                        'services' => $order->services->pluck('name'),
+                        'subtotal' => $order->total,
+                    ]];
+                } else {
+                    // إذا لم تكن هناك car، إرجاع بيانات افتراضية
+                    $order->all_cars = [[
+                        'id' => $order->car_id ?? null,
+                        'brand' => 'Unknown',
+                        'model' => 'Unknown',
+                        'services' => $order->services->pluck('name'),
+                        'subtotal' => $order->total ?? 0,
+                    ]];
+                }
             }
         });
 
@@ -540,6 +653,16 @@ public function assignToWorker(Request $request, $id)
                     $order->is_multi_car = $order->orderCars->count() > 1;
                     $order->cars_count = $order->orderCars->count();
                     $order->all_cars = $order->orderCars->map(function ($orderCar) {
+                        // التحقق من وجود car و brand و model
+                        if (!$orderCar->car || !$orderCar->car->brand || !$orderCar->car->model) {
+                            return [
+                                'id' => $orderCar->car_id ?? null,
+                                'brand' => 'Unknown',
+                                'model' => 'Unknown',
+                                'services' => $orderCar->services->pluck('name'),
+                                'subtotal' => $orderCar->subtotal ?? 0,
+                            ];
+                        }
                         return [
                             'id' => $orderCar->car->id,
                             'brand' => $orderCar->car->brand->name,
@@ -551,14 +674,25 @@ public function assignToWorker(Request $request, $id)
                 } else {
                     $order->is_multi_car = false;
                     $order->cars_count = 1;
-                    // For orders without orderCars, use the main car and services
-                    $order->all_cars = [[
-                        'id' => $order->car->id,
-                        'brand' => $order->car->brand->name,
-                        'model' => $order->car->model->name,
-                        'services' => $order->services->pluck('name'),
-                        'subtotal' => $order->total,
-                    ]];
+                    // التحقق من وجود car قبل الوصول إليه
+                    if ($order->car && $order->car->brand && $order->car->model) {
+                        $order->all_cars = [[
+                            'id' => $order->car->id,
+                            'brand' => $order->car->brand->name,
+                            'model' => $order->car->model->name,
+                            'services' => $order->services->pluck('name'),
+                            'subtotal' => $order->total,
+                        ]];
+                    } else {
+                        // إذا لم تكن هناك car، إرجاع بيانات افتراضية
+                        $order->all_cars = [[
+                            'id' => $order->car_id ?? null,
+                            'brand' => 'Unknown',
+                            'model' => 'Unknown',
+                            'services' => $order->services->pluck('name'),
+                            'subtotal' => $order->total ?? 0,
+                        ]];
+                    }
                 }
             });
 
