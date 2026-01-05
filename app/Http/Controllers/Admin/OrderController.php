@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\TimeSlot;
 use App\Models\DailyTimeSlot;
+use App\Models\HourSlotInstance;
 use App\Models\Setting;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -41,47 +42,61 @@ class OrderController extends Controller
             // الحصول على جميع الطلبات لليوم المحدد (بما في ذلك المكتملة والملغية)
             $bookedOrders = Order::whereDate('scheduled_at', $dateString)
                 ->whereIn('status', ['pending', 'accepted', 'in_progress', 'completed', 'cancelled'])
-                ->with(['customer', 'services'])
+                ->with(['customer', 'services', 'hourSlotInstance'])
                 ->orderBy('scheduled_at')
                 ->get();
             
-            // عد الطلبات لكل ساعة (فقط الطلبات النشطة)
-            $hourlyBookings = [];
+            // ربط الطلبات مع الـ slots (إذا لم تكن مرتبطة بالفعل)
             foreach ($bookedOrders as $order) {
-                if (in_array($order->status, ['pending', 'accepted', 'in_progress'])) {
+                if (in_array($order->status, ['pending', 'accepted', 'in_progress']) && $order->scheduled_at) {
                     $hour = Carbon::parse($order->scheduled_at)->hour;
-                    $hourlyBookings[$hour] = ($hourlyBookings[$hour] ?? 0) + 1;
+                    
+                    // التحقق من أن الطلب غير مرتبط ب slot بالفعل
+                    $existingSlot = HourSlotInstance::where('order_id', $order->id)
+                        ->where('date', $dateString)
+                        ->where('hour', $hour)
+                        ->first();
+                    
+                    if (!$existingSlot) {
+                        // البحث عن slot متاح لهذه الساعة وربطه بالطلب
+                        $allSlots = HourSlotInstance::getSlotsForHour($dateString, $hour, $maxSlotsPerHour);
+                        $availableSlotIndex = null;
+                        foreach ($allSlots as $index => $slot) {
+                            if ($slot['status'] === 'available' && !$slot['order_id']) {
+                                $availableSlotIndex = $index;
+                                break;
+                            }
+                        }
+                        if ($availableSlotIndex) {
+                            HourSlotInstance::bookSlot($dateString, $hour, $availableSlotIndex, $order->id);
+                        }
+                    }
                 }
             }
-            
-            // استخراج الساعات المحجوزة بالكامل (التي وصلت للحد الأقصى)
-            $bookedHours = [];
-            foreach ($hourlyBookings as $hour => $count) {
-                if ($count >= $maxSlotsPerHour) {
-                    $bookedHours[] = $hour;
-                }
-            }
-            
-            // الحصول على الساعات غير المتاحة من إعدادات الأدمن لهذا التاريخ
-            $unavailableTimeSlots = DailyTimeSlot::getUnavailableHoursForDate($dateString);
             
             // إنشاء جميع الساعات (10 AM - 11 PM)
             $allHours = range(10, 23);
-            $availableHours = array_diff($allHours, array_merge($bookedHours, $unavailableTimeSlots));
+            $bookedHours = [];
+            $availableHours = [];
             
             // تنظيم بيانات الساعات
             $hoursData = [];
             foreach ($allHours as $hour) {
-                $bookingsCount = $hourlyBookings[$hour] ?? 0;
-                $isFullyBooked = $bookingsCount >= $maxSlotsPerHour;
-                $isUnavailable = in_array($hour, $unavailableTimeSlots);
-                $period = $hour < 12 ? 'AM' : 'PM';
-                $displayHour = $hour > 12 ? $hour - 12 : $hour;
-                if ($hour == 12) $displayHour = 12;
+                // الحصول على جميع الـ slots لهذه الساعة
+                $slots = HourSlotInstance::getSlotsForHour($dateString, $hour, $maxSlotsPerHour);
                 
-                // البحث عن الطلبات لهذه الساعة (بغض النظر عن الحالة)
+                // حساب الإحصائيات
+                $bookedCount = HourSlotInstance::getBookedSlotsCount($dateString, $hour, $maxSlotsPerHour);
+                $disabledCount = HourSlotInstance::getDisabledSlotsCount($dateString, $hour, $maxSlotsPerHour);
+                $availableCount = HourSlotInstance::getAvailableSlotsCount($dateString, $hour, $maxSlotsPerHour);
+                
+                // تحديد حالة الساعة: OFF فقط إذا كانت جميع الـ slots غير متاحة
+                $isUnavailable = HourSlotInstance::areAllSlotsUnavailable($dateString, $hour, $maxSlotsPerHour);
+                $isFullyBooked = $bookedCount >= $maxSlotsPerHour;
+                
+                // البحث عن الطلبات لهذه الساعة
                 $ordersForHour = $bookedOrders->filter(function($order) use ($hour) {
-                    return Carbon::parse($order->scheduled_at)->hour == $hour;
+                    return $order->scheduled_at && Carbon::parse($order->scheduled_at)->hour == $hour;
                 });
                 
                 // الحصول على الطلب الأول النشط لهذه الساعة (للعرض)
@@ -89,8 +104,29 @@ class OrderController extends Controller
                     return in_array($order->status, ['pending', 'accepted', 'in_progress']);
                 });
                 
+                $period = $hour < 12 ? 'AM' : 'PM';
+                $displayHour = $hour > 12 ? $hour - 12 : $hour;
+                if ($hour == 12) $displayHour = 12;
+                
                 // الحصول على معلومات الساعة من جدول time_slots
                 $timeSlot = TimeSlot::where('hour', $hour)->first();
+                
+                // إضافة معلومات الـ slots
+                $slotsData = [];
+                foreach ($slots as $index => $slot) {
+                    $slotsData[] = [
+                        'slot_index' => $slot['slot_index'],
+                        'status' => $slot['status'],
+                        'order_id' => $slot['order_id'],
+                        'order' => $slot['order'],
+                    ];
+                }
+                
+                if ($isUnavailable) {
+                    $bookedHours[] = $hour;
+                } else {
+                    $availableHours[] = $hour;
+                }
                 
                 $hoursData[] = [
                     'hour' => $hour,
@@ -99,13 +135,16 @@ class OrderController extends Controller
                     'label' => $displayHour . ':00 ' . $period,
                     'is_booked' => $isFullyBooked,
                     'is_unavailable' => $isUnavailable,
-                    'is_available' => !$isUnavailable && !$isFullyBooked,
+                    'is_available' => !$isUnavailable,
                     'order' => $order,
-                    'orders' => $ordersForHour->values(), // جميع الطلبات لهذه الساعة
+                    'orders' => $ordersForHour->values(),
                     'time_slot' => $timeSlot,
-                    'bookings_count' => $bookingsCount,
+                    'bookings_count' => $bookedCount,
+                    'disabled_count' => $disabledCount,
+                    'available_count' => $availableCount,
                     'max_slots' => $maxSlotsPerHour,
-                    'is_fully_booked' => $isFullyBooked
+                    'is_fully_booked' => $isFullyBooked,
+                    'slots' => $slotsData,
                 ];
             }
             
@@ -208,19 +247,61 @@ class OrderController extends Controller
     }
 
     /**
-     * تبديل حالة الساعة (ON/OFF) لتاريخ محدد
+     * تبديل حالة slot محدد (ON/OFF) لتاريخ وساعة محددة
      */
     public function toggleTimeSlot(Request $request, $hour)
     {
-        $date = $request->get('date', now()->toDateString());
+        $request->validate([
+            'date' => 'required|date',
+            'slot_index' => 'required|integer|min:1',
+        ]);
         
-        $slot = DailyTimeSlot::toggleHourAvailabilityForDate($date, $hour);
+        $date = $request->get('date');
+        $slotIndex = $request->get('slot_index');
+        
+        // الحصول على max_slots_per_hour
+        $maxSlotsPerHour = (int) Setting::getValue('max_slots_per_hour', 2);
+        
+        // التحقق من أن slot_index صحيح
+        if ($slotIndex > $maxSlotsPerHour) {
+            return response()->json([
+                'success' => false,
+                'message' => 'رقم الـ slot غير صحيح'
+            ], 400);
+        }
+        
+        $slot = HourSlotInstance::toggleSlot($date, $hour, $slotIndex);
+        
+        // الحصول على حالة الساعة بعد التبديل
+        $isUnavailable = HourSlotInstance::areAllSlotsUnavailable($date, $hour, $maxSlotsPerHour);
+        $bookedCount = HourSlotInstance::getBookedSlotsCount($date, $hour, $maxSlotsPerHour);
+        $disabledCount = HourSlotInstance::getDisabledSlotsCount($date, $hour, $maxSlotsPerHour);
+        $availableCount = HourSlotInstance::getAvailableSlotsCount($date, $hour, $maxSlotsPerHour);
+        
+        // الحصول على جميع الـ slots
+        $slots = HourSlotInstance::getSlotsForHour($date, $hour, $maxSlotsPerHour);
+        $slotsData = [];
+        foreach ($slots as $index => $slotData) {
+            $slotsData[] = [
+                'slot_index' => $slotData['slot_index'],
+                'status' => $slotData['status'],
+                'order_id' => $slotData['order_id'],
+            ];
+        }
         
         return response()->json([
             'success' => true,
-            'is_available' => $slot->is_available,
-            'message' => $slot->is_available ? 'تم تفعيل الساعة' : 'تم إيقاف الساعة',
-            'date' => $date
+            'slot_status' => $slot->status,
+            'is_available' => $slot->status === 'available',
+            'hour_is_unavailable' => $isUnavailable,
+            'booked_count' => $bookedCount,
+            'disabled_count' => $disabledCount,
+            'available_count' => $availableCount,
+            'slots' => $slotsData,
+            'message' => $slot->status === 'available' ? 'تم تفعيل الـ slot' : 'تم إيقاف الـ slot',
+            'date' => $date,
+            'hour' => $hour,
+            'slot_index' => $slotIndex
         ]);
     }
 

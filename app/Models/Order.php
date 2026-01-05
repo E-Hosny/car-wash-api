@@ -75,4 +75,9 @@ class Order extends Model
     {
         return $this->orderCars()->count() > 1;
     }
+
+    public function hourSlotInstance()
+    {
+        return $this->hasOne(HourSlotInstance::class);
+    }
 }

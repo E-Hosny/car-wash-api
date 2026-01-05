@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\Models\User;
 use App\Models\Service;
 use App\Models\DailyTimeSlot;
+use App\Models\HourSlotInstance;
 use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -108,6 +109,41 @@ class OrderController extends Controller
         $total = Service::whereIn('id', $request->services)->sum('price');
     }
 
+    // التحقق من توفر slot إذا كان هناك scheduled_at
+    if ($request->scheduled_at) {
+        $scheduledDate = Carbon::parse($request->scheduled_at)->toDateString();
+        $scheduledHour = Carbon::parse($request->scheduled_at)->hour;
+        $maxSlotsPerHour = (int) Setting::getValue('max_slots_per_hour', 2);
+        
+        // التحقق من أن الساعة متاحة (يوجد slot متاح واحد على الأقل)
+        $isUnavailable = HourSlotInstance::areAllSlotsUnavailable($scheduledDate, $scheduledHour, $maxSlotsPerHour);
+        
+        if ($isUnavailable) {
+            return response()->json([
+                'success' => false,
+                'message' => 'الساعة المحددة غير متاحة للحجز'
+            ], 400);
+        }
+        
+        // البحث عن slot متاح وربطه بالطلب
+        $slots = HourSlotInstance::getSlotsForHour($scheduledDate, $scheduledHour, $maxSlotsPerHour);
+        $availableSlotIndex = null;
+        
+        foreach ($slots as $index => $slot) {
+            if ($slot['status'] === 'available' && !$slot['order_id']) {
+                $availableSlotIndex = $index;
+                break;
+            }
+        }
+        
+        if (!$availableSlotIndex) {
+            return response()->json([
+                'success' => false,
+                'message' => 'لا توجد slots متاحة في الساعة المحددة'
+            ], 400);
+        }
+    }
+
     // إنشاء الطلب مع حفظ total
     $order = Order::create([
         'customer_id' => auth()->id(),
@@ -125,6 +161,13 @@ class OrderController extends Controller
     ]);
 
     $order->services()->attach($request->services);
+    
+    // ربط الطلب مع slot محدد
+    if ($request->scheduled_at && isset($availableSlotIndex)) {
+        $scheduledDate = Carbon::parse($request->scheduled_at)->toDateString();
+        $scheduledHour = Carbon::parse($request->scheduled_at)->hour;
+        HourSlotInstance::bookSlot($scheduledDate, $scheduledHour, $availableSlotIndex, $order->id);
+    }
     // 🟢 إرسال رسالة واتساب بقالب Meta إلى مستلمين محددين (يدعم عدة أرقام مستقبلًا)
     try {
         $recipientsCsv = (string) config('services.whatsapp.notify_recipients', '');
@@ -828,27 +871,48 @@ public function updateStatus(Request $request, $id)
             }
         }
         
-        // الحصول على الساعات غير المتاحة من إعدادات الأدمن
-        $unavailableHours = DailyTimeSlot::getUnavailableHoursForDate($date);
-        
-        Log::info('Booked hours (fully booked): ' . json_encode($bookedHours));
-        Log::info('Unavailable hours: ' . json_encode($unavailableHours));
-        
-        // الساعات المتاحة = جميع الساعات - المحجوزة بالكامل - غير المتاحة
+        // استخدام النظام الجديد: التحقق من الساعات غير المتاحة بناءً على HourSlotInstance
+        // الساعة غير متاحة فقط إذا كانت جميع الـ slots إما محجوزة أو مقفلة
         $allHours = range(10, 23);
-        $unavailableHours = array_merge($bookedHours, $unavailableHours);
-        $availableHours = array_diff($allHours, $unavailableHours);
+        $unavailableHours = [];
+        $availableHours = [];
         
+        foreach ($allHours as $hour) {
+            // التحقق من حالة الساعة بناءً على جميع الـ slots
+            $isUnavailable = HourSlotInstance::areAllSlotsUnavailable($date, $hour, $maxSlotsPerHour);
+            
+            if ($isUnavailable) {
+                $unavailableHours[] = $hour;
+                Log::info("Hour {$hour} is unavailable: all slots are either booked or disabled");
+            } else {
+                $availableHours[] = $hour;
+                $bookedCount = HourSlotInstance::getBookedSlotsCount($date, $hour, $maxSlotsPerHour);
+                $availableCount = HourSlotInstance::getAvailableSlotsCount($date, $hour, $maxSlotsPerHour);
+                Log::info("Hour {$hour} is available: {$bookedCount} booked, {$availableCount} available out of {$maxSlotsPerHour}");
+            }
+        }
+        
+        // الساعات المحجوزة بالكامل (للمعلومات فقط)
+        $fullyBookedHours = [];
+        foreach ($allHours as $hour) {
+            $bookedCount = HourSlotInstance::getBookedSlotsCount($date, $hour, $maxSlotsPerHour);
+            if ($bookedCount >= $maxSlotsPerHour) {
+                $fullyBookedHours[] = $hour;
+            }
+        }
+        
+        Log::info('Booked hours (fully booked): ' . json_encode($fullyBookedHours));
+        Log::info('Unavailable hours (all slots unavailable): ' . json_encode($unavailableHours));
         Log::info('Available hours: ' . json_encode($availableHours));
         
         return response()->json([
             'success' => true,
             'date' => $date,
-            'booked_hours' => $bookedHours, // الساعات المحجوزة بالكامل فقط
-            'unavailable_hours' => DailyTimeSlot::getUnavailableHoursForDate($date),
+            'booked_hours' => $fullyBookedHours, // الساعات المحجوزة بالكامل فقط
+            'unavailable_hours' => $unavailableHours, // الساعات التي جميع slots غير متاحة
             'available_hours' => $availableHours,
-            'total_booked' => count($bookedHours),
-            'total_unavailable' => count(DailyTimeSlot::getUnavailableHoursForDate($date)),
+            'total_booked' => count($fullyBookedHours),
+            'total_unavailable' => count($unavailableHours),
             'total_available' => count($availableHours),
             'hourly_bookings' => $hourlyBookings, // معلومات إضافية: عدد الطلبات لكل ساعة
             'max_slots_per_hour' => $maxSlotsPerHour // معلومات إضافية: الحد الأقصى لكل ساعة

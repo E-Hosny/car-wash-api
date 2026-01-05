@@ -162,46 +162,64 @@
                                 <div class="col-4">
                                     @php
                                         $bookingsCount = $hourData['bookings_count'] ?? 0;
+                                        $disabledCount = $hourData['disabled_count'] ?? 0;
+                                        $availableCount = $hourData['available_count'] ?? 0;
                                         $maxSlots = $hourData['max_slots'] ?? 2;
                                         $isFullyBooked = $hourData['is_fully_booked'] ?? false;
+                                        $isUnavailable = $hourData['is_unavailable'] ?? false;
                                         $isPartiallyBooked = $bookingsCount > 0 && !$isFullyBooked;
+                                        $slots = $hourData['slots'] ?? [];
+                                        
+                                        // Ensure slots array has all slots (1 to maxSlots)
+                                        if (count($slots) < $maxSlots) {
+                                            $existingSlotIndexes = array_column($slots, 'slot_index');
+                                            for ($i = 1; $i <= $maxSlots; $i++) {
+                                                if (!in_array($i, $existingSlotIndexes)) {
+                                                    $slots[] = [
+                                                        'slot_index' => $i,
+                                                        'status' => 'available',
+                                                        'order_id' => null,
+                                                        'order' => null,
+                                                    ];
+                                                }
+                                            }
+                                            // Sort by slot_index
+                                            usort($slots, function($a, $b) {
+                                                return $a['slot_index'] <=> $b['slot_index'];
+                                            });
+                                        }
                                     @endphp
                                     <div class="time-slot-card 
-                                        {{ $isFullyBooked ? 'booked' : ($hourData['is_unavailable'] ? 'unavailable' : ($isPartiallyBooked ? 'partially-booked' : 'available')) }} 
-                                        {{ $isFullyBooked ? 'border-danger' : ($hourData['is_unavailable'] ? 'border-warning' : ($isPartiallyBooked ? 'border-warning' : 'border-success')) }}"
+                                        {{ $isFullyBooked ? 'booked' : ($isUnavailable ? 'unavailable' : ($isPartiallyBooked ? 'partially-booked' : 'available')) }} 
+                                        {{ $isFullyBooked ? 'border-danger' : ($isUnavailable ? 'border-warning' : ($isPartiallyBooked ? 'border-warning' : 'border-success')) }}"
                                         data-hour="{{ $hourData['hour'] }}"
                                         data-date="{{ $dayData['date_string'] }}"
                                         data-day="{{ $dayKey }}"
                                         data-order-id="{{ $hourData['order']->id ?? '' }}"
                                         data-customer-name="{{ $hourData['order']->customer->name ?? 'عميل' }}"
-                                        @php
-                                            $bookingsCount = $hourData['bookings_count'] ?? 0;
-                                            $maxSlots = $hourData['max_slots'] ?? 2;
-                                            $isFullyBooked = $hourData['is_fully_booked'] ?? false;
-                                        @endphp
                                         @if($isFullyBooked)
                                             data-bs-toggle="tooltip" 
                                             data-bs-placement="top"
                                             title="{{ $bookingsCount }}/{{ $maxSlots }} {{ __('messages.booked') }}"
-                                        @elseif($hourData['is_unavailable'])
+                                        @elseif($isUnavailable)
                                             data-bs-toggle="tooltip" 
                                             data-bs-placement="top"
                                             title="{{ __('messages.unavailable') }} - {{ __('messages.click_to_enable') }}"
                                         @elseif($bookingsCount > 0)
                                             data-bs-toggle="tooltip" 
                                             data-bs-placement="top"
-                                            title="{{ $bookingsCount }}/{{ $maxSlots }} {{ __('messages.booked') }} - {{ ($maxSlots - $bookingsCount) }} {{ __('messages.available') }}"
+                                            title="{{ $bookingsCount }}/{{ $maxSlots }} {{ __('messages.booked') }} - {{ $availableCount }} {{ __('messages.available') }}"
                                         @else
                                             data-bs-toggle="tooltip" 
                                             data-bs-placement="top"
-                                            title="{{ __('messages.available') }} (0/{{ $maxSlots }}) - {{ __('messages.click_to_book') }}"
+                                            title="{{ __('messages.available') }} ({{ $availableCount }}/{{ $maxSlots }}) - {{ __('messages.click_to_book') }}"
                                         @endif
-                                        onclick="handleTimeSlotClick('{{ $dayKey }}', {{ $hourData['hour'] }}, {{ $isFullyBooked ? 'true' : 'false' }}, {{ $hourData['is_unavailable'] ? 'true' : 'false' }}, '{{ $dayData['date_string'] }}')">
+                                        onclick="handleTimeSlotClick('{{ $dayKey }}', {{ $hourData['hour'] }}, {{ $isFullyBooked ? 'true' : 'false' }}, {{ $isUnavailable ? 'true' : 'false' }}, '{{ $dayData['date_string'] }}')">
                                         <div class="text-center p-2">
-                                            <div class="fw-bold {{ $hourData['is_booked'] ? 'text-danger' : ($hourData['is_unavailable'] ? 'text-warning' : 'text-success') }} fs-6">
+                                            <div class="fw-bold {{ $hourData['is_booked'] ? 'text-danger' : ($isUnavailable ? 'text-warning' : 'text-success') }} fs-6">
                                                 {{ $hourData['label'] }}
                                             </div>
-                                            @if($hourData['is_unavailable'])
+                                            @if($isUnavailable)
                                                 <small class="text-warning d-block">
                                                     <i class="bi bi-power"></i> {{ __('messages.off') }}
                                                 </small>
@@ -209,11 +227,6 @@
                                                     {{ __('messages.click_to_enable') }}
                                                 </small>
                                             @else
-                                                @php
-                                                    $bookingsCount = $hourData['bookings_count'] ?? 0;
-                                                    $maxSlots = $hourData['max_slots'] ?? 2;
-                                                    $isFullyBooked = $hourData['is_fully_booked'] ?? false;
-                                                @endphp
                                                 @if($isFullyBooked)
                                                     <small class="text-danger d-block">
                                                         <i class="bi bi-x-circle"></i> {{ $bookingsCount }}/{{ $maxSlots }} {{ __('messages.booked') }}
@@ -223,27 +236,66 @@
                                                         <i class="bi bi-clock-history"></i> {{ $bookingsCount }}/{{ $maxSlots }} {{ __('messages.booked') }}
                                                     </small>
                                                     <small class="text-muted d-block" style="font-size: 0.65rem;">
-                                                        {{ ($maxSlots - $bookingsCount) }} {{ __('messages.available') }}
+                                                        {{ $availableCount }} {{ __('messages.available') }}
                                                     </small>
                                                 @else
                                                     <small class="text-success d-block">
-                                                        <i class="bi bi-check-circle"></i> {{ __('messages.available') }} (0/{{ $maxSlots }})
+                                                        <i class="bi bi-check-circle"></i> {{ __('messages.available') }} ({{ $availableCount }}/{{ $maxSlots }})
                                                     </small>
                                                 @endif
                                             @endif
-                                        </div>
-                                        
-                                        <!-- Toggle Button for Admin -->
-                                        @if(!$hourData['is_fully_booked'] && !$hourData['is_unavailable'])
-                                            <div class="toggle-btn-container">
-                                                <button class="btn btn-sm toggle-btn {{ $hourData['is_unavailable'] ? 'btn-warning' : 'btn-success' }}"
-                                                        onclick="event.stopPropagation(); toggleTimeSlot({{ $hourData['hour'] }}, '{{ $dayData['date_string'] }}')"
-                                                        data-bs-toggle="tooltip" 
-                                                        title="{{ $hourData['is_unavailable'] ? __('messages.enable_hour') : __('messages.disable_hour') }}">
-                                                    <i class="bi {{ $hourData['is_unavailable'] ? 'bi-power' : 'bi-check-circle' }}"></i>
-                                                </button>
+                                            
+                                            <!-- Individual Slots Display -->
+                                            @if(!empty($slots))
+                                            <div class="slots-container mt-2" style="display: flex; flex-wrap: wrap; gap: 4px; justify-content: center;">
+                                                @foreach($slots as $slot)
+                                                    @php
+                                                        $slotStatus = $slot['status'] ?? 'available';
+                                                        $slotIndex = $slot['slot_index'] ?? 1;
+                                                        $isSlotBooked = $slotStatus === 'booked';
+                                                        $isSlotDisabled = $slotStatus === 'disabled';
+                                                        $isSlotAvailable = $slotStatus === 'available';
+                                                    @endphp
+                                                    <div class="slot-indicator 
+                                                        {{ $isSlotBooked ? 'slot-booked' : ($isSlotDisabled ? 'slot-disabled' : 'slot-available') }}"
+                                                        data-slot-index="{{ $slotIndex }}"
+                                                        data-slot-status="{{ $slotStatus }}"
+                                                        data-hour="{{ $hourData['hour'] }}"
+                                                        data-date="{{ $dayData['date_string'] }}"
+                                                        onclick="event.stopPropagation(); event.preventDefault(); toggleSlotInstance({{ $hourData['hour'] }}, '{{ $dayData['date_string'] }}', {{ $slotIndex }}); return false;"
+                                                        style="cursor: {{ $isSlotBooked ? 'not-allowed' : 'pointer' }};"
+                                                        data-bs-toggle="tooltip"
+                                                        title="Slot {{ $slotIndex }}: {{ $isSlotBooked ? __('messages.booked') : ($isSlotDisabled ? __('messages.off') : __('messages.available')) }}">
+                                                        <span class="slot-number">{{ $slotIndex }}</span>
+                                                        @if($isSlotBooked)
+                                                            <i class="bi bi-x-circle" style="font-size: 0.7rem;"></i>
+                                                        @elseif($isSlotDisabled)
+                                                            <i class="bi bi-power" style="font-size: 0.7rem;"></i>
+                                                        @else
+                                                            <i class="bi bi-check-circle" style="font-size: 0.7rem;"></i>
+                                                        @endif
+                                                    </div>
+                                                @endforeach
                                             </div>
-                                        @endif
+                                            @else
+                                            <div class="slots-container mt-2" style="display: flex; flex-wrap: wrap; gap: 4px; justify-content: center;">
+                                                @for($i = 1; $i <= $maxSlots; $i++)
+                                                    <div class="slot-indicator slot-available"
+                                                        data-slot-index="{{ $i }}"
+                                                        data-slot-status="available"
+                                                        data-hour="{{ $hourData['hour'] }}"
+                                                        data-date="{{ $dayData['date_string'] }}"
+                                                        onclick="event.stopPropagation(); event.preventDefault(); toggleSlotInstance({{ $hourData['hour'] }}, '{{ $dayData['date_string'] }}', {{ $i }}); return false;"
+                                                        style="cursor: pointer;"
+                                                        data-bs-toggle="tooltip"
+                                                        title="Slot {{ $i }}: {{ __('messages.available') }}">
+                                                        <span class="slot-number">{{ $i }}</span>
+                                                        <i class="bi bi-check-circle" style="font-size: 0.7rem;"></i>
+                                                    </div>
+                                                @endfor
+                                            </div>
+                                            @endif
+                                        </div>
                                     </div>
                                 </div>
                             @endforeach
@@ -542,6 +594,76 @@
     background: linear-gradient(135deg, #ffeaa7, #fdcb6e);
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(255, 193, 7, 0.3);
+}
+
+/* Individual Slot Indicators */
+.slots-container {
+    margin-top: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    justify-content: center;
+    align-items: center;
+}
+
+.slot-indicator {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.7rem;
+    position: relative;
+}
+
+.slot-indicator:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.slot-indicator .slot-number {
+    font-weight: bold;
+    font-size: 0.65rem;
+}
+
+.slot-available {
+    background-color: #d4edda;
+    border-color: #28a745;
+    color: #155724;
+}
+
+.slot-available:hover {
+    background-color: #c3e6cb;
+    border-color: #1e7e34;
+}
+
+.slot-disabled {
+    background-color: #fff3cd;
+    border-color: #ffc107;
+    color: #856404;
+}
+
+.slot-disabled:hover {
+    background-color: #ffeaa7;
+    border-color: #ffb300;
+}
+
+.slot-booked {
+    background-color: #f8d7da;
+    border-color: #dc3545;
+    color: #721c24;
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+.slot-booked:hover {
+    transform: none;
+    box-shadow: none;
 }
 
 .card {
@@ -2106,6 +2228,34 @@ function updateTimeSlotsDisplay(data) {
                 } else {
                     slotElement.setAttribute('data-bs-original-title', `${t('available')} - ${t('click_to_book')}`);
                 }
+                
+                // Update individual slots
+                if (hourData.slots && Array.isArray(hourData.slots)) {
+                    const slotsContainer = slotElement.querySelector('.slots-container');
+                    if (slotsContainer) {
+                        hourData.slots.forEach(slot => {
+                            const slotIndicator = slotsContainer.querySelector(`[data-slot-index="${slot.slot_index}"]`);
+                            if (slotIndicator) {
+                                slotIndicator.setAttribute('data-slot-status', slot.status);
+                                slotIndicator.className = 'slot-indicator';
+                                
+                                if (slot.status === 'available') {
+                                    slotIndicator.classList.add('slot-available');
+                                    slotIndicator.innerHTML = `<span class="slot-number">${slot.slot_index}</span><i class="bi bi-check-circle" style="font-size: 0.7rem;"></i>`;
+                                    slotIndicator.setAttribute('title', `Slot ${slot.slot_index}: متاح`);
+                                } else if (slot.status === 'disabled') {
+                                    slotIndicator.classList.add('slot-disabled');
+                                    slotIndicator.innerHTML = `<span class="slot-number">${slot.slot_index}</span><i class="bi bi-power" style="font-size: 0.7rem;"></i>`;
+                                    slotIndicator.setAttribute('title', `Slot ${slot.slot_index}: OFF`);
+                                } else if (slot.status === 'booked') {
+                                    slotIndicator.classList.add('slot-booked');
+                                    slotIndicator.innerHTML = `<span class="slot-number">${slot.slot_index}</span><i class="bi bi-x-circle" style="font-size: 0.7rem;"></i>`;
+                                    slotIndicator.setAttribute('title', `Slot ${slot.slot_index}: محجوز`);
+                                }
+                            }
+                        });
+                    }
+                }
             }
         });
     });
@@ -2232,10 +2382,8 @@ function handleTimeSlotClick(dayKey, hour, isBooked, isUnavailable, date) {
             viewOrderDetails(orderId);
         }
     } else if (isUnavailable) {
-        // Show option to enable the slot
-        if (confirm(`${t('confirm_enable_hour')} ${hour}:00 ${t('for')} ${date}?`)) {
-            toggleTimeSlot(hour, date);
-        }
+        // Show info that hour is OFF - user can enable individual slots
+        showNotification(`الساعة ${hour}:00 غير متاحة. يمكنك تفعيل الـ slots الفردية بالنقر عليها`, 'info');
     } else {
         // Show available slot info
         showNotification(`${t('hour')} ${hour}:00 ${t('hour_available')} ${t('for')} ${date}`, 'info');
@@ -2751,16 +2899,47 @@ function searchOrders() {
 }
 
 // Toggle time slot availability
-function toggleTimeSlot(hour, date) {
-    const toggleBtn = document.querySelector(`[onclick*="toggleTimeSlot(${hour}, '${date}')"]`);
-    const originalContent = toggleBtn.innerHTML;
-    const isCurrentlyUnavailable = toggleBtn.classList.contains('btn-warning');
+// Toggle individual slot instance
+function toggleSlotInstance(hour, date, slotIndex) {
+    console.log('toggleSlotInstance called:', { hour, date, slotIndex });
     
-    // Show confirmation modal
-    showTimeSlotConfirmationModal(hour, date, isCurrentlyUnavailable, () => {
-        // User confirmed, proceed with the update
-        performTimeSlotToggle(hour, date, toggleBtn, originalContent);
-    });
+    // Find the slot indicator element - try multiple selectors
+    const hourCard = document.querySelector(`[data-hour="${hour}"][data-date="${date}"]`);
+    if (!hourCard) {
+        console.error('Hour card not found:', { hour, date });
+        showNotification('لم يتم العثور على الساعة', 'error');
+        return;
+    }
+    
+    const slotElement = hourCard.querySelector(`[data-slot-index="${slotIndex}"]`);
+    if (!slotElement) {
+        console.error('Slot element not found:', { hour, date, slotIndex });
+        showNotification('لم يتم العثور على الـ slot', 'error');
+        return;
+    }
+    
+    const currentStatus = slotElement.getAttribute('data-slot-status');
+    console.log('Current slot status:', currentStatus);
+    
+    // If booked, don't allow toggle
+    if (currentStatus === 'booked') {
+        showNotification('لا يمكن تغيير حالة الـ slot المحجوز', 'error');
+        return;
+    }
+    
+    const isCurrentlyDisabled = currentStatus === 'disabled';
+    const action = isCurrentlyDisabled ? 'تفعيل' : 'إيقاف';
+    
+    // Show confirmation
+    if (confirm(`هل تريد ${action} Slot ${slotIndex} للساعة ${hour}:00 لليوم ${date}؟`)) {
+        performSlotToggle(hour, date, slotIndex, slotElement);
+    }
+}
+
+// Legacy function for backward compatibility (now redirects to slot toggle)
+function toggleTimeSlot(hour, date) {
+    // This is now handled by individual slot toggles
+    showNotification('يرجى استخدام أزرار الـ slots الفردية', 'info');
 }
 
 // Show confirmation modal for time slot toggle
@@ -2845,48 +3024,83 @@ function confirmTimeSlotToggle() {
     confirmTimeSlotAction();
 }
 
-// Perform the actual time slot toggle
-function performTimeSlotToggle(hour, date, toggleBtn, originalContent) {
+// Perform the actual slot toggle
+function performSlotToggle(hour, date, slotIndex, slotElement) {
+    console.log('performSlotToggle called:', { hour, date, slotIndex });
+    
     // Show loading state
-    toggleBtn.innerHTML = '<i class="bi bi-hourglass-split"></i>';
-    toggleBtn.disabled = true;
+    const originalContent = slotElement.innerHTML;
+    slotElement.innerHTML = '<i class="bi bi-hourglass-split"></i>';
+    slotElement.style.pointerEvents = 'none';
     
     // Show loading notification
-    showNotification(`جاري ${toggleBtn.classList.contains('btn-warning') ? t('enabling_hours') : t('disabling_hours')} ${t('hour')} ${hour}:00...`, 'info');
+    showNotification(`جاري تحديث Slot ${slotIndex}...`, 'info');
     
-    fetch(`/admin/time-slots/${hour}/toggle?date=${date}`, {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]');
+    if (!csrfToken) {
+        console.error('CSRF token not found');
+        showNotification('خطأ في الأمان', 'error');
+        slotElement.innerHTML = originalContent;
+        slotElement.style.pointerEvents = 'auto';
+        return;
+    }
+    
+    fetch(`/admin/time-slots/${hour}/toggle`, {
         method: 'POST',
         headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-            'Content-Type': 'application/json'
-        }
+            'X-CSRF-TOKEN': csrfToken.getAttribute('content'),
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+            date: date,
+            slot_index: slotIndex
+        })
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('Response status:', response.status);
+        if (!response.ok) {
+            return response.text().then(text => {
+                console.error('Response error:', text);
+                throw new Error(`HTTP error! status: ${response.status}`);
+            });
+        }
+        return response.json();
+    })
     .then(data => {
+        console.log('Response data:', data);
         if (data.success) {
-            // Show success notification with animation
-            showSuccessNotification(data.message, hour, date);
+            // Show success notification
+            showNotification(data.message, 'success');
             
-            // Update the UI immediately without full refresh
-            updateTimeSlotUI(hour, date, data.is_available);
+            // Update the UI
+            if (data.slots) {
+                updateSlotUI(hour, date, data.slots, data.hour_is_unavailable);
+            }
             
             // Force a complete refresh to ensure all states are correct
             setTimeout(() => {
                 refreshTimeSlots(true);
-            }, 1000);
+            }, 500);
         } else {
-            showNotification(data.message || t('hour_toggle_error'), 'error');
+            showNotification(data.message || 'حدث خطأ في تحديث الـ slot', 'error');
+            slotElement.innerHTML = originalContent;
         }
     })
     .catch(error => {
-        console.error('Error:', error);
-        showNotification(t('hour_toggle_error'), 'error');
+        console.error('Error in performSlotToggle:', error);
+        showNotification('حدث خطأ في تحديث الـ slot: ' + error.message, 'error');
+        slotElement.innerHTML = originalContent;
     })
     .finally(() => {
-        // Restore button state
-        toggleBtn.innerHTML = originalContent;
-        toggleBtn.disabled = false;
+        slotElement.style.pointerEvents = 'auto';
     });
+}
+
+// Legacy function for backward compatibility
+function performTimeSlotToggle(hour, date, toggleBtn, originalContent) {
+    showNotification('يرجى استخدام أزرار الـ slots الفردية', 'info');
 }
 
 // Set time slot status directly
@@ -3032,92 +3246,95 @@ function showSuccessNotification(message, hour, date) {
 }
 
 // Update time slot UI immediately
-function updateTimeSlotUI(hour, date, isAvailable) {
+// Update slot UI after toggle
+function updateSlotUI(hour, date, slots, hourIsUnavailable) {
     // Find the time slot element
     const slotElement = document.querySelector(`[data-hour="${hour}"][data-date="${date}"]`);
     if (!slotElement) return;
     
-    const toggleBtn = slotElement.querySelector('.toggle-btn');
-    const statusText = slotElement.querySelector('small');
+    // Update each slot indicator
+    if (slots && Array.isArray(slots)) {
+        slots.forEach(slot => {
+            const slotIndicator = slotElement.querySelector(`[data-slot-index="${slot.slot_index}"]`);
+            if (slotIndicator) {
+                // Update status attribute
+                slotIndicator.setAttribute('data-slot-status', slot.status);
+                
+                // Update classes
+                slotIndicator.className = 'slot-indicator';
+                if (slot.status === 'available') {
+                    slotIndicator.classList.add('slot-available');
+                    slotIndicator.innerHTML = `<span class="slot-number">${slot.slot_index}</span><i class="bi bi-check-circle" style="font-size: 0.7rem;"></i>`;
+                    slotIndicator.setAttribute('title', `Slot ${slot.slot_index}: متاح`);
+                } else if (slot.status === 'disabled') {
+                    slotIndicator.classList.add('slot-disabled');
+                    slotIndicator.innerHTML = `<span class="slot-number">${slot.slot_index}</span><i class="bi bi-power" style="font-size: 0.7rem;"></i>`;
+                    slotIndicator.setAttribute('title', `Slot ${slot.slot_index}: OFF`);
+                } else if (slot.status === 'booked') {
+                    slotIndicator.classList.add('slot-booked');
+                    slotIndicator.innerHTML = `<span class="slot-number">${slot.slot_index}</span><i class="bi bi-x-circle" style="font-size: 0.7rem;"></i>`;
+                    slotIndicator.setAttribute('title', `Slot ${slot.slot_index}: محجوز`);
+                }
+            }
+        });
+    }
     
-    if (isAvailable) {
-        // Make available
-        slotElement.className = 'time-slot-card available border-success';
-        
-        // Update time text color
-        const timeText = slotElement.querySelector('.fw-bold');
-        if (timeText) {
-            timeText.className = 'fw-bold text-success fs-6';
-        }
-        
-        if (toggleBtn) {
-            toggleBtn.className = 'btn btn-sm toggle-btn btn-success';
-            toggleBtn.innerHTML = '<i class="bi bi-check-circle"></i>';
-            toggleBtn.title = t('disable_hour');
-        }
-        
-        if (statusText) {
-            statusText.innerHTML = `<i class="bi bi-check-circle"></i> ${t('available')}`;
-            statusText.className = 'text-success d-block';
-        }
-        
-        // Remove instruction text if exists
-        const instructionSpan = slotElement.querySelector('.text-muted');
-        if (instructionSpan && instructionSpan.textContent === t('click_to_enable')) {
-            instructionSpan.remove();
-        }
-        
-        // Update tooltip
-        slotElement.setAttribute('data-bs-original-title', `${t('available')} - ${t('click_to_book')}`);
-        
-    } else {
-        // Make unavailable
+    // Update hour card status
+    const statusText = slotElement.querySelector('small');
+    const timeText = slotElement.querySelector('.fw-bold');
+    
+    if (hourIsUnavailable) {
+        // Hour is OFF
         slotElement.className = 'time-slot-card unavailable border-warning';
-        
-        // Update time text color
-        const timeText = slotElement.querySelector('.fw-bold');
         if (timeText) {
             timeText.className = 'fw-bold text-warning fs-6';
         }
-        
-        if (toggleBtn) {
-            toggleBtn.className = 'btn btn-sm toggle-btn btn-warning';
-            toggleBtn.innerHTML = '<i class="bi bi-power"></i>';
-            toggleBtn.title = 'تفعيل الساعة';
-        }
-        
         if (statusText) {
-            statusText.innerHTML = '<i class="bi bi-power"></i> OFF';
+            statusText.innerHTML = `<i class="bi bi-power"></i> ${t('off')}`;
             statusText.className = 'text-warning d-block';
-            
-            // Add instruction text
-            const instructionSpan = slotElement.querySelector('.text-muted');
-            if (instructionSpan) {
-                instructionSpan.textContent = 'اضغط للتفعيل';
-                instructionSpan.style.fontSize = '0.6rem';
-            } else {
-                const newInstructionSpan = document.createElement('small');
-                newInstructionSpan.className = 'text-muted d-block';
-                newInstructionSpan.style.fontSize = '0.6rem';
-                newInstructionSpan.textContent = 'اضغط للتفعيل';
-                statusText.parentNode.appendChild(newInstructionSpan);
+        }
+    } else {
+        // Calculate counts
+        const bookedCount = slots ? slots.filter(s => s.status === 'booked').length : 0;
+        const availableCount = slots ? slots.filter(s => s.status === 'available').length : 0;
+        const maxSlots = slots ? slots.length : 2;
+        
+        if (bookedCount >= maxSlots) {
+            slotElement.className = 'time-slot-card booked border-danger';
+            if (timeText) {
+                timeText.className = 'fw-bold text-danger fs-6';
+            }
+            if (statusText) {
+                statusText.innerHTML = `<i class="bi bi-x-circle"></i> ${bookedCount}/${maxSlots} ${t('booked')}`;
+                statusText.className = 'text-danger d-block';
+            }
+        } else if (bookedCount > 0) {
+            slotElement.className = 'time-slot-card partially-booked border-warning';
+            if (timeText) {
+                timeText.className = 'fw-bold text-warning fs-6';
+            }
+            if (statusText) {
+                statusText.innerHTML = `<i class="bi bi-clock-history"></i> ${bookedCount}/${maxSlots} ${t('booked')}`;
+                statusText.className = 'text-warning d-block';
+            }
+        } else {
+            slotElement.className = 'time-slot-card available border-success';
+            if (timeText) {
+                timeText.className = 'fw-bold text-success fs-6';
+            }
+            if (statusText) {
+                statusText.innerHTML = `<i class="bi bi-check-circle"></i> ${t('available')} (${availableCount}/${maxSlots})`;
+                statusText.className = 'text-success d-block';
             }
         }
-        
-        // Update tooltip
-        slotElement.setAttribute('data-bs-original-title', 'غير متاح - اضغط للتفعيل');
     }
-    
-    // Add visual feedback animation
-    slotElement.style.transform = 'scale(1.05)';
-    slotElement.style.transition = 'transform 0.2s ease';
-    
-    setTimeout(() => {
-        slotElement.style.transform = 'scale(1)';
-    }, 200);
-    
-    // Update stats badges
-    updateStatsBadges(date);
+}
+
+// Legacy function for backward compatibility
+function updateTimeSlotUI(hour, date, isAvailable) {
+    // This function is kept for backward compatibility but may not work correctly with new slot system
+    // Simply refresh the page to get updated data
+    refreshTimeSlots(true);
 }
 
 // Update stats badges for specific date
