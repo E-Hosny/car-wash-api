@@ -12,6 +12,7 @@ use App\Http\Controllers\API\PaymentController;
 use App\Http\Controllers\API\PackageController;
 use App\Http\Controllers\API\ConfigController;
 use App\Http\Controllers\API\TimeSlotController;
+use App\Http\Controllers\API\ProviderTimeSlotController;
 use App\Http\Controllers\SupportController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -101,6 +102,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/time-slots', [TimeSlotController::class, 'getTimeSlots']);
     Route::get('/time-slots/booked', [TimeSlotController::class, 'getBookedTimeSlots']);
     Route::post('/time-slots/book', [TimeSlotController::class, 'bookTimeSlot']);
+});
+
+// Provider/Worker Time Slots Management
+Route::middleware(['auth:sanctum'])->group(function () {
+    Route::get('/provider/time-slots/today', [ProviderTimeSlotController::class, 'getTodayTimeSlots']);
+    Route::post('/provider/time-slots/{hour}/toggle', [ProviderTimeSlotController::class, 'toggleSlot']);
 });
 
 // Admin Time Slots Management (Admin only)
