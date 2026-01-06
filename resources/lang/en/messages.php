@@ -180,5 +180,8 @@ return [
     'max_slots_per_hour' => 'Max Slots Per Hour',
     'max_slots_per_hour_label' => 'Max Slots Per Hour',
     'max_slots_per_hour_help' => 'Set the number of appointments that can be booked per hour (1 to 10)',
+    'minimum_booking_advance_minutes' => 'Minimum Booking Advance (Minutes)',
+    'minimum_booking_advance_minutes_label' => 'Minimum Booking Advance (Minutes)',
+    'minimum_booking_advance_minutes_help' => 'Set the minimum time (in minutes) that must remain before the first available hour. If the remaining time is less than this threshold, the hour will be automatically closed (e.g., 20 minutes)',
     'fully_booked' => 'Fully Booked',
 ];

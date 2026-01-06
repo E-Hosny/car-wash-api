@@ -1035,6 +1035,76 @@ public function updateStatus(Request $request, $id)
             }
         }
         
+        // التحقق من الوقت المتبقي قبل أول ساعة متاحة (اليوم الحالي فقط)
+        $minimumAdvanceMinutes = (int) Setting::getValue('minimum_booking_advance_minutes', 60);
+        
+        if ($date === now()->toDateString()) {
+            $currentTime = now();
+            $currentHour = $currentTime->hour;
+            $currentMinute = $currentTime->minute;
+            
+            Log::info("Checking auto-close logic: Current time = {$currentHour}:{$currentMinute}, Minimum advance = {$minimumAdvanceMinutes} minutes");
+            Log::info("Available hours before auto-close check: " . json_encode($availableHours));
+            
+            // العثور على أول ساعة متاحة (يجب أن تكون أكبر من الساعة الحالية)
+            $firstAvailableHour = null;
+            foreach ($availableHours as $hour) {
+                Log::info("Checking hour {$hour} against current hour {$currentHour}: " . ($hour > $currentHour ? 'YES' : 'NO'));
+                if ($hour > $currentHour) {
+                    $firstAvailableHour = $hour;
+                    Log::info("Found first available hour: {$firstAvailableHour}");
+                    break;
+                }
+            }
+            
+            // إذا وجدنا ساعة متاحة
+            if ($firstAvailableHour !== null) {
+                // حساب الوقت المتبقي حتى بداية أول ساعة متاحة
+                $firstAvailableTime = Carbon::createFromDate($currentTime->year, $currentTime->month, $currentTime->day)
+                    ->setTime($firstAvailableHour, 0, 0);
+                
+                // حساب الفرق بالدقائق بشكل مباشر
+                // الوقت الحالي بالدقائق: (الساعة * 60) + الدقائق
+                $currentMinutes = ($currentTime->hour * 60) + $currentTime->minute;
+                // الساعة المستقبلية بالدقائق: (الساعة * 60)
+                $targetMinutes = $firstAvailableHour * 60;
+                // الفرق بالدقائق
+                $minutesUntilFirstHour = $targetMinutes - $currentMinutes;
+                
+                Log::info("Current time: {$currentTime->format('H:i:s')} ({$currentMinutes} minutes), First available hour: {$firstAvailableHour}:00 ({$targetMinutes} minutes), Minutes until first hour: {$minutesUntilFirstHour}, Minimum required: {$minimumAdvanceMinutes}");
+                
+                // إذا كان الوقت المتبقي أقل من الحد الأدنى المحدد
+                if ($minutesUntilFirstHour < $minimumAdvanceMinutes) {
+                    Log::info("Auto-closing hour {$firstAvailableHour}: only {$minutesUntilFirstHour} minutes remaining (minimum: {$minimumAdvanceMinutes})");
+                    
+                    // إغلاق جميع slots في هذه الساعة
+                    for ($slotIndex = 1; $slotIndex <= $maxSlotsPerHour; $slotIndex++) {
+                        HourSlotInstance::setSlotStatus($date, $firstAvailableHour, $slotIndex, 'disabled');
+                    }
+                    
+                    // التحقق من أن الساعة أصبحت غير متاحة
+                    $isNowUnavailable = HourSlotInstance::areAllSlotsUnavailable($date, $firstAvailableHour, $maxSlotsPerHour);
+                    Log::info("After closing slots, hour {$firstAvailableHour} is now unavailable: " . ($isNowUnavailable ? 'YES' : 'NO'));
+                    
+                    // إعادة حساب الساعات المتاحة بعد الإغلاق
+                    $availableHours = array_filter($availableHours, function($hour) use ($firstAvailableHour) {
+                        return $hour != $firstAvailableHour;
+                    });
+                    $availableHours = array_values($availableHours); // إعادة ترقيم المصفوفة
+                    
+                    $unavailableHours[] = $firstAvailableHour;
+                    $unavailableHours = array_unique($unavailableHours);
+                    sort($unavailableHours);
+                    
+                    Log::info("Hour {$firstAvailableHour} has been auto-closed and removed from available hours. Updated available hours: " . json_encode($availableHours));
+                } else {
+                    Log::info("Hour {$firstAvailableHour} remains available: {$minutesUntilFirstHour} minutes >= {$minimumAdvanceMinutes} minutes");
+                }
+            } else {
+                Log::info("No available hours found after current hour {$currentHour}");
+            }
+        }
+        
         Log::info('Booked hours (fully booked): ' . json_encode($fullyBookedHours));
         Log::info('Unavailable hours (all slots unavailable): ' . json_encode($unavailableHours));
         Log::info('Available hours: ' . json_encode($availableHours));

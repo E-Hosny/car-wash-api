@@ -22,6 +22,11 @@
 			<input type="text" class="form-control" id="support_whatsapp" name="support_whatsapp" value="{{ $supportWhatsapp }}" placeholder="966542327025" required>
 			<small class="form-text text-muted">أدخل رقم واتساب الدعم (بدون + في البداية، مثال: 966542327025)</small>
 		</div>
+		<div class="mb-3">
+			<label for="minimum_booking_advance_minutes" class="form-label">{{ __('messages.minimum_booking_advance_minutes_label') }}</label>
+			<input type="number" class="form-control" id="minimum_booking_advance_minutes" name="minimum_booking_advance_minutes" value="{{ $minimumBookingAdvance }}" min="1" max="1440" required>
+			<small class="form-text text-muted">{{ __('messages.minimum_booking_advance_minutes_help') }}</small>
+		</div>
 		<button type="submit" class="btn btn-primary mt-3">حفظ</button>
 	</form>
 </div>
