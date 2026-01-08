@@ -14,7 +14,23 @@ class SettingsController extends Controller
         $maxSlotsPerHour = (int) Setting::getValue('max_slots_per_hour', 2);
         $supportWhatsapp = Setting::getValue('support_whatsapp', '966542327025');
         $minimumBookingAdvance = (int) Setting::getValue('minimum_booking_advance_minutes', 60);
-        return view('admin.settings.edit', compact('packagesEnabled', 'maxSlotsPerHour', 'supportWhatsapp', 'minimumBookingAdvance'));
+        
+        // الحدود الجغرافية
+        $dubaiMinLat = (float) Setting::getValue('dubai_min_latitude', 24.5);
+        $dubaiMaxLat = (float) Setting::getValue('dubai_max_latitude', 25.5);
+        $dubaiMinLng = (float) Setting::getValue('dubai_min_longitude', 54.5);
+        $dubaiMaxLng = (float) Setting::getValue('dubai_max_longitude', 56.0);
+        
+        return view('admin.settings.edit', compact(
+            'packagesEnabled', 
+            'maxSlotsPerHour', 
+            'supportWhatsapp', 
+            'minimumBookingAdvance',
+            'dubaiMinLat',
+            'dubaiMaxLat',
+            'dubaiMinLng',
+            'dubaiMaxLng'
+        ));
     }
 
     public function update(Request $request)
@@ -24,7 +40,24 @@ class SettingsController extends Controller
             'max_slots_per_hour' => 'required|integer|min:1|max:10',
             'support_whatsapp' => 'required|string|max:20|regex:/^[0-9+]+$/',
             'minimum_booking_advance_minutes' => 'required|integer|min:1|max:1440',
+            'dubai_min_latitude' => 'required|numeric|min:-90|max:90',
+            'dubai_max_latitude' => 'required|numeric|min:-90|max:90',
+            'dubai_min_longitude' => 'required|numeric|min:-180|max:180',
+            'dubai_max_longitude' => 'required|numeric|min:-180|max:180',
         ]);
+
+        // التحقق من أن الحد الأدنى أقل من الحد الأقصى
+        if ($request->dubai_min_latitude >= $request->dubai_max_latitude) {
+            return redirect()->back()->withErrors([
+                'dubai_min_latitude' => 'الحد الأدنى للخط العرض يجب أن يكون أقل من الحد الأقصى'
+            ])->withInput();
+        }
+
+        if ($request->dubai_min_longitude >= $request->dubai_max_longitude) {
+            return redirect()->back()->withErrors([
+                'dubai_min_longitude' => 'الحد الأدنى للخط الطول يجب أن يكون أقل من الحد الأقصى'
+            ])->withInput();
+        }
 
         $enabled = $request->has('packages_enabled') && $request->packages_enabled ? true : false;
         Setting::setValue('packages_enabled', $enabled);
@@ -34,6 +67,12 @@ class SettingsController extends Controller
         // Remove + if present, we'll add it when needed
         $whatsappNumber = str_replace('+', '', $request->support_whatsapp);
         Setting::setValue('support_whatsapp', $whatsappNumber);
+
+        // حفظ الحدود الجغرافية
+        Setting::setValue('dubai_min_latitude', (float) $request->dubai_min_latitude);
+        Setting::setValue('dubai_max_latitude', (float) $request->dubai_max_latitude);
+        Setting::setValue('dubai_min_longitude', (float) $request->dubai_min_longitude);
+        Setting::setValue('dubai_max_longitude', (float) $request->dubai_max_longitude);
 
         return redirect()->route('admin.settings.index')->with('success', __('messages.updated_successfully'));
     }

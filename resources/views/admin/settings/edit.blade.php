@@ -27,6 +27,63 @@
 			<input type="number" class="form-control" id="minimum_booking_advance_minutes" name="minimum_booking_advance_minutes" value="{{ $minimumBookingAdvance }}" min="1" max="1440" required>
 			<small class="form-text text-muted">{{ __('messages.minimum_booking_advance_minutes_help') }}</small>
 		</div>
+		
+		<hr class="my-4">
+		<h4 class="mb-3">الحدود الجغرافية</h4>
+		<div class="alert alert-info">
+			<small>حدد الحدود الجغرافية للمنطقة المسموح بالحجز فيها. سيتم رفض أي طلب خارج هذه الحدود.</small>
+		</div>
+		
+		<div class="row">
+			<div class="col-md-6 mb-3">
+				<label for="dubai_min_latitude" class="form-label">الحد الأدنى للخط العرض (Latitude)</label>
+				<input type="number" step="0.0001" class="form-control @error('dubai_min_latitude') is-invalid @enderror" 
+					id="dubai_min_latitude" name="dubai_min_latitude" 
+					value="{{ old('dubai_min_latitude', $dubaiMinLat) }}" 
+					min="-90" max="90" required>
+				@error('dubai_min_latitude')
+					<div class="invalid-feedback">{{ $message }}</div>
+				@enderror
+				<small class="form-text text-muted">يجب أن يكون أقل من الحد الأقصى</small>
+			</div>
+			<div class="col-md-6 mb-3">
+				<label for="dubai_max_latitude" class="form-label">الحد الأقصى للخط العرض (Latitude)</label>
+				<input type="number" step="0.0001" class="form-control @error('dubai_max_latitude') is-invalid @enderror" 
+					id="dubai_max_latitude" name="dubai_max_latitude" 
+					value="{{ old('dubai_max_latitude', $dubaiMaxLat) }}" 
+					min="-90" max="90" required>
+				@error('dubai_max_latitude')
+					<div class="invalid-feedback">{{ $message }}</div>
+				@enderror
+				<small class="form-text text-muted">يجب أن يكون أكبر من الحد الأدنى</small>
+			</div>
+		</div>
+		
+		<div class="row">
+			<div class="col-md-6 mb-3">
+				<label for="dubai_min_longitude" class="form-label">الحد الأدنى للخط الطول (Longitude)</label>
+				<input type="number" step="0.0001" class="form-control @error('dubai_min_longitude') is-invalid @enderror" 
+					id="dubai_min_longitude" name="dubai_min_longitude" 
+					value="{{ old('dubai_min_longitude', $dubaiMinLng) }}" 
+					min="-180" max="180" required>
+				@error('dubai_min_longitude')
+					<div class="invalid-feedback">{{ $message }}</div>
+				@enderror
+				<small class="form-text text-muted">يجب أن يكون أقل من الحد الأقصى</small>
+			</div>
+			<div class="col-md-6 mb-3">
+				<label for="dubai_max_longitude" class="form-label">الحد الأقصى للخط الطول (Longitude)</label>
+				<input type="number" step="0.0001" class="form-control @error('dubai_max_longitude') is-invalid @enderror" 
+					id="dubai_max_longitude" name="dubai_max_longitude" 
+					value="{{ old('dubai_max_longitude', $dubaiMaxLng) }}" 
+					min="-180" max="180" required>
+				@error('dubai_max_longitude')
+					<div class="invalid-feedback">{{ $message }}</div>
+				@enderror
+				<small class="form-text text-muted">يجب أن يكون أكبر من الحد الأدنى</small>
+			</div>
+		</div>
+		
 		<button type="submit" class="btn btn-primary mt-3">حفظ</button>
 	</form>
 </div>
