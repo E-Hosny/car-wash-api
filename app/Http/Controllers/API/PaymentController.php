@@ -39,10 +39,14 @@ class PaymentController extends Controller
             ]);
             
             // تحديد إذا كان هذا طلب عادي (يحتاج موقع) أم شراء باقة (لا يحتاج موقع)
-            $isPackagePurchase = str_starts_with($request->order_id, 'package_');
+            // التحقق بطريقتين: من order_id أو من معامل is_package_purchase
+            $isPackagePurchase = str_starts_with($request->order_id, 'package_') 
+                || ($request->has('is_package_purchase') && $request->is_package_purchase == true);
             
             Log::info('Order type determination', [
                 'order_id' => $request->order_id,
+                'has_is_package_purchase' => $request->has('is_package_purchase'),
+                'is_package_purchase_value' => $request->is_package_purchase ?? null,
                 'is_package_purchase' => $isPackagePurchase,
             ]);
             

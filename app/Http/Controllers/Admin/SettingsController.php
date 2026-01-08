@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
+use App\Models\GeographicalBound;
 use Illuminate\Http\Request;
 
 class SettingsController extends Controller
@@ -15,11 +16,14 @@ class SettingsController extends Controller
         $supportWhatsapp = Setting::getValue('support_whatsapp', '966542327025');
         $minimumBookingAdvance = (int) Setting::getValue('minimum_booking_advance_minutes', 60);
         
-        // الحدود الجغرافية
+        // الحدود الجغرافية (للتوافق مع البيانات القديمة)
         $dubaiMinLat = (float) Setting::getValue('dubai_min_latitude', 24.5);
         $dubaiMaxLat = (float) Setting::getValue('dubai_max_latitude', 25.5);
         $dubaiMinLng = (float) Setting::getValue('dubai_min_longitude', 54.5);
         $dubaiMaxLng = (float) Setting::getValue('dubai_max_longitude', 56.0);
+        
+        // الحصول على جميع الحدود الجغرافية
+        $geographicalBounds = GeographicalBound::orderBy('created_at', 'desc')->get();
         
         return view('admin.settings.edit', compact(
             'packagesEnabled', 
@@ -29,7 +33,8 @@ class SettingsController extends Controller
             'dubaiMinLat',
             'dubaiMaxLat',
             'dubaiMinLng',
-            'dubaiMaxLng'
+            'dubaiMaxLng',
+            'geographicalBounds'
         ));
     }
 
@@ -75,5 +80,86 @@ class SettingsController extends Controller
         Setting::setValue('dubai_max_longitude', (float) $request->dubai_max_longitude);
 
         return redirect()->route('admin.settings.index')->with('success', __('messages.updated_successfully'));
+    }
+
+    /**
+     * عرض قائمة الحدود الجغرافية
+     */
+    public function boundsIndex()
+    {
+        $bounds = GeographicalBound::orderBy('created_at', 'desc')->get();
+        return response()->json($bounds);
+    }
+
+    /**
+     * إضافة حد جغرافي جديد
+     */
+    public function boundsStore(Request $request)
+    {
+        $validated = $request->validate(
+            GeographicalBound::validationRules(),
+            GeographicalBound::validationMessages()
+        );
+
+        // التحقق من أن الحد الأدنى أقل من الحد الأقصى
+        if ($validated['min_latitude'] >= $validated['max_latitude']) {
+            return redirect()->back()->withErrors([
+                'min_latitude' => 'الحد الأدنى للخط العرض يجب أن يكون أقل من الحد الأقصى'
+            ])->withInput();
+        }
+
+        if ($validated['min_longitude'] >= $validated['max_longitude']) {
+            return redirect()->back()->withErrors([
+                'min_longitude' => 'الحد الأدنى للخط الطول يجب أن يكون أقل من الحد الأقصى'
+            ])->withInput();
+        }
+
+        $bound = GeographicalBound::create($validated);
+
+        return redirect()->route('admin.settings.index')
+            ->with('success', 'تم إضافة الحد الجغرافي بنجاح');
+    }
+
+    /**
+     * تعديل حد جغرافي موجود
+     */
+    public function boundsUpdate(Request $request, $id)
+    {
+        $bound = GeographicalBound::findOrFail($id);
+
+        $validated = $request->validate(
+            GeographicalBound::validationRules(),
+            GeographicalBound::validationMessages()
+        );
+
+        // التحقق من أن الحد الأدنى أقل من الحد الأقصى
+        if ($validated['min_latitude'] >= $validated['max_latitude']) {
+            return redirect()->back()->withErrors([
+                'min_latitude' => 'الحد الأدنى للخط العرض يجب أن يكون أقل من الحد الأقصى'
+            ])->withInput();
+        }
+
+        if ($validated['min_longitude'] >= $validated['max_longitude']) {
+            return redirect()->back()->withErrors([
+                'min_longitude' => 'الحد الأدنى للخط الطول يجب أن يكون أقل من الحد الأقصى'
+            ])->withInput();
+        }
+
+        $bound->update($validated);
+
+        return redirect()->route('admin.settings.index')
+            ->with('success', 'تم تعديل الحد الجغرافي بنجاح');
+    }
+
+    /**
+     * حذف حد جغرافي
+     */
+    public function boundsDestroy($id)
+    {
+        $bound = GeographicalBound::findOrFail($id);
+        $bound->delete();
+
+        return redirect()->route('admin.settings.index')
+            ->with('success', 'تم حذف الحد الجغرافي بنجاح');
     }
 } 

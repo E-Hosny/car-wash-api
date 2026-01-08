@@ -37,9 +37,21 @@ class OrderController extends Controller
         'use_package' => 'nullable|boolean',
     ]);
 
-    // التحقق الجغرافي تم مسبقاً في createPaymentIntent قبل الدفع
-    // إذا وصلنا هنا، يعني أن الموقع صحيح والدفع تم بنجاح
-    // لذا لا نحتاج للتحقق مرة أخرى
+    // التحقق الجغرافي للطلبات التي تستخدم الباقة (لأنها لا تمر بـ createPaymentIntent)
+    if ($request->use_package) {
+        $locationValidation = LocationValidationService::validateLocation(
+            (float) $request->latitude,
+            (float) $request->longitude
+        );
+
+        if (!$locationValidation['valid']) {
+            return response()->json([
+                'success' => false,
+                'message' => $locationValidation['message']
+            ], 400);
+        }
+    }
+    // للطلبات العادية، التحقق تم في createPaymentIntent قبل الدفع
 
     // نتأكد إن السيارة دي تخص المستخدم الحالي
     $car = Car::where('id', $request->car_id)
@@ -779,9 +791,21 @@ public function updateStatus(Request $request, $id)
             'use_package' => 'nullable|boolean',
         ]);
 
-        // التحقق الجغرافي تم مسبقاً في createPaymentIntent قبل الدفع
-        // إذا وصلنا هنا، يعني أن الموقع صحيح والدفع تم بنجاح
-        // لذا لا نحتاج للتحقق مرة أخرى
+        // التحقق الجغرافي للطلبات التي تستخدم الباقة (لأنها لا تمر بـ createPaymentIntent)
+        if ($request->use_package) {
+            $locationValidation = LocationValidationService::validateLocation(
+                (float) $request->latitude,
+                (float) $request->longitude
+            );
+
+            if (!$locationValidation['valid']) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $locationValidation['message']
+                ], 400);
+            }
+        }
+        // للطلبات العادية، التحقق تم في createPaymentIntent قبل الدفع
 
         $user = auth()->user();
         $total = 0;
