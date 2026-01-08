@@ -56,21 +56,18 @@ class PaymentController extends Controller
                 'order_id' => 'required|string',
             ];
             
-            // للطلبات العادية، الموقع إلزامي. للباقات، اختياري
+            // جعل الإحداثيات nullable للجميع (للتوافق مع النسخ القديمة)
+            $validationRules['latitude'] = 'nullable|numeric';
+            $validationRules['longitude'] = 'nullable|numeric';
+            
             if (!$isPackagePurchase) {
-                $validationRules['latitude'] = 'required|numeric';
-                $validationRules['longitude'] = 'required|numeric';
-                Log::info('Regular order - location required');
+                Log::info('Regular order - location optional (for backward compatibility)');
             } else {
-                $validationRules['latitude'] = 'nullable|numeric';
-                $validationRules['longitude'] = 'nullable|numeric';
                 Log::info('Package purchase - location optional');
             }
             
             try {
                 $request->validate($validationRules, [
-                    'latitude.required' => 'Location information is required to verify service availability. Please select a location.',
-                    'longitude.required' => 'Location information is required to verify service availability. Please select a location.',
                     'latitude.numeric' => 'Invalid location coordinates. Please select a valid location.',
                     'longitude.numeric' => 'Invalid location coordinates. Please select a valid location.',
                 ]);
@@ -82,56 +79,51 @@ class PaymentController extends Controller
                 throw $e;
             }
 
-            // التحقق من الموقع للطلبات العادية فقط (ليس للباقات)
+            // التحقق من الموقع للطلبات العادية فقط (إذا كانت الإحداثيات موجودة)
             if (!$isPackagePurchase) {
-                Log::info('Validating location for order', [
+                Log::info('Checking location for order', [
                     'order_id' => $request->order_id,
                     'has_latitude' => $request->has('latitude'),
                     'has_longitude' => $request->has('longitude'),
                     'latitude' => $request->latitude,
                     'longitude' => $request->longitude,
-                    'latitude_type' => gettype($request->latitude),
-                    'longitude_type' => gettype($request->longitude),
                 ]);
                 
-                if (!$request->has('latitude') || !$request->has('longitude') || 
-                    $request->latitude === null || $request->longitude === null) {
-                    Log::warning('Location missing for order', [
-                        'order_id' => $request->order_id,
-                        'has_latitude' => $request->has('latitude'),
-                        'has_longitude' => $request->has('longitude'),
+                // إذا كانت الإحداثيات موجودة، تحقق منها
+                if ($request->has('latitude') && $request->has('longitude') && 
+                    $request->latitude !== null && $request->longitude !== null) {
+                    
+                    $latitude = (float) $request->latitude;
+                    $longitude = (float) $request->longitude;
+                    
+                    Log::info('Location provided - validating bounds', [
+                        'latitude' => $latitude,
+                        'longitude' => $longitude,
                     ]);
-                    return response()->json([
-                        'success' => false,
-                        'error' => 'Location required',
-                        'message' => 'Location information is required to verify service availability. Please select a location and try again.'
-                    ], 400);
-                }
-                
-                $latitude = (float) $request->latitude;
-                $longitude = (float) $request->longitude;
-                
-                Log::info('Checking location bounds', [
-                    'latitude' => $latitude,
-                    'longitude' => $longitude,
-                ]);
-                
-                $locationValidation = LocationValidationService::validateLocation(
-                    $latitude,
-                    $longitude
-                );
+                    
+                    $locationValidation = LocationValidationService::validateLocation(
+                        $latitude,
+                        $longitude
+                    );
 
-                Log::info('Location validation result', [
-                    'valid' => $locationValidation['valid'],
-                    'message' => $locationValidation['message'] ?? 'N/A',
-                ]);
+                    Log::info('Location validation result', [
+                        'valid' => $locationValidation['valid'],
+                        'message' => $locationValidation['message'] ?? 'N/A',
+                    ]);
 
-                if (!$locationValidation['valid']) {
-                    return response()->json([
-                        'success' => false,
-                        'error' => 'Location out of service area',
-                        'message' => $locationValidation['message']
-                    ], 400);
+                    if (!$locationValidation['valid']) {
+                        return response()->json([
+                            'success' => false,
+                            'error' => 'Location out of service area',
+                            'message' => $locationValidation['message']
+                        ], 400);
+                    }
+                } else {
+                    // إذا لم تكن الإحداثيات موجودة (نسخة قديمة)، قبول الطلب بدون تحقق
+                    Log::info('Location not provided - accepting order for backward compatibility', [
+                        'order_id' => $request->order_id,
+                        'reason' => 'Old app version or missing location data',
+                    ]);
                 }
             }
             // للباقات، لا نحتاج للتحقق من الموقع
