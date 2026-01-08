@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use App\Models\Order;
+use App\Services\LocationValidationService;
 
 class PaymentController extends Controller
 {
@@ -25,11 +26,115 @@ class PaymentController extends Controller
     public function createPaymentIntent(Request $request)
     {
         try {
-            $request->validate([
+            // Log all incoming request data
+            Log::info('Payment Intent Request received', [
+                'order_id' => $request->order_id,
+                'amount' => $request->amount,
+                'currency' => $request->currency,
+                'has_latitude' => $request->has('latitude'),
+                'has_longitude' => $request->has('longitude'),
+                'latitude' => $request->latitude,
+                'longitude' => $request->longitude,
+                'all_request_data' => $request->all(),
+            ]);
+            
+            // تحديد إذا كان هذا طلب عادي (يحتاج موقع) أم شراء باقة (لا يحتاج موقع)
+            // التحقق بطريقتين: من order_id أو من معامل is_package_purchase
+            $isPackagePurchase = str_starts_with($request->order_id, 'package_') 
+                || ($request->has('is_package_purchase') && $request->is_package_purchase == true);
+            
+            Log::info('Order type determination', [
+                'order_id' => $request->order_id,
+                'has_is_package_purchase' => $request->has('is_package_purchase'),
+                'is_package_purchase_value' => $request->is_package_purchase ?? null,
+                'is_package_purchase' => $isPackagePurchase,
+            ]);
+            
+            $validationRules = [
                 'amount' => 'required|numeric|min:1',
                 'currency' => 'required|string|size:3',
                 'order_id' => 'required|string',
-            ]);
+            ];
+            
+            // للطلبات العادية، الموقع إلزامي. للباقات، اختياري
+            if (!$isPackagePurchase) {
+                $validationRules['latitude'] = 'required|numeric';
+                $validationRules['longitude'] = 'required|numeric';
+                Log::info('Regular order - location required');
+            } else {
+                $validationRules['latitude'] = 'nullable|numeric';
+                $validationRules['longitude'] = 'nullable|numeric';
+                Log::info('Package purchase - location optional');
+            }
+            
+            try {
+                $request->validate($validationRules, [
+                    'latitude.required' => 'Location information is required to verify service availability. Please select a location.',
+                    'longitude.required' => 'Location information is required to verify service availability. Please select a location.',
+                    'latitude.numeric' => 'Invalid location coordinates. Please select a valid location.',
+                    'longitude.numeric' => 'Invalid location coordinates. Please select a valid location.',
+                ]);
+            } catch (\Illuminate\Validation\ValidationException $e) {
+                Log::error('Validation failed', [
+                    'errors' => $e->errors(),
+                    'request_data' => $request->all(),
+                ]);
+                throw $e;
+            }
+
+            // التحقق من الموقع للطلبات العادية فقط (ليس للباقات)
+            if (!$isPackagePurchase) {
+                Log::info('Validating location for order', [
+                    'order_id' => $request->order_id,
+                    'has_latitude' => $request->has('latitude'),
+                    'has_longitude' => $request->has('longitude'),
+                    'latitude' => $request->latitude,
+                    'longitude' => $request->longitude,
+                    'latitude_type' => gettype($request->latitude),
+                    'longitude_type' => gettype($request->longitude),
+                ]);
+                
+                if (!$request->has('latitude') || !$request->has('longitude') || 
+                    $request->latitude === null || $request->longitude === null) {
+                    Log::warning('Location missing for order', [
+                        'order_id' => $request->order_id,
+                        'has_latitude' => $request->has('latitude'),
+                        'has_longitude' => $request->has('longitude'),
+                    ]);
+                    return response()->json([
+                        'success' => false,
+                        'error' => 'Location required',
+                        'message' => 'Location information is required to verify service availability. Please select a location and try again.'
+                    ], 400);
+                }
+                
+                $latitude = (float) $request->latitude;
+                $longitude = (float) $request->longitude;
+                
+                Log::info('Checking location bounds', [
+                    'latitude' => $latitude,
+                    'longitude' => $longitude,
+                ]);
+                
+                $locationValidation = LocationValidationService::validateLocation(
+                    $latitude,
+                    $longitude
+                );
+
+                Log::info('Location validation result', [
+                    'valid' => $locationValidation['valid'],
+                    'message' => $locationValidation['message'] ?? 'N/A',
+                ]);
+
+                if (!$locationValidation['valid']) {
+                    return response()->json([
+                        'success' => false,
+                        'error' => 'Location out of service area',
+                        'message' => $locationValidation['message']
+                    ], 400);
+                }
+            }
+            // للباقات، لا نحتاج للتحقق من الموقع
 
             $user = auth()->user();
 

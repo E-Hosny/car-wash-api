@@ -57,6 +57,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders/my', [OrderController::class, 'myOrders']);
     Route::get('/orders/available', [OrderController::class, 'availableOrders']);
     Route::get('/orders/booked-time-slots', [OrderController::class, 'getBookedTimeSlots']);
+    Route::post('/orders/validate-location', [OrderController::class, 'validateLocation']);
     Route::get('/orders/completed', [OrderController::class, 'completedOrders']);
     Route::get('/orders/accepted', [OrderController::class, 'acceptedOrders']);
     Route::get('/orders/inProgress', [OrderController::class, 'inProgressOrders']);

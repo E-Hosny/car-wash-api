@@ -15,6 +15,7 @@ use Carbon\Carbon;
 use App\Services\FirebaseNotificationService;
 use App\Models\FcmToken;
 use App\Services\WhatsAppService;
+use App\Services\LocationValidationService;
 
 class OrderController extends Controller
 {
@@ -35,6 +36,22 @@ class OrderController extends Controller
         'services.*' => 'exists:services,id',
         'use_package' => 'nullable|boolean',
     ]);
+
+    // التحقق الجغرافي للطلبات التي تستخدم الباقة (لأنها لا تمر بـ createPaymentIntent)
+    if ($request->use_package) {
+        $locationValidation = LocationValidationService::validateLocation(
+            (float) $request->latitude,
+            (float) $request->longitude
+        );
+
+        if (!$locationValidation['valid']) {
+            return response()->json([
+                'success' => false,
+                'message' => $locationValidation['message']
+            ], 400);
+        }
+    }
+    // للطلبات العادية، التحقق تم في createPaymentIntent قبل الدفع
 
     // نتأكد إن السيارة دي تخص المستخدم الحالي
     $car = Car::where('id', $request->car_id)
@@ -774,6 +791,22 @@ public function updateStatus(Request $request, $id)
             'use_package' => 'nullable|boolean',
         ]);
 
+        // التحقق الجغرافي للطلبات التي تستخدم الباقة (لأنها لا تمر بـ createPaymentIntent)
+        if ($request->use_package) {
+            $locationValidation = LocationValidationService::validateLocation(
+                (float) $request->latitude,
+                (float) $request->longitude
+            );
+
+            if (!$locationValidation['valid']) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $locationValidation['message']
+                ], 400);
+            }
+        }
+        // للطلبات العادية، التحقق تم في createPaymentIntent قبل الدفع
+
         $user = auth()->user();
         $total = 0;
         $servicesUsed = [];
@@ -1121,5 +1154,35 @@ public function updateStatus(Request $request, $id)
             'hourly_bookings' => $hourlyBookings, // معلومات إضافية: عدد الطلبات لكل ساعة
             'max_slots_per_hour' => $maxSlotsPerHour // معلومات إضافية: الحد الأقصى لكل ساعة
         ]);
+    }
+
+    /**
+     * التحقق من أن الموقع داخل حدود دبي (قبل إنشاء الطلب)
+     */
+    public function validateLocation(Request $request)
+    {
+        $request->validate([
+            'latitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
+        ]);
+
+        $locationValidation = LocationValidationService::validateLocation(
+            (float) $request->latitude,
+            (float) $request->longitude
+        );
+
+        if (!$locationValidation['valid']) {
+            return response()->json([
+                'success' => false,
+                'valid' => false,
+                'message' => $locationValidation['message']
+            ], 400);
+        }
+
+        return response()->json([
+            'success' => true,
+            'valid' => true,
+            'message' => 'Location is within service area'
+        ], 200);
     }
 }

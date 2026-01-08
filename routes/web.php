@@ -129,6 +129,11 @@ Route::middleware([
         // Settings
         Route::get('/settings', [SettingsController::class, 'edit'])->name('admin.settings.index');
         Route::post('/settings', [SettingsController::class, 'update'])->name('admin.settings.update');
+        
+        // Geographical Bounds Management
+        Route::post('/settings/bounds', [SettingsController::class, 'boundsStore'])->name('admin.settings.bounds.store');
+        Route::post('/settings/bounds/{id}/update', [SettingsController::class, 'boundsUpdate'])->name('admin.settings.bounds.update');
+        Route::delete('/settings/bounds/{id}', [SettingsController::class, 'boundsDestroy'])->name('admin.settings.bounds.destroy');
     });
 
 });
