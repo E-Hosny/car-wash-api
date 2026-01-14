@@ -3,8 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Download Luxuria Car Wash App</title>
-    <meta name="description" content="Download Luxuria Car Wash app now and get premium car wash services at your home or office">
+    <title>First Car Wash for Only 20 AED - 50% OFF | Luxuria Car Wash</title>
+    <meta name="description" content="Get your first car wash for only 20 AED! 50% OFF limited-time offer for new users. Premium car wash at your home or office - Download Luxuria Car Wash app now">
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -99,6 +99,25 @@
             50% { box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3); }
         }
         
+        .discount-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+            color: white;
+            padding: 10px 25px;
+            border-radius: 25px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 20px rgba(238, 90, 111, 0.3);
+            animation: pulse-badge 2s ease-in-out infinite;
+            letter-spacing: 0.5px;
+        }
+        
+        @keyframes pulse-badge {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
         .title {
             font-size: 2.5rem;
             font-weight: 700;
@@ -108,6 +127,19 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            line-height: 1.2;
+        }
+        
+        .price-highlight {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: block;
+            margin-top: 10px;
+            text-shadow: 0 2px 10px rgba(238, 90, 111, 0.2);
         }
         
         .subtitle {
@@ -115,6 +147,30 @@
             color: #718096;
             margin-bottom: 50px;
             line-height: 1.6;
+        }
+        
+        .urgency-note {
+            font-size: 0.85rem;
+            color: #ee5a6f;
+            font-style: italic;
+            margin-top: 15px;
+            font-weight: 500;
+        }
+        
+        .social-proof {
+            font-size: 0.9rem;
+            color: #667eea;
+            margin-bottom: 30px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .social-proof i {
+            color: #ffd700;
+            font-size: 1rem;
         }
         
         .download-buttons {
@@ -179,7 +235,7 @@
         
         .btn-icon {
             font-size: 1.5rem;
-            margin-left: 15px;
+            margin-right: 15px;
         }
         
         .features {
@@ -225,8 +281,18 @@
                 margin: 10px;
             }
             
+            .discount-badge {
+                font-size: 0.85rem;
+                padding: 8px 20px;
+                margin-bottom: 15px;
+            }
+            
             .title {
                 font-size: 2rem;
+            }
+            
+            .price-highlight {
+                font-size: 2.2rem;
             }
             
             .subtitle {
@@ -236,6 +302,14 @@
             .download-btn {
                 padding: 15px 25px;
                 font-size: 1rem;
+            }
+            
+            .urgency-note {
+                font-size: 0.8rem;
+            }
+            
+            .social-proof {
+                font-size: 0.85rem;
             }
             
             .features {
@@ -276,10 +350,14 @@
             <img src="{{ asset('logo.png') }}" alt="Luxuria Car Wash Logo" class="logo">
         </div>
         
-        <h1 class="title">Luxuria Car Wash</h1>
+        <div class="discount-badge">50% OFF for New Users – Limited Time Offer</div>
+        
+        <h1 class="title">
+            First Car Wash for Only<br>
+            <span class="price-highlight">20 AED</span>
+        </h1>
         <p class="subtitle">
-            Get premium car wash services at your home or office<br>
-            Trusted and secure app with professional team
+            Premium car wash at your home or office – limited-time offer for new users
         </p>
         
         <div class="download-buttons">
@@ -288,7 +366,7 @@
                class="download-btn android-btn"
                onclick="trackDownload('android')">
                 <i class="fab fa-google-play btn-icon"></i>
-                <span>Download from Google Play</span>
+                <span>Get 50% OFF – Download App</span>
             </a>
             
             <a href="https://apps.apple.com/us/app/luxuria-car-wash/id6748601716" 
@@ -296,37 +374,44 @@
                class="download-btn ios-btn"
                onclick="trackDownload('ios')">
                 <i class="fab fa-apple btn-icon"></i>
-                <span>Download from App Store</span>
+                <span>Get 50% OFF – Download App</span>
             </a>
+        </div>
+        
+        <p class="urgency-note">Limited-time offer – new users only</p>
+        
+        <div class="social-proof">
+            <i class="fas fa-star"></i>
+            <span>Trusted by car owners across the UAE</span>
         </div>
         
         <div class="features">
             <div class="feature">
                 <div class="feature-icon">
-                    <i class="fas fa-car"></i>
+                    <i class="fas fa-tag"></i>
                 </div>
-                <div class="feature-text">Interior & Exterior Wash</div>
+                <div class="feature-text">First wash for only 20 AED</div>
             </div>
             
             <div class="feature">
                 <div class="feature-icon">
                     <i class="fas fa-map-marker-alt"></i>
                 </div>
-                <div class="feature-text">Service at Your Location</div>
+                <div class="feature-text">Service at your home or office</div>
             </div>
             
             <div class="feature">
                 <div class="feature-icon">
                     <i class="fas fa-shield-alt"></i>
                 </div>
-                <div class="feature-text">Trained & Trusted Team</div>
+                <div class="feature-text">Trusted & trained team</div>
             </div>
             
             <div class="feature">
                 <div class="feature-icon">
                     <i class="fas fa-credit-card"></i>
                 </div>
-                <div class="feature-text">Secure & Easy Payment</div>
+                <div class="feature-text">Secure in-app payment</div>
             </div>
         </div>
         
