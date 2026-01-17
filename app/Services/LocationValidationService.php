@@ -41,22 +41,28 @@ class LocationValidationService
     {
         $bounds = self::getAllBounds();
         
-        // إذا لم يكن هناك حدود في قاعدة البيانات، استخدم القيم الافتراضية
+        // إذا لم يكن هناك حدود في قاعدة البيانات، رفض الطلب
         if ($bounds->isEmpty()) {
-            \Log::info('No bounds in database, using default bounds');
-            return self::isWithinDubai($latitude, $longitude);
+            \Log::info('No bounds in database, location rejected', [
+                'latitude' => $latitude,
+                'longitude' => $longitude,
+            ]);
+            return false;
         }
 
-        // التحقق من كل حد
+        // التحقق من كل حد (يجب أن يحتوي على polygon_points)
         foreach ($bounds as $bound) {
-            if ($bound->isLocationWithin($latitude, $longitude)) {
-                \Log::info('Location validation check - within bound', [
-                    'latitude' => $latitude,
-                    'longitude' => $longitude,
-                    'bound_id' => $bound->id,
-                    'bound_name' => $bound->name,
-                ]);
-                return true;
+            // التحقق فقط من الحدود التي تحتوي على نقاط مضلع
+            if ($bound->polygon_points && is_array($bound->polygon_points) && count($bound->polygon_points) >= 3) {
+                if ($bound->isLocationWithin($latitude, $longitude)) {
+                    \Log::info('Location validation check - within bound', [
+                        'latitude' => $latitude,
+                        'longitude' => $longitude,
+                        'bound_id' => $bound->id,
+                        'bound_name' => $bound->name,
+                    ]);
+                    return true;
+                }
             }
         }
 

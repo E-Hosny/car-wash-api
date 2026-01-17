@@ -100,19 +100,41 @@ class SettingsController extends Controller
             GeographicalBound::validationRules(),
             GeographicalBound::validationMessages()
         );
-
-        // التحقق من أن الحد الأدنى أقل من الحد الأقصى
-        if ($validated['min_latitude'] >= $validated['max_latitude']) {
+        
+        // التحقق من نقاط المضلع
+        if (!$request->has('polygon_points') || !$request->polygon_points) {
             return redirect()->back()->withErrors([
-                'min_latitude' => 'الحد الأدنى للخط العرض يجب أن يكون أقل من الحد الأقصى'
+                'polygon_points' => 'يجب رسم منطقة على الخريطة أولاً'
             ])->withInput();
         }
-
-        if ($validated['min_longitude'] >= $validated['max_longitude']) {
+        
+        $polygonPoints = json_decode($request->polygon_points, true);
+        if (!is_array($polygonPoints) || count($polygonPoints) < 3) {
             return redirect()->back()->withErrors([
-                'min_longitude' => 'الحد الأدنى للخط الطول يجب أن يكون أقل من الحد الأقصى'
+                'polygon_points' => 'يجب أن يحتوي المضلع على 3 نقاط على الأقل'
             ])->withInput();
         }
+        
+        // تنظيف النقاط: إزالة المكررة والتأكد من الإغلاق
+        $polygonPoints = $this->cleanPolygonPoints($polygonPoints);
+        
+        // التحقق من صحة المضلع
+        $validation = $this->validatePolygonPoints($polygonPoints);
+        if (!$validation['valid']) {
+            return redirect()->back()->withErrors([
+                'polygon_points' => $validation['message']
+            ])->withInput();
+        }
+        
+        $validated['polygon_points'] = $polygonPoints;
+        
+        // حساب الحدود من النقاط (للعرض فقط)
+        $lats = array_column($polygonPoints, 'lat');
+        $lngs = array_column($polygonPoints, 'lng');
+        $validated['min_latitude'] = min($lats);
+        $validated['max_latitude'] = max($lats);
+        $validated['min_longitude'] = min($lngs);
+        $validated['max_longitude'] = max($lngs);
 
         $bound = GeographicalBound::create($validated);
 
@@ -131,19 +153,41 @@ class SettingsController extends Controller
             GeographicalBound::validationRules(),
             GeographicalBound::validationMessages()
         );
-
-        // التحقق من أن الحد الأدنى أقل من الحد الأقصى
-        if ($validated['min_latitude'] >= $validated['max_latitude']) {
+        
+        // التحقق من نقاط المضلع
+        if (!$request->has('polygon_points') || !$request->polygon_points) {
             return redirect()->back()->withErrors([
-                'min_latitude' => 'الحد الأدنى للخط العرض يجب أن يكون أقل من الحد الأقصى'
+                'polygon_points' => 'يجب رسم منطقة على الخريطة أولاً'
             ])->withInput();
         }
-
-        if ($validated['min_longitude'] >= $validated['max_longitude']) {
+        
+        $polygonPoints = json_decode($request->polygon_points, true);
+        if (!is_array($polygonPoints) || count($polygonPoints) < 3) {
             return redirect()->back()->withErrors([
-                'min_longitude' => 'الحد الأدنى للخط الطول يجب أن يكون أقل من الحد الأقصى'
+                'polygon_points' => 'يجب أن يحتوي المضلع على 3 نقاط على الأقل'
             ])->withInput();
         }
+        
+        // تنظيف النقاط: إزالة المكررة والتأكد من الإغلاق
+        $polygonPoints = $this->cleanPolygonPoints($polygonPoints);
+        
+        // التحقق من صحة المضلع
+        $validation = $this->validatePolygonPoints($polygonPoints);
+        if (!$validation['valid']) {
+            return redirect()->back()->withErrors([
+                'polygon_points' => $validation['message']
+            ])->withInput();
+        }
+        
+        $validated['polygon_points'] = $polygonPoints;
+        
+        // حساب الحدود من النقاط (للعرض فقط)
+        $lats = array_column($polygonPoints, 'lat');
+        $lngs = array_column($polygonPoints, 'lng');
+        $validated['min_latitude'] = min($lats);
+        $validated['max_latitude'] = max($lats);
+        $validated['min_longitude'] = min($lngs);
+        $validated['max_longitude'] = max($lngs);
 
         $bound->update($validated);
 
@@ -161,5 +205,82 @@ class SettingsController extends Controller
 
         return redirect()->route('admin.settings.index')
             ->with('success', 'تم حذف الحد الجغرافي بنجاح');
+    }
+    
+    /**
+     * تنظيف نقاط المضلع: إزالة المكررة والتأكد من الإغلاق
+     */
+    private function cleanPolygonPoints(array $points): array
+    {
+        if (empty($points)) {
+            return [];
+        }
+        
+        $cleaned = [];
+        $tolerance = 0.000001;
+        
+        foreach ($points as $point) {
+            $lat = (float) ($point['lat'] ?? 0);
+            $lng = (float) ($point['lng'] ?? 0);
+            
+            // تقريب إلى 6 خانات عشرية
+            $lat = round($lat, 6);
+            $lng = round($lng, 6);
+            
+            // إزالة النقاط المكررة
+            if (empty($cleaned)) {
+                $cleaned[] = ['lat' => $lat, 'lng' => $lng];
+            } else {
+                $last = $cleaned[count($cleaned) - 1];
+                if (abs($lat - $last['lat']) > $tolerance || 
+                    abs($lng - $last['lng']) > $tolerance) {
+                    $cleaned[] = ['lat' => $lat, 'lng' => $lng];
+                }
+            }
+        }
+        
+        // لا نضيف النقطة المكررة - Google Maps Polygon يغلق المضلع تلقائياً
+        // نحفظ النقاط كما هي بدون النقطة الأخيرة المكررة
+        return $cleaned;
+    }
+    
+    /**
+     * التحقق من صحة نقاط المضلع
+     */
+    private function validatePolygonPoints(array $points): array
+    {
+        // التحقق من عدد النقاط
+        if (count($points) < 3) {
+            return [
+                'valid' => false,
+                'message' => 'يجب أن يحتوي المضلع على 3 نقاط على الأقل'
+            ];
+        }
+        
+        // التحقق من أن النقاط ليست على خط مستقيم (للمثلث)
+        if (count($points) === 3 || count($points) === 4) {
+            $p1 = $points[0];
+            $p2 = $points[1];
+            $p3 = $points[2];
+            
+            // حساب المسافات
+            $dist12 = sqrt(pow($p2['lat'] - $p1['lat'], 2) + pow($p2['lng'] - $p1['lng'], 2));
+            $dist23 = sqrt(pow($p3['lat'] - $p2['lat'], 2) + pow($p3['lng'] - $p2['lng'], 2));
+            $dist13 = sqrt(pow($p3['lat'] - $p1['lat'], 2) + pow($p3['lng'] - $p1['lng'], 2));
+            
+            // إذا كانت النقاط على خط مستقيم
+            $tolerance = 0.0001;
+            if (abs($dist12 + $dist23 - $dist13) < $tolerance ||
+                abs($dist12 + $dist13 - $dist23) < $tolerance ||
+                abs($dist23 + $dist13 - $dist12) < $tolerance) {
+                return [
+                    'valid' => false,
+                    'message' => 'النقاط على خط مستقيم. يرجى اختيار نقاط تشكل مضلعاً صالحاً'
+                ];
+            }
+        }
+        
+        // لا نحتاج للتحقق من إغلاق المضلع - Google Maps يغلقه تلقائياً
+        return ['valid' => true];
     }
 } 

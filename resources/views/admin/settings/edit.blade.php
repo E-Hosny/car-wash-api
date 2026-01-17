@@ -107,9 +107,15 @@
 				</button>
 			</div>
 			<div id="map" style="height: 500px; width: 100%; border: 1px solid #ddd; border-radius: 5px;"></div>
-			<small class="text-muted d-block mt-2">
-				<i class="fas fa-info-circle"></i> ارسم مضلعاً على الخريطة لتحديد المنطقة. بعد الانتهاء، اضغط "تطبيق الحدود" لملء الحقول تلقائياً.
-			</small>
+			<div class="alert alert-info mt-2 mb-0">
+				<small>
+					<i class="fas fa-info-circle"></i> <strong>خطوات الاستخدام:</strong><br>
+					1. اضغط "ابدأ الرسم" ثم ارسم المضلع على الخريطة<br>
+					2. بعد الانتهاء، اضغط "تطبيق الحدود على الحقول"<br>
+					3. أدخل اسم الحد في النموذج الذي سيظهر تلقائياً<br>
+					4. اضغط "إضافة" لحفظ الحد الجغرافي
+				</small>
+			</div>
 			
 			<!-- قسم عرض نقاط المضلع -->
 			<div id="polygonPointsSection" style="display: none;" class="mt-3">
@@ -162,8 +168,9 @@
 				<h5 class="mb-0">إضافة حد جغرافي جديد</h5>
 			</div>
 			<div class="card-body">
-				<form method="POST" action="{{ route('admin.settings.bounds.store') }}">
+				<form method="POST" action="{{ route('admin.settings.bounds.store') }}" id="addBoundFormElement">
 					@csrf
+					<input type="hidden" id="polygon_points" name="polygon_points" value="">
 					<div class="mb-3">
 						<label for="name" class="form-label">اسم الحد</label>
 						<input type="text" class="form-control @error('name') is-invalid @enderror" 
@@ -172,45 +179,13 @@
 							<div class="invalid-feedback">{{ $message }}</div>
 						@enderror
 					</div>
-					<div class="row">
-						<div class="col-md-6 mb-3">
-							<label for="min_latitude" class="form-label">الحد الأدنى للخط العرض</label>
-							<input type="number" step="0.000001" class="form-control @error('min_latitude') is-invalid @enderror" 
-								id="min_latitude" name="min_latitude" value="{{ old('min_latitude') }}" 
-								min="-90" max="90" required>
-							@error('min_latitude')
-								<div class="invalid-feedback">{{ $message }}</div>
-							@enderror
+					@error('polygon_points')
+						<div class="alert alert-danger">
+							{{ $message }}
 						</div>
-						<div class="col-md-6 mb-3">
-							<label for="max_latitude" class="form-label">الحد الأقصى للخط العرض</label>
-							<input type="number" step="0.000001" class="form-control @error('max_latitude') is-invalid @enderror" 
-								id="max_latitude" name="max_latitude" value="{{ old('max_latitude') }}" 
-								min="-90" max="90" required>
-							@error('max_latitude')
-								<div class="invalid-feedback">{{ $message }}</div>
-							@enderror
-						</div>
-					</div>
-					<div class="row">
-						<div class="col-md-6 mb-3">
-							<label for="min_longitude" class="form-label">الحد الأدنى للخط الطول</label>
-							<input type="number" step="0.000001" class="form-control @error('min_longitude') is-invalid @enderror" 
-								id="min_longitude" name="min_longitude" value="{{ old('min_longitude') }}" 
-								min="-180" max="180" required>
-							@error('min_longitude')
-								<div class="invalid-feedback">{{ $message }}</div>
-							@enderror
-						</div>
-						<div class="col-md-6 mb-3">
-							<label for="max_longitude" class="form-label">الحد الأقصى للخط الطول</label>
-							<input type="number" step="0.000001" class="form-control @error('max_longitude') is-invalid @enderror" 
-								id="max_longitude" name="max_longitude" value="{{ old('max_longitude') }}" 
-								min="-180" max="180" required>
-							@error('max_longitude')
-								<div class="invalid-feedback">{{ $message }}</div>
-							@enderror
-						</div>
+					@enderror
+					<div class="alert alert-warning">
+						<small><i class="fas fa-exclamation-triangle"></i> يجب رسم منطقة على الخريطة أولاً قبل الحفظ</small>
 					</div>
 					<div class="d-flex justify-content-end gap-2">
 						<button type="button" class="btn btn-secondary" onclick="toggleAddForm()">إلغاء</button>
@@ -244,7 +219,7 @@
 						<td>{{ $bound->max_longitude }}</td>
 						<td>
 							<button type="button" class="btn btn-sm btn-primary" 
-								onclick="toggleEditForm({{ $bound->id }}, '{{ $bound->name }}', {{ $bound->min_latitude }}, {{ $bound->max_latitude }}, {{ $bound->min_longitude }}, {{ $bound->max_longitude }})">
+								onclick="toggleEditForm({{ $bound->id }}, '{{ $bound->name }}', null, null, null, null, {{ $bound->polygon_points ? json_encode($bound->polygon_points) : 'null' }})">
 								تعديل
 							</button>
 							<form method="POST" action="{{ route('admin.settings.bounds.destroy', $bound->id) }}" 
@@ -275,33 +250,13 @@
 		<div class="card-body">
 			<form method="POST" id="editBoundFormElement">
 				@csrf
+				<input type="hidden" id="edit_polygon_points" name="polygon_points" value="">
 				<div class="mb-3">
 					<label for="edit_name" class="form-label">اسم الحد</label>
 					<input type="text" class="form-control" id="edit_name" name="name" required>
 				</div>
-				<div class="row">
-					<div class="col-md-6 mb-3">
-						<label for="edit_min_latitude" class="form-label">الحد الأدنى للخط العرض</label>
-						<input type="number" step="0.000001" class="form-control" 
-							id="edit_min_latitude" name="min_latitude" min="-90" max="90" required>
-					</div>
-					<div class="col-md-6 mb-3">
-						<label for="edit_max_latitude" class="form-label">الحد الأقصى للخط العرض</label>
-						<input type="number" step="0.000001" class="form-control" 
-							id="edit_max_latitude" name="max_latitude" min="-90" max="90" required>
-					</div>
-				</div>
-				<div class="row">
-					<div class="col-md-6 mb-3">
-						<label for="edit_min_longitude" class="form-label">الحد الأدنى للخط الطول</label>
-						<input type="number" step="0.000001" class="form-control" 
-							id="edit_min_longitude" name="min_longitude" min="-180" max="180" required>
-					</div>
-					<div class="col-md-6 mb-3">
-						<label for="edit_max_longitude" class="form-label">الحد الأقصى للخط الطول</label>
-						<input type="number" step="0.000001" class="form-control" 
-							id="edit_max_longitude" name="max_longitude" min="-180" max="180" required>
-					</div>
+				<div class="alert alert-warning">
+					<small><i class="fas fa-exclamation-triangle"></i> يجب رسم منطقة على الخريطة أولاً قبل الحفظ</small>
 				</div>
 				<div class="d-flex justify-content-end gap-2">
 					<button type="button" class="btn btn-secondary" onclick="toggleEditForm()">إلغاء</button>
@@ -329,7 +284,7 @@
 			}
 		}
 		
-		function toggleEditForm(id, name, minLat, maxLat, minLng, maxLng) {
+		function toggleEditForm(id, name, minLat, maxLat, minLng, maxLng, polygonPointsData) {
 			var form = document.getElementById('editBoundForm');
 			if (!form) return;
 			
@@ -337,10 +292,94 @@
 				// ملء البيانات إذا تم تمريرها
 				if (id && name !== undefined) {
 					document.getElementById('edit_name').value = name || '';
-					document.getElementById('edit_min_latitude').value = minLat || '';
-					document.getElementById('edit_max_latitude').value = maxLat || '';
-					document.getElementById('edit_min_longitude').value = minLng || '';
-					document.getElementById('edit_max_longitude').value = maxLng || '';
+					
+					// حفظ polygon_points إذا كانت موجودة
+					var editPolygonPointsInput = document.getElementById('edit_polygon_points');
+					if (editPolygonPointsInput && polygonPointsData && polygonPointsData !== 'null') {
+						try {
+							var points = typeof polygonPointsData === 'string' ? JSON.parse(polygonPointsData) : polygonPointsData;
+							
+							// التأكد من أن النقاط صحيحة
+							if (Array.isArray(points) && points.length >= 3) {
+								editPolygonPointsInput.value = JSON.stringify(points);
+								
+								// رسم المضلع على الخريطة إذا كان موجوداً
+								if (map) {
+									// حذف أي مضلع سابق
+									if (selectedShape) {
+										selectedShape.setMap(null);
+										selectedShape = null;
+									}
+									
+									// رسم المضلع الفعلي من النقاط المحفوظة
+									const polygonPath = points.map(function(point) {
+										return { lat: parseFloat(point.lat), lng: parseFloat(point.lng) };
+									});
+									
+									selectedShape = new google.maps.Polygon({
+										paths: polygonPath,
+										fillColor: '#4285F4',
+										fillOpacity: 0.3,
+										strokeWeight: 2,
+										strokeColor: '#4285F4',
+										editable: true,
+										map: map
+									});
+									
+									// تحديث النقاط (استخدام getPolygonPoints للحصول على النقاط المنظفة)
+									polygonPoints = getPolygonPoints(selectedShape);
+									
+									// استخراج الحدود
+									const bounds = getPolygonBounds(selectedShape);
+									polygonBounds = bounds;
+									
+									// عرض النقاط
+									displayPolygonPoints(polygonPoints);
+									
+									// إضافة listener لتحديث النقاط عند تعديل المضلع
+									selectedShape.getPath().addListener('set_at', function() {
+										polygonPoints = getPolygonPoints(selectedShape);
+										polygonBounds = getPolygonBounds(selectedShape);
+										displayPolygonPoints(polygonPoints);
+									});
+									
+									selectedShape.getPath().addListener('insert_at', function() {
+										polygonPoints = getPolygonPoints(selectedShape);
+										polygonBounds = getPolygonBounds(selectedShape);
+										displayPolygonPoints(polygonPoints);
+									});
+									
+									selectedShape.getPath().addListener('remove_at', function() {
+										polygonPoints = getPolygonPoints(selectedShape);
+										polygonBounds = getPolygonBounds(selectedShape);
+										displayPolygonPoints(polygonPoints);
+									});
+									
+									// إظهار أزرار التحكم
+									document.getElementById('startDrawing').style.display = 'none';
+									document.getElementById('clearDrawing').style.display = 'inline-block';
+									document.getElementById('applyBounds').style.display = 'inline-block';
+									
+									// التمرير إلى الخريطة
+									setTimeout(function() {
+										const mapElement = document.getElementById('map');
+										if (mapElement) {
+											mapElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+										}
+									}, 100);
+								}
+							} else {
+								editPolygonPointsInput.value = '';
+							}
+						} catch(e) {
+							console.error('Error loading polygon points:', e);
+							if (editPolygonPointsInput) {
+								editPolygonPointsInput.value = '';
+							}
+						}
+					} else if (editPolygonPointsInput) {
+						editPolygonPointsInput.value = '';
+					}
 					
 					var formElement = document.getElementById('editBoundFormElement');
 					if (formElement) {
@@ -369,7 +408,7 @@
 		let selectedShape;
 		let polygonBounds = null;
 		let polygonPoints = [];
-		let existingBoundsRectangles = [];
+		let existingBoundsShapes = [];
 
 		function initMap() {
 			// مركز الخريطة على دبي
@@ -411,6 +450,17 @@
 					// استخراج النقاط من المضلع
 					polygonPoints = getPolygonPoints(selectedShape);
 					
+					// التحقق من صحة المضلع
+					const validation = validatePolygon(polygonPoints);
+					if (!validation.valid) {
+						alert(validation.message);
+						selectedShape.setMap(null);
+						selectedShape = null;
+						polygonPoints = [];
+						document.getElementById('startDrawing').style.display = 'inline-block';
+						return;
+					}
+					
 					// استخراج الحدود من المضلع
 					const bounds = getPolygonBounds(selectedShape);
 					polygonBounds = bounds;
@@ -451,19 +501,84 @@
 			displayExistingBounds();
 		}
 
-		// استخراج النقاط من المضلع
+		// استخراج النقاط من المضلع مع تحسينات
 		function getPolygonPoints(polygon) {
 			const paths = polygon.getPath();
 			const points = [];
+			const tolerance = 0.000001; // للتحقق من النقاط المكررة
 			
+			// استخراج جميع النقاط
 			paths.forEach(function(latLng) {
 				points.push({
-					lat: latLng.lat(),
-					lng: latLng.lng()
+					lat: parseFloat(latLng.lat().toFixed(6)),
+					lng: parseFloat(latLng.lng().toFixed(6))
 				});
 			});
 			
-			return points;
+			// إزالة النقاط المكررة المتتالية
+			const cleanedPoints = [];
+			for (let i = 0; i < points.length; i++) {
+				const current = points[i];
+				const prev = cleanedPoints[cleanedPoints.length - 1];
+				
+				if (!prev || 
+					Math.abs(current.lat - prev.lat) > tolerance || 
+					Math.abs(current.lng - prev.lng) > tolerance) {
+					cleanedPoints.push(current);
+				}
+			}
+			
+			// إزالة النقطة الأخيرة إذا كانت مكررة (Google Maps يغلق المضلع تلقائياً)
+			if (cleanedPoints.length > 0) {
+				const first = cleanedPoints[0];
+				const last = cleanedPoints[cleanedPoints.length - 1];
+				
+				// إذا كانت النقطة الأخيرة = الأولى، أزل النقطة الأخيرة
+				if (Math.abs(first.lat - last.lat) < tolerance && 
+					Math.abs(first.lng - last.lng) < tolerance &&
+					cleanedPoints.length > 3) {
+					cleanedPoints.pop(); // إزالة النقطة الأخيرة المكررة
+				}
+			}
+			
+			return cleanedPoints;
+		}
+		
+		// التحقق من صحة المضلع
+		function validatePolygon(points) {
+			// التحقق من عدد النقاط
+			if (!points || points.length < 3) {
+				return {
+					valid: false,
+					message: 'يجب أن يحتوي المضلع على 3 نقاط على الأقل'
+				};
+			}
+			
+			// التحقق من أن النقاط ليست على خط مستقيم (للمثلث)
+			if (points.length === 3) {
+				const p1 = points[0];
+				const p2 = points[1];
+				const p3 = points[2];
+				
+				// حساب المسافة بين النقاط
+				const dist12 = Math.sqrt(Math.pow(p2.lat - p1.lat, 2) + Math.pow(p2.lng - p1.lng, 2));
+				const dist23 = Math.sqrt(Math.pow(p3.lat - p2.lat, 2) + Math.pow(p3.lng - p2.lng, 2));
+				const dist13 = Math.sqrt(Math.pow(p3.lat - p1.lat, 2) + Math.pow(p3.lng - p1.lng, 2));
+				
+				// إذا كانت النقاط على خط مستقيم، مجموع المسافتين = المسافة الثالثة
+				const tolerance = 0.0001;
+				if (Math.abs(dist12 + dist23 - dist13) < tolerance ||
+					Math.abs(dist12 + dist13 - dist23) < tolerance ||
+					Math.abs(dist23 + dist13 - dist12) < tolerance) {
+					return {
+						valid: false,
+						message: 'النقاط الثلاث على خط مستقيم. يرجى اختيار نقاط تشكل مثلثاً'
+					};
+				}
+			}
+			
+			// لا نحتاج للتحقق من إغلاق المضلع - Google Maps يغلقه تلقائياً
+			return { valid: true };
 		}
 		
 		// استخراج الحدود من المضلع
@@ -490,6 +605,19 @@
 			};
 		}
 		
+		// تحديد نوع الشكل
+		function getPolygonType(points) {
+			const pointCount = points.length;
+			if (pointCount === 3) {
+				return 'مثلث';
+			} else if (pointCount === 4) {
+				return 'مربع/مستطيل';
+			} else if (pointCount >= 5) {
+				return 'مضلع (' + pointCount + ' أضلاع)';
+			}
+			return 'مضلع';
+		}
+		
 		// عرض نقاط المضلع في الجدول
 		function displayPolygonPoints(points) {
 			const pointsList = document.getElementById('pointsList');
@@ -498,13 +626,14 @@
 			
 			if (!pointsList || !pointsCount || !pointsSection) return;
 			
-			// تحديث العدد
-			pointsCount.textContent = points.length;
+			// تحديث العدد مع نوع الشكل
+			const polygonType = getPolygonType(points);
+			pointsCount.textContent = points.length + ' (' + polygonType + ')';
 			
 			// مسح الجدول
 			pointsList.innerHTML = '';
 			
-			// إضافة النقاط
+			// إضافة جميع النقاط (بدون النقطة المكررة - getPolygonPoints تزيلها)
 			points.forEach(function(point, index) {
 				const row = document.createElement('tr');
 				row.innerHTML = `
@@ -521,40 +650,25 @@
 
 		// تطبيق الحدود على الحقول
 		function applyBoundsToForm() {
-			if (!polygonBounds) return;
+			if (!polygonPoints || polygonPoints.length < 3) {
+				alert('يجب رسم مضلع يحتوي على 3 نقاط على الأقل');
+				return;
+			}
 			
-			// للحقول الجديدة (إضافة حد جديد)
-			const minLatInput = document.getElementById('min_latitude');
-			const maxLatInput = document.getElementById('max_latitude');
-			const minLngInput = document.getElementById('min_longitude');
-			const maxLngInput = document.getElementById('max_longitude');
+			// التحقق من صحة المضلع قبل الحفظ
+			const validation = validatePolygon(polygonPoints);
+			if (!validation.valid) {
+				alert(validation.message);
+				return;
+			}
 			
-			if (minLatInput) minLatInput.value = polygonBounds.min_latitude.toFixed(6);
-			if (maxLatInput) maxLatInput.value = polygonBounds.max_latitude.toFixed(6);
-			if (minLngInput) minLngInput.value = polygonBounds.min_longitude.toFixed(6);
-			if (maxLngInput) maxLngInput.value = polygonBounds.max_longitude.toFixed(6);
+			// حفظ نقاط المضلع كما هي (بدون النقطة المكررة - getPolygonPoints تزيلها)
+			const polygonPointsInput = document.getElementById('polygon_points');
+			const editPolygonPointsInput = document.getElementById('edit_polygon_points');
 			
-			// للحقول القديمة (للتوافق)
-			const dubaiMinLatInput = document.getElementById('dubai_min_latitude');
-			const dubaiMaxLatInput = document.getElementById('dubai_max_latitude');
-			const dubaiMinLngInput = document.getElementById('dubai_min_longitude');
-			const dubaiMaxLngInput = document.getElementById('dubai_max_longitude');
-			
-			if (dubaiMinLatInput) dubaiMinLatInput.value = polygonBounds.min_latitude.toFixed(6);
-			if (dubaiMaxLatInput) dubaiMaxLatInput.value = polygonBounds.max_latitude.toFixed(6);
-			if (dubaiMinLngInput) dubaiMinLngInput.value = polygonBounds.min_longitude.toFixed(6);
-			if (dubaiMaxLngInput) dubaiMaxLngInput.value = polygonBounds.max_longitude.toFixed(6);
-			
-			// للحقول في form التعديل
-			const editMinLatInput = document.getElementById('edit_min_latitude');
-			const editMaxLatInput = document.getElementById('edit_max_latitude');
-			const editMinLngInput = document.getElementById('edit_min_longitude');
-			const editMaxLngInput = document.getElementById('edit_max_longitude');
-			
-			if (editMinLatInput) editMinLatInput.value = polygonBounds.min_latitude.toFixed(6);
-			if (editMaxLatInput) editMaxLatInput.value = polygonBounds.max_latitude.toFixed(6);
-			if (editMinLngInput) editMinLngInput.value = polygonBounds.min_longitude.toFixed(6);
-			if (editMaxLngInput) editMaxLngInput.value = polygonBounds.max_longitude.toFixed(6);
+			const pointsJson = JSON.stringify(polygonPoints);
+			if (polygonPointsInput) polygonPointsInput.value = pointsJson;
+			if (editPolygonPointsInput) editPolygonPointsInput.value = pointsJson;
 		}
 		
 		// عرض الحدود الموجودة على الخريطة
@@ -564,33 +678,69 @@
 				let colorIndex = 0;
 				
 				@foreach($geographicalBounds as $bound)
-					const bounds{{ $bound->id }} = new google.maps.Rectangle({
-						bounds: {
-							north: {{ $bound->max_latitude }},
-							south: {{ $bound->min_latitude }},
-							east: {{ $bound->max_longitude }},
-							west: {{ $bound->min_longitude }}
-						},
-						fillColor: colors[colorIndex % colors.length],
-						fillOpacity: 0.2,
-						strokeWeight: 2,
-						strokeColor: colors[colorIndex % colors.length],
-						editable: false,
-						draggable: false,
-						map: map
-					});
+					@if($bound->polygon_points && is_array($bound->polygon_points) && count($bound->polygon_points) >= 3)
+						// استخدام Polygon للشكل الفعلي المرسوم
+						const polygonPoints{{ $bound->id }} = @json($bound->polygon_points);
+						const paths{{ $bound->id }} = polygonPoints{{ $bound->id }}.map(function(point) {
+							return { lat: point.lat, lng: point.lng };
+						});
+						
+						const bounds{{ $bound->id }} = new google.maps.Polygon({
+							paths: paths{{ $bound->id }},
+							fillColor: colors[colorIndex % colors.length],
+							fillOpacity: 0.2,
+							strokeWeight: 2,
+							strokeColor: colors[colorIndex % colors.length],
+							editable: false,
+							draggable: false,
+							map: map
+						});
+						
+						// حساب المركز للمعلومات
+						const boundsObj{{ $bound->id }} = new google.maps.LatLngBounds();
+						paths{{ $bound->id }}.forEach(function(point) {
+							boundsObj{{ $bound->id }}.extend(point);
+						});
+						
+						// إضافة معلومات عند النقر
+						const infoWindow{{ $bound->id }} = new google.maps.InfoWindow({
+							content: '<div style="padding: 5px;"><strong>{{ $bound->name }}</strong><br/>عدد النقاط: ' + polygonPoints{{ $bound->id }}.length + '</div>'
+						});
+						
+						bounds{{ $bound->id }}.addListener('click', function(event) {
+							infoWindow{{ $bound->id }}.setPosition(event.latLng);
+							infoWindow{{ $bound->id }}.open(map);
+						});
+					@else
+						// استخدام Rectangle للبيانات القديمة (للتوافق)
+						const bounds{{ $bound->id }} = new google.maps.Rectangle({
+							bounds: {
+								north: {{ $bound->max_latitude }},
+								south: {{ $bound->min_latitude }},
+								east: {{ $bound->max_longitude }},
+								west: {{ $bound->min_longitude }}
+							},
+							fillColor: colors[colorIndex % colors.length],
+							fillOpacity: 0.2,
+							strokeWeight: 2,
+							strokeColor: colors[colorIndex % colors.length],
+							editable: false,
+							draggable: false,
+							map: map
+						});
+						
+						// إضافة معلومات عند النقر
+						const infoWindow{{ $bound->id }} = new google.maps.InfoWindow({
+							content: '<div style="padding: 5px;"><strong>{{ $bound->name }}</strong><br/>العرض: {{ $bound->min_latitude }} - {{ $bound->max_latitude }}<br/>الطول: {{ $bound->min_longitude }} - {{ $bound->max_longitude }}</div>'
+						});
+						
+						bounds{{ $bound->id }}.addListener('click', function() {
+							infoWindow{{ $bound->id }}.setPosition(bounds{{ $bound->id }}.getBounds().getCenter());
+							infoWindow{{ $bound->id }}.open(map);
+						});
+					@endif
 					
-					// إضافة معلومات عند النقر
-					const infoWindow{{ $bound->id }} = new google.maps.InfoWindow({
-						content: '<div style="padding: 5px;"><strong>{{ $bound->name }}</strong><br/>العرض: {{ $bound->min_latitude }} - {{ $bound->max_latitude }}<br/>الطول: {{ $bound->min_longitude }} - {{ $bound->max_longitude }}</div>'
-					});
-					
-					bounds{{ $bound->id }}.addListener('click', function() {
-						infoWindow{{ $bound->id }}.setPosition(bounds{{ $bound->id }}.getBounds().getCenter());
-						infoWindow{{ $bound->id }}.open(map);
-					});
-					
-					existingBoundsRectangles.push(bounds{{ $bound->id }});
+					existingBoundsShapes.push(bounds{{ $bound->id }});
 					colorIndex++;
 				@endforeach
 			@endif
@@ -716,12 +866,83 @@
 			const applyBoundsBtn = document.getElementById('applyBounds');
 			if (applyBoundsBtn) {
 				applyBoundsBtn.addEventListener('click', function() {
+					if (!polygonPoints || polygonPoints.length < 3) {
+						alert('يرجى رسم مضلع على الخريطة أولاً');
+						return;
+					}
+					
 					applyBoundsToForm();
-					alert('تم تطبيق الحدود على الحقول بنجاح! يمكنك الآن إضافة اسم الحد وحفظه.');
+					
 					// إظهار form الإضافة إذا كان مخفياً
 					const addForm = document.getElementById('addBoundForm');
 					if (addForm && addForm.style.display === 'none') {
 						toggleAddForm();
+					}
+					
+					// التمرير إلى form الإضافة
+					setTimeout(function() {
+						addForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+					}, 100);
+					
+					// إبراز حقل الاسم
+					const nameInput = document.getElementById('name');
+					if (nameInput) {
+						nameInput.focus();
+						nameInput.style.border = '2px solid #28a745';
+						setTimeout(function() {
+							nameInput.style.border = '';
+						}, 2000);
+					}
+				});
+			}
+			
+			// التحقق قبل إرسال النموذج
+			const addBoundFormElement = document.getElementById('addBoundFormElement');
+			if (addBoundFormElement) {
+				addBoundFormElement.addEventListener('submit', function(e) {
+					const polygonPointsInput = document.getElementById('polygon_points');
+					if (!polygonPointsInput || !polygonPointsInput.value) {
+						e.preventDefault();
+						alert('يجب رسم منطقة على الخريطة أولاً ثم الضغط على "تطبيق الحدود على الحقول"');
+						return false;
+					}
+					
+					try {
+						const points = JSON.parse(polygonPointsInput.value);
+						if (!Array.isArray(points) || points.length < 3) {
+							e.preventDefault();
+							alert('يجب أن يحتوي المضلع على 3 نقاط على الأقل');
+							return false;
+						}
+					} catch(err) {
+						e.preventDefault();
+						alert('نقاط المضلع غير صحيحة. يرجى رسم منطقة جديدة');
+						return false;
+					}
+				});
+			}
+			
+			const editBoundFormElement = document.getElementById('editBoundFormElement');
+			if (editBoundFormElement) {
+				editBoundFormElement.addEventListener('submit', function(e) {
+					const editPolygonPointsInput = document.getElementById('edit_polygon_points');
+					if (!editPolygonPointsInput || !editPolygonPointsInput.value) {
+						e.preventDefault();
+						alert('يجب رسم منطقة على الخريطة أولاً ثم الضغط على "تطبيق الحدود على الحقول"');
+						return false;
+					}
+					
+					try {
+						const points = JSON.parse(editPolygonPointsInput.value);
+						if (!Array.isArray(points) || points.length < 3) {
+							e.preventDefault();
+							alert('يجب أن يحتوي المضلع على 3 نقاط على الأقل');
+							return false;
+						}
+					} catch(err) {
+						e.preventDefault();
+						alert('نقاط المضلع غير صحيحة. يرجى رسم منطقة جديدة');
+						return false;
 					}
 				});
 			}

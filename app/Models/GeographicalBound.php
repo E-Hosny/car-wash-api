@@ -12,6 +12,7 @@ class GeographicalBound extends Model
         'max_latitude',
         'min_longitude',
         'max_longitude',
+        'polygon_points',
     ];
 
     protected $casts = [
@@ -19,6 +20,7 @@ class GeographicalBound extends Model
         'max_latitude' => 'float',
         'min_longitude' => 'float',
         'max_longitude' => 'float',
+        'polygon_points' => 'array',
     ];
 
     /**
@@ -26,10 +28,93 @@ class GeographicalBound extends Model
      */
     public function isLocationWithin(float $latitude, float $longitude): bool
     {
-        return $latitude >= $this->min_latitude &&
-               $latitude <= $this->max_latitude &&
-               $longitude >= $this->min_longitude &&
-               $longitude <= $this->max_longitude;
+        // الاعتماد فقط على نقاط المضلع المرسوم
+        if (!$this->polygon_points || !is_array($this->polygon_points) || count($this->polygon_points) < 3) {
+            return false;
+        }
+        
+        return $this->isPointInPolygon($latitude, $longitude, $this->polygon_points);
+    }
+    
+    /**
+     * التحقق من أن النقطة داخل المضلع باستخدام خوارزمية Ray Casting المحسنة
+     */
+    private function isPointInPolygon(float $latitude, float $longitude, array $polygonPoints): bool
+    {
+        // Bounding Box check أولاً للأداء
+        if (!$this->isPointInBoundingBox($latitude, $longitude, $polygonPoints)) {
+            return false;
+        }
+        
+        // Ray Casting algorithm للتحقق الدقيق
+        $inside = false;
+        $j = count($polygonPoints) - 1;
+        
+        for ($i = 0; $i < count($polygonPoints); $i++) {
+            $xi = $polygonPoints[$i]['lat'] ?? 0;
+            $yi = $polygonPoints[$i]['lng'] ?? 0;
+            $xj = $polygonPoints[$j]['lat'] ?? 0;
+            $yj = $polygonPoints[$j]['lng'] ?? 0;
+            
+            // التحقق من أن الحافة أفقية (لتجنب القسمة على صفر)
+            if (abs($yj - $yi) < 0.0000001) {
+                $j = $i;
+                continue;
+            }
+            
+            // Ray Casting: إرسال شعاع أفقي من النقطة إلى اليمين
+            // التحقق من تقاطع الشعاع مع الحافة
+            $intersect = (($yi > $longitude) != ($yj > $longitude)) &&
+                         ($latitude < ($xj - $xi) * ($longitude - $yi) / ($yj - $yi) + $xi);
+            
+            if ($intersect) {
+                $inside = !$inside;
+            }
+            
+            $j = $i;
+        }
+        
+        return $inside;
+    }
+    
+    /**
+     * التحقق السريع من أن النقطة داخل Bounding Box للمضلع
+     */
+    private function isPointInBoundingBox(float $latitude, float $longitude, array $polygonPoints): bool
+    {
+        if (empty($polygonPoints)) {
+            return false;
+        }
+        
+        // استخدام min/max lat/lng المحفوظة إذا كانت موجودة
+        if ($this->min_latitude && $this->max_latitude && 
+            $this->min_longitude && $this->max_longitude) {
+            return $latitude >= $this->min_latitude &&
+                   $latitude <= $this->max_latitude &&
+                   $longitude >= $this->min_longitude &&
+                   $longitude <= $this->max_longitude;
+        }
+        
+        // حساب Bounding Box من النقاط
+        $minLat = PHP_FLOAT_MAX;
+        $maxLat = PHP_FLOAT_MIN;
+        $minLng = PHP_FLOAT_MAX;
+        $maxLng = PHP_FLOAT_MIN;
+        
+        foreach ($polygonPoints as $point) {
+            $lat = $point['lat'] ?? 0;
+            $lng = $point['lng'] ?? 0;
+            
+            $minLat = min($minLat, $lat);
+            $maxLat = max($maxLat, $lat);
+            $minLng = min($minLng, $lng);
+            $maxLng = max($maxLng, $lng);
+        }
+        
+        return $latitude >= $minLat &&
+               $latitude <= $maxLat &&
+               $longitude >= $minLng &&
+               $longitude <= $maxLng;
     }
 
     /**
@@ -39,10 +124,7 @@ class GeographicalBound extends Model
     {
         return [
             'name' => 'required|string|max:255',
-            'min_latitude' => 'required|numeric|min:-90|max:90',
-            'max_latitude' => 'required|numeric|min:-90|max:90',
-            'min_longitude' => 'required|numeric|min:-180|max:180',
-            'max_longitude' => 'required|numeric|min:-180|max:180',
+            'polygon_points' => 'required|json',
         ];
     }
 
@@ -53,14 +135,8 @@ class GeographicalBound extends Model
     {
         return [
             'name.required' => 'اسم الحد مطلوب',
-            'min_latitude.required' => 'الحد الأدنى لخط العرض مطلوب',
-            'max_latitude.required' => 'الحد الأقصى لخط العرض مطلوب',
-            'min_longitude.required' => 'الحد الأدنى لخط الطول مطلوب',
-            'max_longitude.required' => 'الحد الأقصى لخط الطول مطلوب',
-            'min_latitude.numeric' => 'الحد الأدنى لخط العرض يجب أن يكون رقماً',
-            'max_latitude.numeric' => 'الحد الأقصى لخط العرض يجب أن يكون رقماً',
-            'min_longitude.numeric' => 'الحد الأدنى لخط الطول يجب أن يكون رقماً',
-            'max_longitude.numeric' => 'الحد الأقصى لخط الطول يجب أن يكون رقماً',
+            'polygon_points.required' => 'يجب رسم منطقة على الخريطة أولاً',
+            'polygon_points.json' => 'نقاط المضلع غير صحيحة',
         ];
     }
 }
