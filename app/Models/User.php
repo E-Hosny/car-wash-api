@@ -51,6 +51,11 @@ class User extends Authenticatable
         return $this->hasMany(FcmToken::class);
     }
 
+    public function ratings()
+    {
+        return $this->hasMany(AppRating::class);
+    }
+
 
 }
 

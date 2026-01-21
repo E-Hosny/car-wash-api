@@ -13,6 +13,7 @@ use App\Http\Controllers\API\PackageController;
 use App\Http\Controllers\API\ConfigController;
 use App\Http\Controllers\API\TimeSlotController;
 use App\Http\Controllers\API\ProviderTimeSlotController;
+use App\Http\Controllers\API\RatingController;
 use App\Http\Controllers\SupportController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -103,6 +104,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/time-slots', [TimeSlotController::class, 'getTimeSlots']);
     Route::get('/time-slots/booked', [TimeSlotController::class, 'getBookedTimeSlots']);
     Route::post('/time-slots/book', [TimeSlotController::class, 'bookTimeSlot']);
+
+    // App Ratings API
+    Route::post('/ratings', [RatingController::class, 'store']);
 });
 
 // Provider/Worker Time Slots Management
