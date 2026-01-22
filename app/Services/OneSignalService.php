@@ -35,9 +35,17 @@ class OneSignalService
             $payload['android_channel_id'] = $androidChannelId;
         }
         
+        // Set sound for all platforms (iOS, Android, Web)
+        $payload['sound'] = 'default';
+        
         // Explicitly set sound for Android to ensure it plays
         // This works in combination with the channel settings
         $payload['android_sound'] = 'default';
+        
+        // Add priority to ensure sound plays (High priority = 10)
+        // This helps ensure notifications play sound even if device settings are restrictive
+        $payload['priority'] = 10;
+        $payload['android_priority'] = 10;
         
         return $payload;
     }
