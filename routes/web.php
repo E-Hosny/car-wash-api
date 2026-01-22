@@ -136,7 +136,8 @@ Route::middleware([
         Route::post('/settings/bounds/{id}/update', [SettingsController::class, 'boundsUpdate'])->name('admin.settings.bounds.update');
         Route::delete('/settings/bounds/{id}', [SettingsController::class, 'boundsDestroy'])->name('admin.settings.bounds.destroy');
 
-        // OneSignal Test
+        // Notifications
+        Route::get('/notifications', [OneSignalTestController::class, 'index'])->name('admin.notifications.index');
         Route::post('/onesignal/test-send', [OneSignalTestController::class, 'sendTest'])->name('admin.onesignal.test.send');
         Route::post('/onesignal/send-to-player', [OneSignalTestController::class, 'sendToPlayer'])->name('admin.onesignal.send.to.player');
         Route::post('/onesignal/send-to-user', [OneSignalTestController::class, 'sendToUser'])->name('admin.onesignal.send.to.user');

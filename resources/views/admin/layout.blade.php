@@ -480,6 +480,14 @@
                 </a>
             </div>
 
+            <!-- Notifications Section -->
+            <div class="nav-section">
+                <div class="nav-section-title">الإشعارات</div>
+                <a href="{{ route('admin.notifications.index') }}" class="{{ request()->routeIs('admin.notifications.*') || request()->routeIs('admin.onesignal.*') ? 'active' : '' }}">
+                    <i class="fas fa-bell"></i> الإشعارات / Notifications
+                </a>
+            </div>
+
             <!-- Settings Section -->
             <div class="nav-section">
                 <div class="nav-section-title">الإعدادات</div>
@@ -540,6 +548,14 @@
                 </a>
                 <a href="{{ route('admin.user-packages.index') }}" class="{{ request()->routeIs('admin.user-packages.*') ? 'active' : '' }}">
                     <i class="fas fa-user-check"></i> {{ __('messages.user_subscriptions') }}
+                </a>
+            </div>
+
+            <!-- Notifications Section -->
+            <div class="nav-section">
+                <div class="nav-section-title">الإشعارات</div>
+                <a href="{{ route('admin.notifications.index') }}" class="{{ request()->routeIs('admin.notifications.*') || request()->routeIs('admin.onesignal.*') ? 'active' : '' }}">
+                    <i class="fas fa-bell"></i> الإشعارات / Notifications
                 </a>
             </div>
 

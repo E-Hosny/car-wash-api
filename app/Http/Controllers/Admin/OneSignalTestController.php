@@ -16,6 +16,22 @@ class OneSignalTestController extends Controller
     }
 
     /**
+     * Display notifications management page
+     */
+    public function index()
+    {
+        // Get users for OneSignal push selection
+        $users = \App\Models\User::select('id', 'name', 'email', 'phone', 'role')
+            ->orderBy('name')
+            ->get();
+
+        return view('admin.notifications.index', [
+            'onesignal_players' => session('onesignal_players', []),
+            'users' => $users,
+        ]);
+    }
+
+    /**
      * Send test push notification to all subscribed users
      */
     public function sendTest(Request $request)
@@ -115,7 +131,7 @@ class OneSignalTestController extends Controller
                 return back()->with('error', 'Failed to fetch players: ' . implode(', ', $response['errors']));
             }
 
-            // Store players in session to display in dashboard
+            // Store players in session to display in notifications page
             session(['onesignal_players' => $response['players'] ?? []]);
             
             return back()->with('success', 'Players loaded successfully!');
