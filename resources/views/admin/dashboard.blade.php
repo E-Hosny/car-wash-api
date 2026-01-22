@@ -89,6 +89,16 @@
                     </a>
                 </div>
                 <div class="card-body">
+                    <!-- Android Heads-up Notification Note -->
+                    <div class="alert alert-info mb-3">
+                        <i class="bi bi-info-circle"></i> 
+                        <strong>Android Heads-up Notifications:</strong><br>
+                        1. Create Android Category in OneSignal Dashboard: Settings > Push & In-App > Android Notification Channels<br>
+                        2. Set <strong>Importance: Urgent</strong> and <strong>Sound: Default</strong> in the category<br>
+                        3. Copy the Channel ID and add it to <code>ONESIGNAL_ANDROID_CHANNEL_ID</code> in .env<br>
+                        4. <strong>Important:</strong> After creating/updating channel, uninstall/reinstall or clear app data to test new settings.
+                    </div>
+                    
                     <div class="row">
                         <div class="col-md-4">
                             <h6 class="mb-3">Send to All Users</h6>

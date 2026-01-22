@@ -17,6 +17,28 @@ class OneSignalService
     }
 
     /**
+     * Add Android channel settings for heads-up notifications with sound
+     * The channel must be created in OneSignal Dashboard with:
+     * - Importance: Urgent (for heads-up notification)
+     * - Sound: Default (or custom)
+     *
+     * @param array $payload
+     * @return array
+     */
+    protected function addAndroidChannelSettings(array $payload): array
+    {
+        $androidChannelId = Config::get('services.onesignal.android_channel_id');
+        
+        // Add Android channel ID if configured
+        // OneSignal Category will handle Importance (Urgent) and Sound automatically
+        if (!empty($androidChannelId)) {
+            $payload['android_channel_id'] = $androidChannelId;
+        }
+        
+        return $payload;
+    }
+
+    /**
      * Send push notification to all subscribed users
      *
      * @param string $title
@@ -46,6 +68,9 @@ class OneSignalService
         if (!empty($data)) {
             $payload['data'] = $data;
         }
+
+        // Add Android channel settings for heads-up + sound
+        $payload = $this->addAndroidChannelSettings($payload);
 
         // OneSignal API requires: Authorization: Key {REST_API_KEY}
         // According to OneSignal documentation, use "Key" prefix, not "Basic"
@@ -93,6 +118,9 @@ class OneSignalService
         if (!empty($data)) {
             $payload['data'] = $data;
         }
+
+        // Add Android channel settings for heads-up + sound
+        $payload = $this->addAndroidChannelSettings($payload);
 
         $response = Http::withHeaders([
             'Authorization' => 'Key ' . $this->restApiKey,
@@ -171,6 +199,9 @@ class OneSignalService
         if (!empty($data)) {
             $payload['data'] = $data;
         }
+
+        // Add Android channel settings for heads-up + sound
+        $payload = $this->addAndroidChannelSettings($payload);
 
         $response = Http::withHeaders([
             'Authorization' => 'Key ' . $this->restApiKey,
