@@ -138,6 +138,9 @@ Route::middleware([
 
         // OneSignal Test
         Route::post('/onesignal/test-send', [OneSignalTestController::class, 'sendTest'])->name('admin.onesignal.test.send');
+        Route::post('/onesignal/send-to-player', [OneSignalTestController::class, 'sendToPlayer'])->name('admin.onesignal.send.to.player');
+        Route::post('/onesignal/send-to-user', [OneSignalTestController::class, 'sendToUser'])->name('admin.onesignal.send.to.user');
+        Route::get('/onesignal/get-players', [OneSignalTestController::class, 'getPlayers'])->name('admin.onesignal.get.players');
     });
 
 });
