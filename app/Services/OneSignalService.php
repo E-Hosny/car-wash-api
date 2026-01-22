@@ -47,11 +47,12 @@ class OneSignalService
             $payload['data'] = $data;
         }
 
-        $response = Http::withBasicAuth($this->restApiKey, '')
-            ->withHeaders([
-                'Content-Type' => 'application/json',
-            ])
-            ->post('https://onesignal.com/api/v1/notifications', $payload);
+        // OneSignal API requires: Authorization: Key {REST_API_KEY}
+        // According to OneSignal documentation, use "Key" prefix, not "Basic"
+        $response = Http::withHeaders([
+            'Authorization' => 'Key ' . $this->restApiKey,
+            'Content-Type' => 'application/json',
+        ])->post('https://onesignal.com/api/v1/notifications', $payload);
 
         return $response->json();
     }
