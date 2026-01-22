@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\PackageController;
 use App\Http\Controllers\Admin\UserPackageController;
 use App\Http\Controllers\Admin\SettingsController;
+use App\Http\Controllers\Admin\OneSignalTestController;
 use App\Http\Controllers\API\QrCodeController;
 use App\Http\Controllers\SupportController;
 use Illuminate\Support\Facades\Route;
@@ -134,6 +135,9 @@ Route::middleware([
         Route::post('/settings/bounds', [SettingsController::class, 'boundsStore'])->name('admin.settings.bounds.store');
         Route::post('/settings/bounds/{id}/update', [SettingsController::class, 'boundsUpdate'])->name('admin.settings.bounds.update');
         Route::delete('/settings/bounds/{id}', [SettingsController::class, 'boundsDestroy'])->name('admin.settings.bounds.destroy');
+
+        // OneSignal Test
+        Route::post('/onesignal/test-send', [OneSignalTestController::class, 'sendTest'])->name('admin.onesignal.test.send');
     });
 
 });
