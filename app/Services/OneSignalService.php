@@ -30,10 +30,14 @@ class OneSignalService
         $androidChannelId = Config::get('services.onesignal.android_channel_id');
         
         // Add Android channel ID if configured
-        // OneSignal Category will handle Importance (Urgent) and Sound automatically
+        // OneSignal Category will handle Importance (Urgent) automatically
         if (!empty($androidChannelId)) {
             $payload['android_channel_id'] = $androidChannelId;
         }
+        
+        // Explicitly set sound for Android to ensure it plays
+        // This works in combination with the channel settings
+        $payload['android_sound'] = 'default';
         
         return $payload;
     }
