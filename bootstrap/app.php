@@ -4,6 +4,8 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Database\QueryException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -19,7 +21,17 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        // Handle AuthenticationException for API and Admin routes
+        // 1. معالجة ValidationException - إرجاع JSON دائماً لمسارات API فقط
+        $exceptions->render(function (ValidationException $e, \Illuminate\Http\Request $request) {
+            if ($request->is('api/*')) {
+                return response()->json([
+                    'message' => 'Validation failed',
+                    'errors' => $e->errors(),
+                ], 422);
+            }
+        });
+
+        // 2. Handle AuthenticationException for API and Admin routes
         $exceptions->render(function (AuthenticationException $e, \Illuminate\Http\Request $request) {
             // For API routes, return JSON response instead of redirect
             if ($request->expectsJson() || $request->is('api/*')) {
@@ -36,5 +48,42 @@ return Application::configure(basePath: dirname(__DIR__))
             
             // Default: redirect to admin login for web requests
             return redirect()->route('admin.login');
+        });
+
+        // 3. معالجة أخطاء قاعدة البيانات - لمسارات API فقط
+        $exceptions->render(function (QueryException $e, \Illuminate\Http\Request $request) {
+            if ($request->is('api/*')) {
+                \Log::error('Database error in API', [
+                    'message' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                
+                return response()->json([
+                    'message' => 'Database error occurred',
+                    'error' => config('app.debug') ? $e->getMessage() : 'Internal server error'
+                ], 500);
+            }
+        });
+
+        // 4. معالجة جميع الاستثناءات الأخرى - لمسارات API فقط
+        $exceptions->render(function (\Throwable $e, \Illuminate\Http\Request $request) {
+            if ($request->is('api/*')) {
+                \Log::error('Unhandled exception in API', [
+                    'message' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                
+                $statusCode = method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500;
+                
+                return response()->json([
+                    'message' => $e->getMessage(),
+                    'error' => class_basename($e),
+                ] + (config('app.debug') ? [
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                ] : []), $statusCode);
+            }
         });
     })->create();
