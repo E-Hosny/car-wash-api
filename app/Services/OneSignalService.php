@@ -323,4 +323,54 @@ class OneSignalService
             ]
         );
     }
+
+    /**
+     * Send push notification when order is completed (for rating)
+     *
+     * @param int $userId
+     * @param int $orderId
+     * @param string|null $customerName
+     * @return array|null
+     */
+    public function sendOrderCompletionRatingNotification(int $userId, int $orderId, ?string $customerName = null)
+    {
+        // Get notification settings from database
+        $defaultTitle = 'تم إكمال طلبك';
+        $defaultMessage = 'تم إكمال طلبك رقم {order_id}. شاركنا رأيك وقيم تجربتك!';
+        
+        $title = Setting::getValue('onesignal_order_completion_rating_title', $defaultTitle);
+        $message = Setting::getValue('onesignal_order_completion_rating_message', $defaultMessage);
+        
+        // If customer name not provided, fetch it
+        if (empty($customerName)) {
+            $customer = User::find($userId);
+            $customerName = $customer ? $customer->name : 'عميلنا العزيز';
+        }
+        
+        // Replace placeholders
+        $title = str_replace(
+            ['{order_id}', '{customer_name}'],
+            [$orderId, $customerName],
+            $title
+        );
+        
+        $message = str_replace(
+            ['{order_id}', '{customer_name}'],
+            [$orderId, $customerName],
+            $message
+        );
+        
+        // Send notification to user with deep link to rate app screen
+        return $this->sendToUsers(
+            $userId,
+            $title,
+            $message,
+            [
+                'type' => 'ORDER_COMPLETED_RATING',
+                'order_id' => $orderId,
+                'screen' => 'rate_app',
+                'route' => '/rate-app'
+            ]
+        );
+    }
 }

@@ -143,6 +143,7 @@ Route::middleware([
         Route::post('/onesignal/send-to-user', [OneSignalTestController::class, 'sendToUser'])->name('admin.onesignal.send.to.user');
         Route::get('/onesignal/get-players', [OneSignalTestController::class, 'getPlayers'])->name('admin.onesignal.get.players');
         Route::post('/notifications/order-payment-settings', [OneSignalTestController::class, 'updateOrderPaymentSettings'])->name('admin.notifications.order-payment-settings');
+        Route::post('/notifications/order-completion-rating-settings', [OneSignalTestController::class, 'updateOrderCompletionRatingSettings'])->name('admin.notifications.order-completion-rating-settings');
     });
 
 });

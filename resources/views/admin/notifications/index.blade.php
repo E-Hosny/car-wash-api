@@ -305,6 +305,90 @@
             </div>
         </div>
     </div>
+
+    <!-- Order Completion Rating Notification Settings Section -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-warning shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-star"></i> Order Completion Rating Notification Settings
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info mb-3">
+                        <i class="bi bi-info-circle"></i> 
+                        <strong>About:</strong> Configure the push notification that will be automatically sent to customers when their order status is changed to "completed" by the provider. This notification includes a deep link to the app rating screen. You can use placeholders to personalize the message.
+                    </div>
+
+                    <form id="orderCompletionRatingSettingsForm" action="{{ route('admin.notifications.order-completion-rating-settings') }}" method="POST">
+                        @csrf
+                        
+                        <div class="mb-3">
+                            <label for="order_completion_rating_title" class="form-label">
+                                <strong>Notification Title</strong>
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="order_completion_rating_title" 
+                                   name="title" 
+                                   value="{{ old('title', $order_completion_rating_title ?? 'تم إكمال طلبك') }}" 
+                                   required
+                                   maxlength="255">
+                            <small class="form-text text-muted">The title of the push notification</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="order_completion_rating_message" class="form-label">
+                                <strong>Notification Message</strong>
+                            </label>
+                            <textarea class="form-control" 
+                                      id="order_completion_rating_message" 
+                                      name="message" 
+                                      rows="3" 
+                                      required
+                                      maxlength="500">{{ old('message', $order_completion_rating_message ?? 'تم إكمال طلبك رقم {order_id}. شاركنا رأيك وقيم تجربتك!') }}</textarea>
+                            <small class="form-text text-muted">The message body of the push notification</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label"><strong>Available Placeholders:</strong></label>
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <code>{order_id}</code> - Order number
+                                        </div>
+                                        <div class="col-md-6">
+                                            <code>{customer_name}</code> - Customer name
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label"><strong>Preview:</strong></label>
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <div class="mb-2">
+                                        <strong>Title:</strong> <span id="preview_rating_title">-</span>
+                                    </div>
+                                    <div>
+                                        <strong>Message:</strong> <span id="preview_rating_message">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" id="saveRatingSettingsBtn" class="btn btn-warning">
+                            <i class="bi bi-save"></i> Save Settings
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -425,6 +509,52 @@ document.addEventListener('DOMContentLoaded', function() {
         settingsForm.addEventListener('submit', function(e) {
             saveBtn.disabled = true;
             saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving...';
+        });
+    }
+
+    // Order Completion Rating Settings Preview
+    function updateRatingPreview() {
+        const title = document.getElementById('order_completion_rating_title').value || '';
+        const message = document.getElementById('order_completion_rating_message').value || '';
+        
+        // Replace placeholders with example values
+        const previewTitle = title
+            .replace(/{order_id}/g, '123')
+            .replace(/{customer_name}/g, 'أحمد محمد');
+        
+        const previewMessage = message
+            .replace(/{order_id}/g, '123')
+            .replace(/{customer_name}/g, 'أحمد محمد');
+        
+        document.getElementById('preview_rating_title').textContent = previewTitle || '-';
+        document.getElementById('preview_rating_message').textContent = previewMessage || '-';
+    }
+
+    // Update rating preview on input change
+    const ratingTitleInput = document.getElementById('order_completion_rating_title');
+    const ratingMessageInput = document.getElementById('order_completion_rating_message');
+    
+    if (ratingTitleInput) {
+        ratingTitleInput.addEventListener('input', updateRatingPreview);
+        ratingTitleInput.addEventListener('keyup', updateRatingPreview);
+    }
+    
+    if (ratingMessageInput) {
+        ratingMessageInput.addEventListener('input', updateRatingPreview);
+        ratingMessageInput.addEventListener('keyup', updateRatingPreview);
+    }
+    
+    // Initial rating preview
+    updateRatingPreview();
+
+    // Rating settings form submit handler
+    const ratingSettingsForm = document.getElementById('orderCompletionRatingSettingsForm');
+    const saveRatingBtn = document.getElementById('saveRatingSettingsBtn');
+    
+    if (ratingSettingsForm && saveRatingBtn) {
+        ratingSettingsForm.addEventListener('submit', function(e) {
+            saveRatingBtn.disabled = true;
+            saveRatingBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving...';
         });
     }
 });

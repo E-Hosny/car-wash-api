@@ -16,6 +16,7 @@ use App\Services\FirebaseNotificationService;
 use App\Models\FcmToken;
 use App\Services\WhatsAppService;
 use App\Services\LocationValidationService;
+use App\Services\OneSignalService;
 
 class OrderController extends Controller
 {
@@ -743,6 +744,27 @@ public function updateStatus(Request $request, $id)
 
     $order->status = $request->status;
     $order->save();
+
+    // Send OneSignal notification when order status is changed to completed
+    if ($request->status === 'completed') {
+        try {
+            $order->load('customer');
+            if ($order->customer) {
+                app(OneSignalService::class)->sendOrderCompletionRatingNotification(
+                    $order->customer_id,
+                    $order->id,
+                    $order->customer->name
+                );
+                Log::info("OneSignal rating notification sent for order {$order->id} completion");
+            }
+        } catch (\Exception $e) {
+            // Log error but don't fail the status update
+            Log::error('Failed to send OneSignal rating notification for order completion', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
 
     return response()->json(['message' => 'Status updated successfully.', 'order' => $order]);
 }

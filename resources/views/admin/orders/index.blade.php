@@ -16,6 +16,7 @@
                 <th>{{ __('messages.status') }}</th>
                 <th>{{ __('messages.scheduled_at') }}</th>
                 <th>{{ __('messages.date') }}</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -64,10 +65,21 @@
                         @endif
                     </td>
                     <td>{{ $order->created_at->format('Y-m-d') }}</td>
+                    <td>
+                        @if($order->status !== 'completed')
+                            <button class="btn btn-success btn-sm mark-completed-btn" 
+                                    data-order-id="{{ $order->id }}"
+                                    title="Mark as Completed (Test Rating Notification)">
+                                <i class="bi bi-check-circle"></i> Mark Completed
+                            </button>
+                        @else
+                            <span class="badge bg-success">Completed</span>
+                        @endif
+                    </td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="9">{{ __('messages.no_orders') }}</td>
+                    <td colspan="10">{{ __('messages.no_orders') }}</td>
                 </tr>
             @endforelse
         </tbody>
@@ -211,6 +223,57 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(() => alert.remove(), 300);
         }, 3000);
     }
+    
+    // Handle "Mark as Completed" button clicks
+    document.querySelectorAll('.mark-completed-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const orderId = this.getAttribute('data-order-id');
+            const button = this;
+            
+            if (!confirm('Are you sure you want to mark this order as completed? This will send a rating notification to the customer.')) {
+                return;
+            }
+            
+            // Disable button and show loading
+            button.disabled = true;
+            const originalText = button.innerHTML;
+            button.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Updating...';
+            
+            // Send request to mark as completed
+            fetch(`/admin/orders/${orderId}/status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    status: 'completed',
+                    notes: 'Marked as completed for testing'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('success', 'Order marked as completed! Rating notification sent.');
+                    // Reload page after 1 second to show updated status
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    button.disabled = false;
+                    button.innerHTML = originalText;
+                    showAlert('danger', data.message || 'Error updating order status');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                button.disabled = false;
+                button.innerHTML = originalText;
+                showAlert('danger', 'Error updating order status');
+            });
+        });
+    });
 });
 </script>
 @endsection

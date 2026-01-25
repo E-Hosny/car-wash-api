@@ -10,6 +10,8 @@ use App\Models\HourSlotInstance;
 use App\Models\Setting;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use App\Services\OneSignalService;
+use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
 {
@@ -224,6 +226,27 @@ class OrderController extends Controller
             'status' => $request->status,
             'admin_notes' => $request->notes
         ]);
+        
+        // Send OneSignal notification when order status is changed to completed
+        if ($request->status === 'completed') {
+            try {
+                $order->load('customer');
+                if ($order->customer) {
+                    app(OneSignalService::class)->sendOrderCompletionRatingNotification(
+                        $order->customer_id,
+                        $order->id,
+                        $order->customer->name
+                    );
+                    Log::info("OneSignal rating notification sent for order {$order->id} completion (from admin panel)");
+                }
+            } catch (\Exception $e) {
+                // Log error but don't fail the status update
+                Log::error('Failed to send OneSignal rating notification for order completion (from admin panel)', [
+                    'order_id' => $order->id,
+                    'error' => $e->getMessage()
+                ]);
+            }
+        }
         
         return response()->json([
             'success' => true,
