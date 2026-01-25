@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Log;
 use App\Models\Setting;
 use App\Models\User;
 
@@ -53,6 +54,45 @@ class OneSignalService
     }
 
     /**
+     * Add app icon to notification payload
+     * Uses small_icon from Flutter (always small) + large_icon/big_picture in production (bigger display)
+     *
+     * @param array $payload
+     * @return array
+     */
+    protected function addAppIcon(array $payload): array
+    {
+        // Always add small_icon from Android app resources (works offline)
+        // Note: small_icon is always small (24x24 dp) in Android notifications
+        $payload['small_icon'] = 'ic_notification_icon';
+        
+        // Add large_icon and big_picture in production (when URL is not localhost)
+        // OneSignal cannot access localhost URLs, so we skip them in development
+        $baseUrl = rtrim(Config::get('app.url'), '/');
+        
+        // Check if URL is production (not localhost or 127.0.0.1)
+        if (!empty($baseUrl) && 
+            strpos($baseUrl, 'localhost') === false && 
+            strpos($baseUrl, '127.0.0.1') === false &&
+            strpos($baseUrl, 'http://') !== false) {
+            
+            $iconUrl = $baseUrl . '/images/notification_icon.png';
+            
+            // Add big_picture for larger display in expanded notifications
+            $payload['big_picture'] = $iconUrl;
+            
+            // Add large_icon for better display
+            $payload['large_icon'] = $iconUrl;
+            
+            Log::info('Added large_icon and big_picture for production: ' . $iconUrl);
+        } else {
+            Log::info('Skipping large_icon/big_picture - using localhost (development mode)');
+        }
+        
+        return $payload;
+    }
+
+    /**
      * Send push notification to all subscribed users
      *
      * @param string $title
@@ -82,6 +122,9 @@ class OneSignalService
         if (!empty($data)) {
             $payload['data'] = $data;
         }
+
+        // Add app icon from Android resources
+        $payload = $this->addAppIcon($payload);
 
         // Add Android channel settings for heads-up + sound
         $payload = $this->addAndroidChannelSettings($payload);
@@ -132,6 +175,9 @@ class OneSignalService
         if (!empty($data)) {
             $payload['data'] = $data;
         }
+
+        // Add app icon from Android resources
+        $payload = $this->addAppIcon($payload);
 
         // Add Android channel settings for heads-up + sound
         $payload = $this->addAndroidChannelSettings($payload);
@@ -213,6 +259,9 @@ class OneSignalService
         if (!empty($data)) {
             $payload['data'] = $data;
         }
+
+        // Add app icon from Android resources
+        $payload = $this->addAppIcon($payload);
 
         // Add Android channel settings for heads-up + sound
         $payload = $this->addAndroidChannelSettings($payload);
