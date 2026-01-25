@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use App\Models\Order;
 use App\Services\LocationValidationService;
+use App\Services\OneSignalService;
 
 class PaymentController extends Controller
 {
@@ -354,6 +355,28 @@ class PaymentController extends Controller
                 'paid_at' => $request->payment_status === 'paid' ? now() : null,
             ]);
 
+            // Send OneSignal notification when payment is completed
+            if ($request->payment_status === 'paid') {
+                try {
+                    $order->load('customer');
+                    if ($order->customer) {
+                        app(OneSignalService::class)->sendOrderPaymentNotification(
+                            $order->customer_id,
+                            $order->id,
+                            $order->total,
+                            $order->customer->name
+                        );
+                        Log::info("OneSignal notification sent for order {$order->id} payment completion");
+                    }
+                } catch (\Exception $e) {
+                    // Log error but don't fail the payment update
+                    Log::error('Failed to send OneSignal notification for order payment', [
+                        'order_id' => $order->id,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
+
             return response()->json([
                 'success' => true,
                 'message' => 'Payment status updated successfully',
@@ -410,7 +433,13 @@ class PaymentController extends Controller
         $orderId = $paymentIntent->metadata->order_id ?? null;
         
         if ($orderId) {
+            // Try to find order by payment_intent_id first
             $order = Order::where('payment_intent_id', $paymentIntent->id)->first();
+            
+            // If not found, try to find by order_id (in case order_id is numeric)
+            if (!$order && is_numeric($orderId)) {
+                $order = Order::find($orderId);
+            }
             
             if ($order) {
                 $order->update([
@@ -419,6 +448,26 @@ class PaymentController extends Controller
                 ]);
                 
                 Log::info("Order {$order->id} payment succeeded");
+                
+                // Send OneSignal notification when payment is completed
+                try {
+                    $order->load('customer');
+                    if ($order->customer) {
+                        app(OneSignalService::class)->sendOrderPaymentNotification(
+                            $order->customer_id,
+                            $order->id,
+                            $order->total,
+                            $order->customer->name
+                        );
+                        Log::info("OneSignal notification sent for order {$order->id} payment completion via webhook");
+                    }
+                } catch (\Exception $e) {
+                    // Log error but don't fail the payment update
+                    Log::error('Failed to send OneSignal notification for order payment via webhook', [
+                        'order_id' => $order->id,
+                        'error' => $e->getMessage()
+                    ]);
+                }
             }
         }
     }

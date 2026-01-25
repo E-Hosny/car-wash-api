@@ -218,6 +218,93 @@
             </div>
         </div>
     </div>
+
+    <!-- Order Payment Notification Settings Section -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-primary shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-gear"></i> Order Payment Notification Settings
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info mb-3">
+                        <i class="bi bi-info-circle"></i> 
+                        <strong>About:</strong> Configure the push notification that will be automatically sent to customers when they complete an order payment. You can use placeholders to personalize the message.
+                    </div>
+
+                    <form id="orderPaymentSettingsForm" action="{{ route('admin.notifications.order-payment-settings') }}" method="POST">
+                        @csrf
+                        
+                        <div class="mb-3">
+                            <label for="order_payment_title" class="form-label">
+                                <strong>Notification Title</strong>
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="order_payment_title" 
+                                   name="title" 
+                                   value="{{ old('title', $order_payment_title ?? 'تم إتمام الطلب بنجاح') }}" 
+                                   required
+                                   maxlength="255">
+                            <small class="form-text text-muted">The title of the push notification</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="order_payment_message" class="form-label">
+                                <strong>Notification Message</strong>
+                            </label>
+                            <textarea class="form-control" 
+                                      id="order_payment_message" 
+                                      name="message" 
+                                      rows="3" 
+                                      required
+                                      maxlength="500">{{ old('message', $order_payment_message ?? 'تم إتمام طلبك رقم {order_id} بنجاح. المبلغ: {total}') }}</textarea>
+                            <small class="form-text text-muted">The message body of the push notification</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label"><strong>Available Placeholders:</strong></label>
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <code>{order_id}</code> - Order number
+                                        </div>
+                                        <div class="col-md-4">
+                                            <code>{total}</code> - Order total amount
+                                        </div>
+                                        <div class="col-md-4">
+                                            <code>{customer_name}</code> - Customer name
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label"><strong>Preview:</strong></label>
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <div class="mb-2">
+                                        <strong>Title:</strong> <span id="preview_title">-</span>
+                                    </div>
+                                    <div>
+                                        <strong>Message:</strong> <span id="preview_message">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" id="saveSettingsBtn" class="btn btn-primary">
+                            <i class="bi bi-save"></i> Save Settings
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -291,5 +378,55 @@ function sendToUserFromTable(userId) {
     document.getElementById('user_id').scrollIntoView({ behavior: 'smooth', block: 'center' });
     document.getElementById('user_id').focus();
 }
+
+// Order Payment Settings Preview
+function updatePreview() {
+    const title = document.getElementById('order_payment_title').value || '';
+    const message = document.getElementById('order_payment_message').value || '';
+    
+    // Replace placeholders with example values
+    const previewTitle = title
+        .replace(/{order_id}/g, '123')
+        .replace(/{total}/g, '150.00')
+        .replace(/{customer_name}/g, 'أحمد محمد');
+    
+    const previewMessage = message
+        .replace(/{order_id}/g, '123')
+        .replace(/{total}/g, '150.00')
+        .replace(/{customer_name}/g, 'أحمد محمد');
+    
+    document.getElementById('preview_title').textContent = previewTitle || '-';
+    document.getElementById('preview_message').textContent = previewMessage || '-';
+}
+
+// Update preview on input change
+document.addEventListener('DOMContentLoaded', function() {
+    const titleInput = document.getElementById('order_payment_title');
+    const messageInput = document.getElementById('order_payment_message');
+    
+    if (titleInput) {
+        titleInput.addEventListener('input', updatePreview);
+        titleInput.addEventListener('keyup', updatePreview);
+    }
+    
+    if (messageInput) {
+        messageInput.addEventListener('input', updatePreview);
+        messageInput.addEventListener('keyup', updatePreview);
+    }
+    
+    // Initial preview
+    updatePreview();
+
+    // Settings form submit handler
+    const settingsForm = document.getElementById('orderPaymentSettingsForm');
+    const saveBtn = document.getElementById('saveSettingsBtn');
+    
+    if (settingsForm && saveBtn) {
+        settingsForm.addEventListener('submit', function(e) {
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving...';
+        });
+    }
+});
 </script>
 @endsection

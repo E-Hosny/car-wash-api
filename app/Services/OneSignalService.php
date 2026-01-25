@@ -4,6 +4,8 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Config;
+use App\Models\Setting;
+use App\Models\User;
 
 class OneSignalService
 {
@@ -221,5 +223,55 @@ class OneSignalService
         ])->post('https://onesignal.com/api/v1/notifications', $payload);
 
         return $response->json();
+    }
+
+    /**
+     * Send push notification when order payment is completed
+     *
+     * @param int $userId
+     * @param int $orderId
+     * @param float $orderTotal
+     * @param string|null $customerName
+     * @return array|null
+     */
+    public function sendOrderPaymentNotification(int $userId, int $orderId, float $orderTotal, ?string $customerName = null)
+    {
+        // Get notification settings from database
+        $defaultTitle = 'تم إتمام الطلب بنجاح';
+        $defaultMessage = 'تم إتمام طلبك رقم {order_id} بنجاح. المبلغ: {total}';
+        
+        $title = Setting::getValue('onesignal_order_payment_title', $defaultTitle);
+        $message = Setting::getValue('onesignal_order_payment_message', $defaultMessage);
+        
+        // If customer name not provided, fetch it
+        if (empty($customerName)) {
+            $customer = User::find($userId);
+            $customerName = $customer ? $customer->name : 'عميلنا العزيز';
+        }
+        
+        // Replace placeholders
+        $title = str_replace(
+            ['{order_id}', '{total}', '{customer_name}'],
+            [$orderId, number_format($orderTotal, 2), $customerName],
+            $title
+        );
+        
+        $message = str_replace(
+            ['{order_id}', '{total}', '{customer_name}'],
+            [$orderId, number_format($orderTotal, 2), $customerName],
+            $message
+        );
+        
+        // Send notification to user
+        return $this->sendToUsers(
+            $userId,
+            $title,
+            $message,
+            [
+                'type' => 'ORDER_PAYMENT',
+                'order_id' => $orderId,
+                'screen' => 'orders'
+            ]
+        );
     }
 }

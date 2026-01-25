@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Services\OneSignalService;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 
 class OneSignalTestController extends Controller
@@ -25,9 +26,15 @@ class OneSignalTestController extends Controller
             ->orderBy('name')
             ->get();
 
+        // Get order payment notification settings
+        $orderPaymentTitle = Setting::getValue('onesignal_order_payment_title', 'تم إتمام الطلب بنجاح');
+        $orderPaymentMessage = Setting::getValue('onesignal_order_payment_message', 'تم إتمام طلبك رقم {order_id} بنجاح. المبلغ: {total}');
+
         return view('admin.notifications.index', [
             'onesignal_players' => session('onesignal_players', []),
             'users' => $users,
+            'order_payment_title' => $orderPaymentTitle,
+            'order_payment_message' => $orderPaymentMessage,
         ]);
     }
 
@@ -185,6 +192,26 @@ class OneSignalTestController extends Controller
         } catch (\Exception $e) {
             session(['onesignal_last_response' => ['error' => $e->getMessage()]]);
             return back()->with('error', 'Error sending notification: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Update order payment notification settings
+     */
+    public function updateOrderPaymentSettings(Request $request)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'message' => 'required|string|max:500',
+        ]);
+
+        try {
+            Setting::setValue('onesignal_order_payment_title', $request->title);
+            Setting::setValue('onesignal_order_payment_message', $request->message);
+
+            return back()->with('success', 'Order payment notification settings saved successfully!');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Error saving settings: ' . $e->getMessage());
         }
     }
 }
