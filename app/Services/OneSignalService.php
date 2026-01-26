@@ -319,7 +319,7 @@ class OneSignalService
             [
                 'type' => 'ORDER_PAYMENT',
                 'order_id' => $orderId,
-                'screen' => 'orders'
+                'screen' => 'my_orders'
             ]
         );
     }

@@ -33,6 +33,9 @@ class PackageController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'description_items' => 'nullable|array',
+            'description_items.*.header' => 'required_with:description_items|string|max:255',
+            'description_items.*.description' => 'required_with:description_items|string',
             'price' => 'required|numeric|min:0',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'services' => 'required|array',
@@ -42,9 +45,23 @@ class PackageController extends Controller
 
         DB::beginTransaction();
         try {
+            // Process description: use description_items if provided, otherwise use description
+            $descriptionValue = null;
+            if ($request->has('description_items') && is_array($request->description_items) && count($request->description_items) > 0) {
+                // Filter out empty items
+                $filteredItems = array_filter($request->description_items, function($item) {
+                    return !empty($item['header']) && !empty($item['description']);
+                });
+                if (count($filteredItems) > 0) {
+                    $descriptionValue = json_encode(array_values($filteredItems));
+                }
+            } elseif ($request->has('description') && !empty($request->description)) {
+                $descriptionValue = $request->description;
+            }
+
             $package = Package::create([
                 'name' => $request->name,
-                'description' => $request->description,
+                'description' => $descriptionValue,
                 'price' => $request->price,
                 'image' => null,
             ]);
@@ -93,6 +110,9 @@ class PackageController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
+            'description_items' => 'nullable|array',
+            'description_items.*.header' => 'required_with:description_items|string|max:255',
+            'description_items.*.description' => 'required_with:description_items|string',
             'price' => 'required|numeric|min:0',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'services' => 'required|array',
@@ -104,9 +124,23 @@ class PackageController extends Controller
 
         DB::beginTransaction();
         try {
+            // Process description: use description_items if provided, otherwise use description
+            $descriptionValue = null;
+            if ($request->has('description_items') && is_array($request->description_items) && count($request->description_items) > 0) {
+                // Filter out empty items
+                $filteredItems = array_filter($request->description_items, function($item) {
+                    return !empty($item['header']) && !empty($item['description']);
+                });
+                if (count($filteredItems) > 0) {
+                    $descriptionValue = json_encode(array_values($filteredItems));
+                }
+            } elseif ($request->has('description') && !empty($request->description)) {
+                $descriptionValue = $request->description;
+            }
+
             $package->update([
                 'name' => $request->name,
-                'description' => $request->description,
+                'description' => $descriptionValue,
                 'price' => $request->price,
             ]);
 

@@ -50,10 +50,13 @@ class PackageController extends Controller
                 $hasRemainingServices = $userPackage->hasRemainingServices();
                 $canUpgrade = $isExpired || !$hasRemainingServices;
                 
+                $descriptionData = $this->parsePackageDescription($userPackage->package->description);
+                
                 $currentPackage = [
                     'id' => $userPackage->package->id,
                     'name' => $userPackage->package->name,
-                    'description' => $userPackage->package->description,
+                    'description' => $descriptionData['full'],
+                    'description_headers' => $descriptionData['headers'],
                     'price' => $userPackage->package->price,
                     'expires_at' => $userPackage->expires_at,
                     'status' => $userPackage->status,
@@ -73,10 +76,14 @@ class PackageController extends Controller
                 ];
             });
             
+            // Parse description to get headers and full description
+            $descriptionData = $this->parsePackageDescription($package->description);
+            
             return [
                 'id' => $package->id,
                 'name' => $package->name,
-                'description' => $package->description,
+                'description' => $descriptionData['full'], // Full description for popup
+                'description_headers' => $descriptionData['headers'], // Headers only for card
                 'price' => $package->price,
                 'image' => $package->image, // This should be like 'packages/image.jpg'
                 'is_active' => $package->is_active,
@@ -115,13 +122,16 @@ class PackageController extends Controller
             ];
         });
         
+        $descriptionData = $this->parsePackageDescription($package->description);
+        
         return response()->json([
             'success' => true,
             'data' => [
                 'package' => [
                     'id' => $package->id,
                     'name' => $package->name,
-                    'description' => $package->description,
+                    'description' => $descriptionData['full'],
+                    'description_headers' => $descriptionData['headers'],
                     'price' => $package->price,
                     'image' => $package->image,
                     'is_active' => $package->is_active,
@@ -262,7 +272,8 @@ class PackageController extends Controller
                 'package' => [
                     'id' => $userPackage->package->id,
                     'name' => $userPackage->package->name,
-                    'description' => $userPackage->package->description,
+                    'description' => $this->parsePackageDescription($userPackage->package->description)['full'],
+                    'description_headers' => $this->parsePackageDescription($userPackage->package->description)['headers'],
                     'price' => $userPackage->package->price,
                 ],
                 'expires_at' => $userPackage->expires_at,
@@ -350,5 +361,41 @@ class PackageController extends Controller
             'success' => true,
             'data' => $packages
         ]);
+    }
+
+    /**
+     * Parse package description (handles both JSON and string formats)
+     * 
+     * @param string|null $description
+     * @return array ['full' => string|array, 'headers' => array]
+     */
+    private function parsePackageDescription($description)
+    {
+        if (empty($description)) {
+            return [
+                'full' => null,
+                'headers' => []
+            ];
+        }
+
+        // Try to decode as JSON first
+        $decoded = json_decode($description, true);
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+            // It's JSON format
+            $headers = array_map(function($item) {
+                return $item['header'] ?? '';
+            }, $decoded);
+            
+            return [
+                'full' => $decoded, // Full structured data
+                'headers' => array_filter($headers) // Only headers
+            ];
+        }
+
+        // It's a plain string (old format)
+        return [
+            'full' => $description,
+            'headers' => []
+        ];
     }
 } 

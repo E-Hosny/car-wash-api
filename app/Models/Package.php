@@ -22,6 +22,45 @@ class Package extends Model
         'price' => 'decimal:2',
     ];
 
+    /**
+     * Get description as array (handles both JSON and string formats)
+     */
+    public function getDescriptionArrayAttribute()
+    {
+        if (empty($this->description)) {
+            return null;
+        }
+
+        // Try to decode as JSON first
+        $decoded = json_decode($this->description, true);
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+            return $decoded;
+        }
+
+        // If not JSON, return as single item array with header
+        return [
+            [
+                'header' => 'Description',
+                'description' => $this->description
+            ]
+        ];
+    }
+
+    /**
+     * Get only headers from description
+     */
+    public function getDescriptionHeaders()
+    {
+        $descriptionArray = $this->description_array;
+        if (!$descriptionArray) {
+            return [];
+        }
+
+        return array_map(function($item) {
+            return $item['header'] ?? '';
+        }, $descriptionArray);
+    }
+
     public function userPackages()
     {
         return $this->hasMany(UserPackage::class);

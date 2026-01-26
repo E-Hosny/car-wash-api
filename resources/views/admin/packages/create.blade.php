@@ -76,11 +76,27 @@
                         </div>
 
                         <div class="form-group mb-4">
-                            <label for="description" class="form-label">
+                            <label class="form-label">
                                 <i class="fas fa-align-left"></i> {{ __('packages.package_description') }}
                             </label>
-                            <textarea class="form-control" id="description" name="description" 
-                                      rows="4" placeholder="{{ __('packages.enter_package_description') }}">{{ old('description') }}</textarea>
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <span class="fw-bold">Description Items</span>
+                                    <button type="button" class="btn btn-sm btn-primary" onclick="addDescriptionItem()">
+                                        <i class="fas fa-plus"></i> Add Header
+                                    </button>
+                                </div>
+                                <div class="card-body">
+                                    <div id="descriptionItemsContainer">
+                                        <!-- Description items will be added here dynamically -->
+                                    </div>
+                                    <div class="text-muted small mt-2">
+                                        <i class="fas fa-info-circle"></i> Add headers with descriptions. Each header will be displayed in the app card.
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Hidden field for backward compatibility -->
+                            <input type="hidden" id="description" name="description" value="">
                         </div>
 
                         <div class="card mb-4">
@@ -260,6 +276,84 @@ document.getElementById('createPackageForm').addEventListener('submit', function
     submitBtn.disabled = true;
 });
 
+// Description items management
+let descriptionItemIndex = 0;
+
+function addDescriptionItem(header = '', description = '') {
+    const container = document.getElementById('descriptionItemsContainer');
+    const index = descriptionItemIndex++;
+    
+    const itemDiv = document.createElement('div');
+    itemDiv.className = 'card mb-3 description-item';
+    itemDiv.setAttribute('data-index', index);
+    itemDiv.innerHTML = `
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <h6 class="card-title mb-0">Item ${index + 1}</h6>
+                <button type="button" class="btn btn-sm btn-danger" onclick="removeDescriptionItem(${index})">
+                    <i class="fas fa-trash"></i> Remove
+                </button>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Header <span class="text-danger">*</span></label>
+                <input type="text" class="form-control description-header" 
+                       name="description_items[${index}][header]" 
+                       value="${header}" 
+                       placeholder="Enter header title" required>
+            </div>
+            <div class="mb-0">
+                <label class="form-label">Description <span class="text-danger">*</span></label>
+                <textarea class="form-control description-text" 
+                          name="description_items[${index}][description]" 
+                          rows="3" 
+                          placeholder="Enter description" required>${description}</textarea>
+            </div>
+        </div>
+    `;
+    
+    container.appendChild(itemDiv);
+    updateDescriptionHiddenField();
+}
+
+function removeDescriptionItem(index) {
+    const item = document.querySelector(`.description-item[data-index="${index}"]`);
+    if (item) {
+        item.remove();
+        updateDescriptionHiddenField();
+        // Re-index remaining items
+        reindexDescriptionItems();
+    }
+}
+
+function reindexDescriptionItems() {
+    const items = document.querySelectorAll('.description-item');
+    items.forEach((item, newIndex) => {
+        item.setAttribute('data-index', newIndex);
+        const headerInput = item.querySelector('.description-header');
+        const descTextarea = item.querySelector('.description-text');
+        const title = item.querySelector('.card-title');
+        
+        if (headerInput) {
+            headerInput.name = `description_items[${newIndex}][header]`;
+        }
+        if (descTextarea) {
+            descTextarea.name = `description_items[${newIndex}][description]`;
+        }
+        if (title) {
+            title.textContent = `Item ${newIndex + 1}`;
+        }
+    });
+}
+
+function updateDescriptionHiddenField() {
+    // This is for backward compatibility - we'll use description_items in controller
+    const items = document.querySelectorAll('.description-item');
+    const descriptionField = document.getElementById('description');
+    if (items.length === 0) {
+        descriptionField.value = '';
+    }
+}
+
 // Auto-hide alerts after 5 seconds
 document.addEventListener('DOMContentLoaded', function() {
     setTimeout(function() {
@@ -271,9 +365,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 5000);
     
     // Initialize service statuses
-    document.querySelectorAll('input[name*="[points_required]"]').forEach(function(input) {
+    document.querySelectorAll('input[name*="[quantity]"]').forEach(function(input) {
         updateServiceStatus(input);
     });
+    
+    // Add one empty description item by default
+    addDescriptionItem();
 });
 </script>
 @endsection 
