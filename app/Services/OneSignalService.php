@@ -54,6 +54,24 @@ class OneSignalService
     }
 
     /**
+     * Add iOS-specific settings for push notifications
+     *
+     * @param array $payload
+     * @return array
+     */
+    protected function addIOSSettings(array $payload): array
+    {
+        // iOS sound (uses default notification sound)
+        $payload['ios_sound'] = 'default';
+        
+        // iOS badge (optional - can be set to increase badge count)
+        // $payload['ios_badgeType'] = 'Increase';
+        // $payload['ios_badgeCount'] = 1;
+        
+        return $payload;
+    }
+
+    /**
      * Add app icon to notification payload
      * Uses small_icon from Flutter (always small) + large_icon/big_picture in production (bigger display)
      *
@@ -129,6 +147,9 @@ class OneSignalService
         // Add Android channel settings for heads-up + sound
         $payload = $this->addAndroidChannelSettings($payload);
 
+        // Add iOS settings for push notifications
+        $payload = $this->addIOSSettings($payload);
+
         // OneSignal API requires: Authorization: Key {REST_API_KEY}
         // According to OneSignal documentation, use "Key" prefix, not "Basic"
         $response = Http::withHeaders([
@@ -181,6 +202,9 @@ class OneSignalService
 
         // Add Android channel settings for heads-up + sound
         $payload = $this->addAndroidChannelSettings($payload);
+
+        // Add iOS settings for push notifications
+        $payload = $this->addIOSSettings($payload);
 
         $response = Http::withHeaders([
             'Authorization' => 'Key ' . $this->restApiKey,
@@ -265,6 +289,9 @@ class OneSignalService
 
         // Add Android channel settings for heads-up + sound
         $payload = $this->addAndroidChannelSettings($payload);
+
+        // Add iOS settings for push notifications
+        $payload = $this->addIOSSettings($payload);
 
         $response = Http::withHeaders([
             'Authorization' => 'Key ' . $this->restApiKey,

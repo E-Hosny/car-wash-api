@@ -11,6 +11,7 @@ class AppRating extends Model
 
     protected $fillable = [
         'user_id',
+        'order_id',
         'rating',
         'comment',
     ];
@@ -21,5 +22,13 @@ class AppRating extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the order that this rating belongs to.
+     */
+    public function order()
+    {
+        return $this->belongsTo(Order::class);
     }
 }

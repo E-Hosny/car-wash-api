@@ -107,6 +107,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // App Ratings API
     Route::post('/ratings', [RatingController::class, 'store']);
+    Route::get('/ratings/order/{orderId}', [RatingController::class, 'checkOrderRating']);
 });
 
 // Provider/Worker Time Slots Management
