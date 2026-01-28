@@ -80,4 +80,9 @@ class Order extends Model
     {
         return $this->hasOne(HourSlotInstance::class);
     }
+
+    public function ratings()
+    {
+        return $this->hasMany(AppRating::class);
+    }
 }

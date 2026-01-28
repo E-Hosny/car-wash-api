@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\PackageController;
 use App\Http\Controllers\Admin\UserPackageController;
 use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\OneSignalTestController;
+use App\Http\Controllers\Admin\RatingController;
 use App\Http\Controllers\API\QrCodeController;
 use App\Http\Controllers\SupportController;
 use Illuminate\Support\Facades\Route;
@@ -144,6 +145,9 @@ Route::middleware([
         Route::get('/onesignal/get-players', [OneSignalTestController::class, 'getPlayers'])->name('admin.onesignal.get.players');
         Route::post('/notifications/order-payment-settings', [OneSignalTestController::class, 'updateOrderPaymentSettings'])->name('admin.notifications.order-payment-settings');
         Route::post('/notifications/order-completion-rating-settings', [OneSignalTestController::class, 'updateOrderCompletionRatingSettings'])->name('admin.notifications.order-completion-rating-settings');
+
+        // Ratings
+        Route::get('/ratings', [RatingController::class, 'index'])->name('admin.ratings.index');
     });
 
 });

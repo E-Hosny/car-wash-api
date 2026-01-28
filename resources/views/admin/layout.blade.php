@@ -461,6 +461,14 @@
                 </a>
             </div>
 
+            <!-- Ratings Section -->
+            <div class="nav-section">
+                <div class="nav-section-title">التقييمات</div>
+                <a href="{{ route('admin.ratings.index') }}" class="{{ request()->routeIs('admin.ratings.*') ? 'active' : '' }}">
+                    <i class="fas fa-star"></i> التقييمات / Ratings
+                </a>
+            </div>
+
             <!-- Services Section -->
             <div class="nav-section">
                 <div class="nav-section-title">الخدمات</div>
@@ -529,6 +537,14 @@
                 <div class="nav-section-title">الطلبات</div>
                 <a href="{{ route('admin.orders.time-slots') }}" class="{{ request()->routeIs('admin.orders.time-slots') ? 'active' : '' }}">
                     <i class="fas fa-calendar-alt"></i> {{ __('messages.time_slots_management') }}
+                </a>
+            </div>
+
+            <!-- Ratings Section -->
+            <div class="nav-section">
+                <div class="nav-section-title">التقييمات</div>
+                <a href="{{ route('admin.ratings.index') }}" class="{{ request()->routeIs('admin.ratings.*') ? 'active' : '' }}">
+                    <i class="fas fa-star"></i> التقييمات / Ratings
                 </a>
             </div>
 
