@@ -42,10 +42,10 @@
                                     <span class="ms-2 text-muted">({{ $rating->rating }}/5)</span>
                                 </div>
                             </td>
-                            <td class="text-center">
+                            <td class="text-center" style="max-width: 400px; white-space: normal; word-wrap: break-word;">
                                 @if($rating->comment)
-                                    <div class="text-truncate d-inline-block" style="max-width: 200px;" title="{{ $rating->comment }}">
-                                        {{ Str::limit($rating->comment, 50) }}
+                                    <div style="text-align: right; padding: 5px;">
+                                        {{ $rating->comment }}
                                     </div>
                                 @else
                                     <span class="text-muted">-</span>
@@ -124,9 +124,6 @@
     .table td {
         vertical-align: middle;
         text-align: center;
-    }
-    .text-truncate {
-        cursor: help;
     }
 </style>
 @endsection
