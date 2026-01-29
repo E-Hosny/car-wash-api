@@ -4,6 +4,68 @@
 <div class="container mt-4">
     <h3 class="mb-4 text-center">{{ __('messages.order_list') }}</h3>
 
+    @if(isset($serviceStats) && count($serviceStats) > 0)
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-pie"></i> إحصائيات الخدمات / Services Statistics
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-12 mb-3">
+                        <strong>إجمالي الطلبات:</strong> <span class="badge bg-secondary">{{ $totalOrders }}</span>
+                    </div>
+                    <div class="col-12">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="text-center">الخدمة / Service</th>
+                                        <th class="text-center">عدد المرات / Count</th>
+                                        <th class="text-center">النسبة المئوية / Percentage</th>
+                                        <th class="text-center">شريط التقدم / Progress</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($serviceStats as $stat)
+                                        <tr>
+                                            <td class="text-center">
+                                                <strong>🧼 {{ $stat['name'] }}</strong>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge bg-primary">{{ $stat['count'] }}</span>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge bg-success">{{ $stat['percentage'] }}%</span>
+                                            </td>
+                                            <td>
+                                                <div class="progress" style="height: 25px;">
+                                                    <div class="progress-bar progress-bar-striped progress-bar-animated 
+                                                        @if($stat['percentage'] >= 50) bg-success
+                                                        @elseif($stat['percentage'] >= 25) bg-warning
+                                                        @else bg-info
+                                                        @endif" 
+                                                        role="progressbar" 
+                                                        style="width: {{ $stat['percentage'] }}%"
+                                                        aria-valuenow="{{ $stat['percentage'] }}" 
+                                                        aria-valuemin="0" 
+                                                        aria-valuemax="100">
+                                                        {{ $stat['percentage'] }}%
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
     <table class="table table-bordered table-striped text-center">
         <thead class="table-dark">
             <tr>

@@ -23,7 +23,56 @@ class OrderController extends Controller
             'services',
             'orderCars.services'
         ])->latest()->get();
-        return view('admin.orders.index', compact('orders'));
+        
+        // حساب إحصائيات الخدمات
+        $serviceStats = [];
+        $totalOrders = $orders->count();
+        
+        foreach ($orders as $order) {
+            // جمع الخدمات من الطلبات العادية
+            if ($order->services && $order->services->count() > 0) {
+                foreach ($order->services as $service) {
+                    if (!isset($serviceStats[$service->id])) {
+                        $serviceStats[$service->id] = [
+                            'name' => $service->name,
+                            'count' => 0
+                        ];
+                    }
+                    $serviceStats[$service->id]['count']++;
+                }
+            }
+            
+            // جمع الخدمات من OrderCars (للطلبات متعددة السيارات)
+            if ($order->orderCars && $order->orderCars->count() > 0) {
+                foreach ($order->orderCars as $orderCar) {
+                    if ($orderCar->services && $orderCar->services->count() > 0) {
+                        foreach ($orderCar->services as $service) {
+                            if (!isset($serviceStats[$service->id])) {
+                                $serviceStats[$service->id] = [
+                                    'name' => $service->name,
+                                    'count' => 0
+                                ];
+                            }
+                            $serviceStats[$service->id]['count']++;
+                        }
+                    }
+                }
+            }
+        }
+        
+        // حساب النسبة المئوية لكل خدمة
+        foreach ($serviceStats as $serviceId => &$stat) {
+            $stat['percentage'] = $totalOrders > 0 
+                ? round(($stat['count'] / $totalOrders) * 100, 2) 
+                : 0;
+        }
+        
+        // ترتيب الخدمات حسب عدد المرات (من الأكثر إلى الأقل)
+        usort($serviceStats, function($a, $b) {
+            return $b['count'] - $a['count'];
+        });
+        
+        return view('admin.orders.index', compact('orders', 'serviceStats', 'totalOrders'));
     }
 
     public function timeSlots(Request $request)
