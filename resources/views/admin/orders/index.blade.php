@@ -26,12 +26,16 @@
                     <td>{{ $order->customer->name ?? '-' }}</td>
                     <td>{{ $order->provider->name ?? '-' }}</td>
                     <td>{{ $order->address ?? 'غير محدد' }}</td>
-                    <td>
-                        <ul class="list-unstyled m-0">
-                            @foreach($order->services as $service)
-                                <li>🧼 {{ $service->name }}</li>
-                            @endforeach
-                        </ul>
+                    <td style="min-width: 200px; white-space: normal;">
+                        @if($order->services && $order->services->count() > 0)
+                            <div class="d-flex flex-wrap gap-1 justify-content-center">
+                                @foreach($order->services as $service)
+                                    <span class="badge bg-primary mb-1">🧼 {{ $service->name }}</span>
+                                @endforeach
+                            </div>
+                        @else
+                            <span class="text-muted">-</span>
+                        @endif
                     </td>
                     <td>{{ number_format($order->total, 2) }} AED</td>
 
