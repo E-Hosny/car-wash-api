@@ -107,8 +107,7 @@
                                 }
                             }
                             
-                            // إزالة التكرارات بناءً على service ID
-                            $allServices = $allServices->unique('id');
+                            // عدم إزالة التكرارات - عرض الخدمة المكررة لكل سيارة
                         @endphp
                         
                         @if($allServices->count() > 0)
