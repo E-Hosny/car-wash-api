@@ -27,10 +27,32 @@
                     <td>{{ $order->provider->name ?? '-' }}</td>
                     <td>{{ $order->address ?? 'غير محدد' }}</td>
                     <td style="min-width: 200px; white-space: normal;">
-                        @if($order->services && $order->services->count() > 0)
-                            <div class="d-flex flex-wrap gap-1 justify-content-center">
-                                @foreach($order->services as $service)
-                                    <span class="badge bg-primary mb-1">🧼 {{ $service->name }}</span>
+                        @php
+                            // جمع جميع الخدمات من مصادر مختلفة
+                            $allServices = collect();
+                            
+                            // الخدمات المباشرة للطلب (للطلبات العادية)
+                            if ($order->services && $order->services->count() > 0) {
+                                $allServices = $allServices->merge($order->services);
+                            }
+                            
+                            // الخدمات من OrderCars (للطلبات متعددة السيارات)
+                            if ($order->orderCars && $order->orderCars->count() > 0) {
+                                foreach ($order->orderCars as $orderCar) {
+                                    if ($orderCar->services && $orderCar->services->count() > 0) {
+                                        $allServices = $allServices->merge($orderCar->services);
+                                    }
+                                }
+                            }
+                            
+                            // إزالة التكرارات بناءً على service ID
+                            $allServices = $allServices->unique('id');
+                        @endphp
+                        
+                        @if($allServices->count() > 0)
+                            <div class="d-flex flex-wrap gap-2 justify-content-center">
+                                @foreach($allServices as $service)
+                                    <span class="text-dark">🧼 {{ $service->name }}</span>
                                 @endforeach
                             </div>
                         @else

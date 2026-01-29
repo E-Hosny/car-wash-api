@@ -17,7 +17,12 @@ class OrderController extends Controller
 {
     public function index()
     {
-        $orders = Order::with('customer', 'provider', 'services')->latest()->get();
+        $orders = Order::with([
+            'customer', 
+            'provider', 
+            'services',
+            'orderCars.services'
+        ])->latest()->get();
         return view('admin.orders.index', compact('orders'));
     }
 
