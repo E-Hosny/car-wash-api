@@ -6,7 +6,7 @@
 
     @if(isset($serviceStats) && count($serviceStats) > 0)
         <div class="card mb-4">
-            <div class="card-header bg-info text-white">
+            <div class="card-header bg-dark text-white">
                 <h5 class="mb-0">
                     <i class="fas fa-chart-pie"></i> إحصائيات الخدمات / Services Statistics
                 </h5>
