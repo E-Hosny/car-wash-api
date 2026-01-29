@@ -154,15 +154,22 @@
                     </td>
                     <td>{{ $order->created_at->format('Y-m-d') }}</td>
                     <td>
-                        @if($order->status !== 'completed')
-                            <button class="btn btn-success btn-sm mark-completed-btn" 
-                                    data-order-id="{{ $order->id }}"
-                                    title="Mark as Completed (Test Rating Notification)">
-                                <i class="bi bi-check-circle"></i> Mark Completed
-                            </button>
-                        @else
-                            <span class="badge bg-success">Completed</span>
-                        @endif
+                        <div class="d-flex gap-1 justify-content-center">
+                            <a href="{{ route('admin.orders.history', $order->id) }}" 
+                               class="btn btn-info btn-sm" 
+                               title="عرض تاريخ تغييرات الحالة">
+                                <i class="fas fa-history"></i> التاريخ
+                            </a>
+                            @if($order->status !== 'completed')
+                                <button class="btn btn-success btn-sm mark-completed-btn" 
+                                        data-order-id="{{ $order->id }}"
+                                        title="Mark as Completed (Test Rating Notification)">
+                                    <i class="bi bi-check-circle"></i> Mark Completed
+                                </button>
+                            @else
+                                <span class="badge bg-success">Completed</span>
+                            @endif
+                        </div>
                     </td>
                 </tr>
             @empty

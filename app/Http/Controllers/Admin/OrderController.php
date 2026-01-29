@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Models\OrderStatusHistory;
 use App\Models\TimeSlot;
 use App\Models\DailyTimeSlot;
 use App\Models\HourSlotInstance;
@@ -257,6 +258,17 @@ class OrderController extends Controller
         return view('admin.orders.show', compact('order'));
     }
 
+    public function history($id)
+    {
+        $order = Order::with(['customer', 'provider', 'services', 'car'])->findOrFail($id);
+        $history = OrderStatusHistory::with('changedBy')
+            ->where('order_id', $order->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
+        return view('admin.orders.history', compact('order', 'history'));
+    }
+
     public function getStatus($id)
     {
         $order = Order::findOrFail($id);
@@ -276,9 +288,24 @@ class OrderController extends Controller
             'notes' => 'nullable|string|max:500'
         ]);
         
+        // حفظ الحالة السابقة
+        $previousStatus = $order->status;
+        $newStatus = $request->status;
+        
+        // تحديث حالة الطلب
         $order->update([
-            'status' => $request->status,
+            'status' => $newStatus,
             'admin_notes' => $request->notes
+        ]);
+        
+        // تسجيل تغيير الحالة في order_status_history
+        OrderStatusHistory::create([
+            'order_id' => $order->id,
+            'previous_status' => $previousStatus,
+            'new_status' => $newStatus,
+            'changed_by' => auth()->id(),
+            'notes' => $request->notes,
+            'ip_address' => $request->ip(),
         ]);
         
         // Send OneSignal notification when order status is changed to completed

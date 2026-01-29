@@ -3,6 +3,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Car;
 use App\Models\Order;
+use App\Models\OrderStatusHistory;
 use App\Models\User;
 use App\Models\Service;
 use App\Models\DailyTimeSlot;
@@ -742,8 +743,23 @@ public function updateStatus(Request $request, $id)
     //     return response()->json(['message' => 'غير مسموح.'], 403);
     // }
 
-    $order->status = $request->status;
+    // حفظ الحالة السابقة
+    $previousStatus = $order->status;
+    $newStatus = $request->status;
+
+    // تحديث حالة الطلب
+    $order->status = $newStatus;
     $order->save();
+
+    // تسجيل تغيير الحالة في order_status_history
+    OrderStatusHistory::create([
+        'order_id' => $order->id,
+        'previous_status' => $previousStatus,
+        'new_status' => $newStatus,
+        'changed_by' => auth()->id(),
+        'notes' => $request->notes ?? null,
+        'ip_address' => $request->ip(),
+    ]);
 
     // Send OneSignal notification when order status is changed to completed
     if ($request->status === 'completed') {

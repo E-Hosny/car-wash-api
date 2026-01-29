@@ -85,4 +85,9 @@ class Order extends Model
     {
         return $this->hasMany(AppRating::class);
     }
+
+    public function statusHistory()
+    {
+        return $this->hasMany(OrderStatusHistory::class);
+    }
 }

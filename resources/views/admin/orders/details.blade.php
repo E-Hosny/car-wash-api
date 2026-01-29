@@ -1,3 +1,9 @@
+<div class="mb-3">
+    <a href="{{ route('admin.orders.history', $order->id) }}" class="btn btn-info btn-sm">
+        <i class="fas fa-history"></i> عرض تاريخ تغييرات الحالة
+    </a>
+</div>
+
 <div class="row">
     <div class="col-md-6">
         <div class="card mb-3">
