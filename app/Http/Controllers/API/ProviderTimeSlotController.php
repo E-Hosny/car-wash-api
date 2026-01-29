@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\HourSlotInstance;
+use App\Models\SlotStatusHistory;
 use App\Models\Setting;
 use App\Models\Order;
 use Carbon\Carbon;
@@ -120,7 +121,28 @@ class ProviderTimeSlotController extends Controller
             ], 400);
         }
         
+        // حفظ الحالة السابقة قبل التبديل
+        $dateString = is_string($date) ? $date : Carbon::parse($date)->toDateString();
+        $existingSlot = HourSlotInstance::where('date', $dateString)
+            ->where('hour', $hour)
+            ->where('slot_index', $slotIndex)
+            ->first();
+        $previousStatus = $existingSlot ? $existingSlot->status : 'available';
+        
         $slot = HourSlotInstance::toggleSlot($date, $hour, $slotIndex);
+        
+        // تسجيل تغيير الحالة في slot_status_history
+        SlotStatusHistory::create([
+            'slot_type' => 'hour_slot_instance',
+            'date' => $dateString,
+            'hour' => $hour,
+            'slot_index' => $slotIndex,
+            'previous_status' => $previousStatus,
+            'new_status' => $slot->status,
+            'changed_by' => auth()->id(),
+            'notes' => $request->notes ?? null,
+            'ip_address' => $request->ip(),
+        ]);
         
         // الحصول على حالة الساعة بعد التبديل
         $isUnavailable = HourSlotInstance::areAllSlotsUnavailable($date, $hour, $maxSlotsPerHour);
