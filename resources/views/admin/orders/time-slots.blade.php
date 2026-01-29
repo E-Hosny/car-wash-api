@@ -20,6 +20,10 @@
                                 <i class="bi bi-arrow-left"></i> 
                                 <span class="d-none d-sm-inline">{{ __('messages.back_to_orders') }}</span>
                     </a>
+                    <a href="{{ route('admin.slots.history') }}" class="btn btn-info">
+                                <i class="fas fa-history"></i> 
+                                <span class="d-none d-sm-inline">تاريخ التغييرات</span>
+                    </a>
                     <button class="btn btn-primary" onclick="refreshTimeSlots()" id="refreshBtn">
                                 <i class="bi bi-arrow-clockwise"></i> 
                                 <span class="d-none d-sm-inline">{{ __('messages.refresh') }}</span>

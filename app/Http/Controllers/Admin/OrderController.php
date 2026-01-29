@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderStatusHistory;
+use App\Models\SlotStatusHistory;
 use App\Models\TimeSlot;
 use App\Models\DailyTimeSlot;
 use App\Models\HourSlotInstance;
@@ -374,7 +375,28 @@ class OrderController extends Controller
             ], 400);
         }
         
+        // حفظ الحالة السابقة
+        $dateString = is_string($date) ? $date : Carbon::parse($date)->toDateString();
+        $existingSlot = HourSlotInstance::where('date', $dateString)
+            ->where('hour', $hour)
+            ->where('slot_index', $slotIndex)
+            ->first();
+        $previousStatus = $existingSlot ? $existingSlot->status : 'available';
+        
         $slot = HourSlotInstance::toggleSlot($date, $hour, $slotIndex);
+        
+        // تسجيل تغيير الحالة في slot_status_history
+        SlotStatusHistory::create([
+            'slot_type' => 'hour_slot_instance',
+            'date' => $dateString,
+            'hour' => $hour,
+            'slot_index' => $slotIndex,
+            'previous_status' => $previousStatus,
+            'new_status' => $slot->status,
+            'changed_by' => auth()->id(),
+            'notes' => $request->notes ?? null,
+            'ip_address' => $request->ip(),
+        ]);
         
         // الحصول على حالة الساعة بعد التبديل
         $isUnavailable = HourSlotInstance::areAllSlotsUnavailable($date, $hour, $maxSlotsPerHour);
@@ -419,12 +441,32 @@ class OrderController extends Controller
             'date' => 'required|date'
         ]);
         
+        // حفظ الحالة السابقة
+        $dateString = is_string($request->date) ? $request->date : Carbon::parse($request->date)->toDateString();
+        $existingSlot = DailyTimeSlot::where('date', $dateString)
+            ->where('hour', $hour)
+            ->first();
+        $previousStatus = $existingSlot ? ($existingSlot->is_available ? 'true' : 'false') : 'true';
+        
         $slot = DailyTimeSlot::setHourAvailabilityForDate(
             $request->date, 
             $hour, 
             $request->is_available,
             $request->notes
         );
+        
+        // تسجيل تغيير الحالة في slot_status_history
+        SlotStatusHistory::create([
+            'slot_type' => 'daily_time_slot',
+            'date' => $dateString,
+            'hour' => $hour,
+            'slot_index' => null,
+            'previous_status' => $previousStatus,
+            'new_status' => $slot->is_available ? 'true' : 'false',
+            'changed_by' => auth()->id(),
+            'notes' => $request->notes,
+            'ip_address' => $request->ip(),
+        ]);
         
         return response()->json([
             'success' => true,
@@ -447,5 +489,33 @@ class OrderController extends Controller
             'date' => $date,
             'data' => $timeSlots
         ]);
+    }
+
+    /**
+     * عرض تاريخ تغييرات الـ Slots
+     */
+    public function slotHistory(Request $request)
+    {
+        $query = SlotStatusHistory::with('changedBy')
+            ->orderBy('created_at', 'desc');
+
+        // فلترة حسب النوع
+        if ($request->filled('slot_type')) {
+            $query->where('slot_type', $request->slot_type);
+        }
+
+        // فلترة حسب التاريخ
+        if ($request->filled('date')) {
+            $query->whereDate('date', $request->date);
+        }
+
+        // فلترة حسب الساعة
+        if ($request->filled('hour')) {
+            $query->where('hour', $request->hour);
+        }
+
+        $history = $query->paginate(50);
+
+        return view('admin.orders.slot-history', compact('history'));
     }
 }

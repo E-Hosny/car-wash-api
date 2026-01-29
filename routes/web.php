@@ -105,6 +105,7 @@ Route::middleware([
         Route::post('/time-slots/{hour}/toggle', [OrderController::class, 'toggleTimeSlot'])->name('admin.time-slots.toggle');
         Route::post('/time-slots/{hour}/set-status', [OrderController::class, 'setTimeSlotStatus'])->name('admin.time-slots.set-status');
         Route::get('/time-slots/status', [OrderController::class, 'getTimeSlotsStatus'])->name('admin.time-slots.status');
+        Route::get('/slots/history', [OrderController::class, 'slotHistory'])->name('admin.slots.history');
 
         // Packages routes
         Route::get('/packages', [PackageController::class, 'index'])->name('admin.packages.index');
