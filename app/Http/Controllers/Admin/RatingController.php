@@ -18,6 +18,8 @@ class RatingController extends Controller
         $ratings = AppRating::with([
             'order.customer',
             'order.assignedUser',
+            'order.services',
+            'order.orderCars.services',
             'user'
         ])
         ->whereNotNull('order_id') // فقط التقييمات المرتبطة بطلبات

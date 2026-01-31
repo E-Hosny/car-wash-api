@@ -19,6 +19,7 @@
                         <th class="text-center">النجوم</th>
                         <th class="text-center">التعليق</th>
                         <th class="text-center">رقم الطلب</th>
+                        <th class="text-center">الخدمات</th>
                         <th class="text-center">اسم العامل</th>
                         <th class="text-center">اسم العميل</th>
                         <th class="text-center">تاريخ الطلب</th>
@@ -57,6 +58,38 @@
                                        class="text-decoration-none fw-bold">
                                         #{{ $rating->order->id }}
                                     </a>
+                                @else
+                                    <span class="text-muted">-</span>
+                                @endif
+                            </td>
+                            <td class="text-center" style="min-width: 200px; white-space: normal;">
+                                @php
+                                    // جمع جميع الخدمات من مصادر مختلفة
+                                    $allServices = collect();
+                                    
+                                    // الخدمات المباشرة للطلب (للطلبات العادية)
+                                    if ($rating->order && $rating->order->services && $rating->order->services->count() > 0) {
+                                        $allServices = $allServices->merge($rating->order->services);
+                                    }
+                                    
+                                    // الخدمات من OrderCars (للطلبات متعددة السيارات)
+                                    if ($rating->order && $rating->order->orderCars && $rating->order->orderCars->count() > 0) {
+                                        foreach ($rating->order->orderCars as $orderCar) {
+                                            if ($orderCar->services && $orderCar->services->count() > 0) {
+                                                $allServices = $allServices->merge($orderCar->services);
+                                            }
+                                        }
+                                    }
+                                    
+                                    // عدم إزالة التكرارات - عرض الخدمة المكررة لكل سيارة
+                                @endphp
+                                
+                                @if($allServices->count() > 0)
+                                    <div class="d-flex flex-wrap gap-2 justify-content-center">
+                                        @foreach($allServices as $service)
+                                            <span class="text-dark">🧼 {{ $service->name }}</span>
+                                        @endforeach
+                                    </div>
                                 @else
                                     <span class="text-muted">-</span>
                                 @endif
