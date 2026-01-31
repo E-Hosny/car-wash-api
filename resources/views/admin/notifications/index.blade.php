@@ -32,23 +32,21 @@
                     </a>
                 </div>
                 <div class="card-body">
-                    <!-- Android Heads-up Notification Note -->
-                    <div class="alert alert-info mb-3">
-                        <i class="bi bi-info-circle"></i> 
-                        <strong>Android Heads-up Notifications:</strong><br>
-                        1. Create Android Category in OneSignal Dashboard: Settings > Push & In-App > Android Notification Channels<br>
-                        2. Set <strong>Importance: Urgent</strong> and <strong>Sound: Default</strong> in the category<br>
-                        3. Copy the Channel ID and add it to <code>ONESIGNAL_ANDROID_CHANNEL_ID</code> in .env<br>
-                        4. <strong>Important:</strong> After creating/updating channel, uninstall/reinstall or clear app data to test new settings.
-                    </div>
-                    
                     <div class="row">
                         <div class="col-md-4">
                             <h6 class="mb-3">Send to All Users</h6>
                             <form id="onesignalTestForm" action="{{ route('admin.onesignal.test.send') }}" method="POST">
                                 @csrf
+                                <div class="mb-2">
+                                    <label for="all_title" class="form-label">Title (optional):</label>
+                                    <input type="text" class="form-control" id="all_title" name="title" placeholder="Test Notification" value="Test Notification">
+                                </div>
+                                <div class="mb-2">
+                                    <label for="all_message" class="form-label">Message (optional):</label>
+                                    <input type="text" class="form-control" id="all_message" name="message" placeholder="Hello from Laravel ✅" value="Hello from Laravel ✅">
+                                </div>
                                 <button type="submit" id="onesignalTestBtn" class="btn btn-primary btn-lg w-100">
-                                    <i class="bi bi-send"></i> Send Push Test to All
+                                    <i class="bi bi-send"></i> Send to All
                                 </button>
                             </form>
                         </div>

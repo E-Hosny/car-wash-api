@@ -49,10 +49,18 @@ class OneSignalTestController extends Controller
      */
     public function sendTest(Request $request)
     {
+        $request->validate([
+            'title' => 'nullable|string|max:255',
+            'message' => 'nullable|string',
+        ]);
+
         try {
+            $title = $request->input('title', 'Test Notification');
+            $message = $request->input('message', 'Hello from Laravel ✅');
+            
             $response = $this->oneSignalService->sendToAll(
-                "Test Notification",
-                "Hello from Laravel ✅",
+                $title,
+                $message,
                 [
                     "type" => "TEST",
                     "screen" => "home"
