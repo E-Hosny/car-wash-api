@@ -143,19 +143,60 @@ class OrderController extends Controller
                 // الحصول على جميع الـ slots لهذه الساعة
                 $slots = HourSlotInstance::getSlotsForHour($dateString, $hour, $maxSlotsPerHour);
                 
-                // حساب الإحصائيات
-                $bookedCount = HourSlotInstance::getBookedSlotsCount($dateString, $hour, $maxSlotsPerHour);
-                $disabledCount = HourSlotInstance::getDisabledSlotsCount($dateString, $hour, $maxSlotsPerHour);
-                $availableCount = HourSlotInstance::getAvailableSlotsCount($dateString, $hour, $maxSlotsPerHour);
-                
-                // تحديد حالة الساعة: OFF فقط إذا كانت جميع الـ slots غير متاحة
-                $isUnavailable = HourSlotInstance::areAllSlotsUnavailable($dateString, $hour, $maxSlotsPerHour);
-                $isFullyBooked = $bookedCount >= $maxSlotsPerHour;
-                
                 // البحث عن الطلبات لهذه الساعة
                 $ordersForHour = $bookedOrders->filter(function($order) use ($hour) {
                     return $order->scheduled_at && Carbon::parse($order->scheduled_at)->hour == $hour;
                 });
+                
+                // التحقق من الطلبات غير المرتبطة بجدول hour_slot_instances
+                $unlinkedOrders = $ordersForHour->filter(function($order) use ($slots) {
+                    // التحقق إذا كان الطلب مرتبط بأي slot
+                    $isLinked = false;
+                    foreach ($slots as $slot) {
+                        if ($slot['order_id'] == $order->id) {
+                            $isLinked = true;
+                            break;
+                        }
+                    }
+                    // اعتبار الطلبات النشطة (pending, accepted, in_progress) كمحجوزة حتى لو غير مرتبطة
+                    return !$isLinked && in_array($order->status, ['pending', 'accepted', 'in_progress', 'completed']);
+                });
+                
+                // إضافة الطلبات غير المرتبطة إلى الـ slots كـ booked
+                $unlinkedCount = 0;
+                foreach ($unlinkedOrders as $unlinkedOrder) {
+                    // البحث عن slot متاح لإضافة الطلب
+                    $slotIndex = 1;
+                    $added = false;
+                    while ($slotIndex <= $maxSlotsPerHour && !$added) {
+                        if (isset($slots[$slotIndex]) && $slots[$slotIndex]['status'] === 'available' && !$slots[$slotIndex]['order_id']) {
+                            $slots[$slotIndex]['status'] = 'booked';
+                            $slots[$slotIndex]['order_id'] = $unlinkedOrder->id;
+                            $slots[$slotIndex]['order'] = $unlinkedOrder;
+                            $unlinkedCount++;
+                            $added = true;
+                        }
+                        $slotIndex++;
+                    }
+                }
+                
+                // حساب الإحصائيات (بعد إضافة الطلبات غير المرتبطة)
+                $bookedCount = 0;
+                $disabledCount = 0;
+                $availableCount = 0;
+                foreach ($slots as $slot) {
+                    if ($slot['status'] === 'booked') {
+                        $bookedCount++;
+                    } elseif ($slot['status'] === 'disabled') {
+                        $disabledCount++;
+                    } elseif ($slot['status'] === 'available') {
+                        $availableCount++;
+                    }
+                }
+                
+                // تحديد حالة الساعة: OFF فقط إذا كانت جميع الـ slots غير متاحة
+                $isUnavailable = ($disabledCount + $bookedCount) >= $maxSlotsPerHour && $availableCount == 0;
+                $isFullyBooked = $bookedCount >= $maxSlotsPerHour;
                 
                 // الحصول على الطلب الأول النشط لهذه الساعة (للعرض)
                 $order = $ordersForHour->firstWhere(function($order) {
