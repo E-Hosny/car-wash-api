@@ -416,7 +416,7 @@
         </div>
         
         <div class="footer-text">
-            © 2024 Luxuria Car Wash. All rights reserved
+            © 2024 LUXURIA ELITE PARKING CAR WASHING L.L.C. All rights reserved
         </div>
     </div>
     

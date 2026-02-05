@@ -76,7 +76,7 @@
         
         <div class="highlight">
             <p><strong>Last Updated:</strong> {{ date('F d, Y') }}</p>
-            <p>This Privacy Policy describes how Car Wash App ("we," "us," or "our") collects, uses, and shares your personal information when you use our mobile application and related services.</p>
+            <p>This Privacy Policy describes how <strong>LUXURIA ELITE PARKING CAR WASHING L.L.C</strong> ("we," "us," or "our") collects, uses, and shares your personal information when you use our mobile application and related services.</p>
         </div>
 
         <h2>1. Information We Collect</h2>
@@ -166,6 +166,7 @@
 
         <h2>12. Contact Us</h2>
         <div class="contact-info">
+            <p><strong>LUXURIA ELITE PARKING CAR WASHING L.L.C</strong></p>
             <p>If you have any questions about this Privacy Policy or our privacy practices, please contact us:</p>
             <ul>
                 <li><strong>Email:</strong> info@washluxuria.com</li>
