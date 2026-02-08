@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Storage;
 class ServiceController extends Controller
 {
     //
-    public function index()
+    public function index(Request $request)
     {
         // التحقق من وجود مستخدم مصادق عليه وعدد طلباته
         // استخدام auth('sanctum') للتحقق من التوكن على المسارات العامة
@@ -29,8 +29,12 @@ class ServiceController extends Controller
         // تطبيق خصم 50% إذا كان المستخدم غير مصادق عليه أو ليس لديه طلبات
         $shouldApplyDiscount = !$user || !$hasOrders;
         
+        // Get language from request header or default to 'en'
+        $language = $request->header('Accept-Language', 'en');
+        $language = in_array($language, ['ar', 'en']) ? $language : 'en';
+        
         // استخدام scope ordered() للحصول على الخدمات مرتبة حسب sort_order
-        $services = Service::ordered()->get()->map(function ($service) use ($shouldApplyDiscount) {
+        $services = Service::ordered()->get()->map(function ($service) use ($shouldApplyDiscount, $language) {
             if ($service->image) {
                 $imagePath = Storage::url($service->image);
                 $service->image_url = url($imagePath);
@@ -40,17 +44,29 @@ class ServiceController extends Controller
             
             // إضافة معلومات الخصم
             $originalPrice = $service->price;
-            $originalName = $service->name;
+            
+            // تحديد الاسم والوصف حسب اللغة
+            if ($language === 'ar' && $service->name_ar) {
+                $originalName = $service->name_ar;
+                $service->name = $service->name_ar;
+            } else {
+                $originalName = $service->name;
+                $service->name = $service->name;
+            }
+            
+            if ($language === 'ar' && $service->description_ar) {
+                $service->description = $service->description_ar;
+            }
             
             if ($shouldApplyDiscount) {
                 $service->has_discount = true;
                 $service->discount_percentage = 50;
-                $service->discount_label = "🔥 - 50% off";
+                $service->discount_label = $language === 'ar' ? "🔥 - خصم 50%" : "🔥 - 50% off";
                 $service->original_price = $originalPrice;
                 $service->discounted_price = $originalPrice / 2;
                 $service->price = $service->discounted_price;
-                // إضافة "🔥 - 50% off" بجانب عنوان الخدمة
-                $service->name = $originalName . " 🔥 - 50% off";
+                // إضافة التسمية بجانب عنوان الخدمة
+                $service->name = $originalName . ($language === 'ar' ? " 🔥 - خصم 50%" : " 🔥 - 50% off");
                 $service->original_name = $originalName;
             } else {
                 $service->has_discount = false;
@@ -95,7 +111,7 @@ class ServiceController extends Controller
     }
 
     // ✅ عرض خدمة مفردة
-    public function show($id)
+    public function show(Request $request, $id)
     {
         $service = Service::findOrFail($id);
         if ($service->image) {
@@ -117,19 +133,35 @@ class ServiceController extends Controller
         // تطبيق خصم 50% إذا كان المستخدم غير مصادق عليه أو ليس لديه طلبات
         $shouldApplyDiscount = !$user || !$hasOrders;
         
+        // Get language from request header or default to 'en'
+        $language = $request->header('Accept-Language', 'en');
+        $language = in_array($language, ['ar', 'en']) ? $language : 'en';
+        
         // إضافة معلومات الخصم
         $originalPrice = $service->price;
-        $originalName = $service->name;
+        
+        // تحديد الاسم والوصف حسب اللغة
+        if ($language === 'ar' && $service->name_ar) {
+            $originalName = $service->name_ar;
+            $service->name = $service->name_ar;
+        } else {
+            $originalName = $service->name;
+            $service->name = $service->name;
+        }
+        
+        if ($language === 'ar' && $service->description_ar) {
+            $service->description = $service->description_ar;
+        }
         
         if ($shouldApplyDiscount) {
             $service->has_discount = true;
             $service->discount_percentage = 50;
-            $service->discount_label = "🔥 - 50% off";
+            $service->discount_label = $language === 'ar' ? "🔥 - خصم 50%" : "🔥 - 50% off";
             $service->original_price = $originalPrice;
             $service->discounted_price = $originalPrice / 2;
             $service->price = $service->discounted_price;
-            // إضافة "🔥 - 50% off" بجانب عنوان الخدمة
-            $service->name = $originalName . " 🔥 - 50% off";
+            // إضافة التسمية بجانب عنوان الخدمة
+            $service->name = $originalName . ($language === 'ar' ? " 🔥 - خصم 50%" : " 🔥 - 50% off");
             $service->original_name = $originalName;
         } else {
             $service->has_discount = false;

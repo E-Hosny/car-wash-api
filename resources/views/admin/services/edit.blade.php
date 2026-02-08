@@ -8,13 +8,25 @@
         @csrf
 
         <div class="mb-3">
-            <label>{{ __('messages.name') }}:</label>
+            <label>{{ __('messages.name') }} (English):</label>
             <input type="text" name="name" class="form-control" value="{{ $service->name }}" required>
         </div>
 
         <div class="mb-3">
-            <label>{{ __('messages.description') }}:</label>
+            <label>{{ __('messages.name') }} (العربية):</label>
+            <input type="text" name="name_ar" class="form-control" value="{{ $service->name_ar }}" dir="rtl">
+            <small class="form-text text-muted">اسم الخدمة بالعربية</small>
+        </div>
+
+        <div class="mb-3">
+            <label>{{ __('messages.description') }} (English):</label>
             <textarea name="description" class="form-control">{{ $service->description }}</textarea>
+        </div>
+
+        <div class="mb-3">
+            <label>{{ __('messages.description') }} (العربية):</label>
+            <textarea name="description_ar" class="form-control" dir="rtl">{{ $service->description_ar }}</textarea>
+            <small class="form-text text-muted">وصف الخدمة بالعربية</small>
         </div>
 
         <div class="mb-3">

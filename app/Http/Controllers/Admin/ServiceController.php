@@ -43,7 +43,9 @@ class ServiceController extends Controller
         
         Service::create([
             'name' => $request->name,
+            'name_ar' => $request->name_ar,
             'description' => $request->description,
+            'description_ar' => $request->description_ar,
             'price' => $request->price,
             'image' => $imagePath,
             'sort_order' => $sortOrder,
@@ -62,7 +64,9 @@ class ServiceController extends Controller
     {
         $request->validate([
             'name' => 'required',
+            'name_ar' => 'nullable',
             'description' => 'nullable',
+            'description_ar' => 'nullable',
             'price' => 'required|numeric',
             'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'sort_order' => 'required|integer|min:1',
@@ -83,7 +87,9 @@ class ServiceController extends Controller
             
             $service->update([
                 'name' => $request->name,
+                'name_ar' => $request->name_ar,
                 'description' => $request->description,
+                'description_ar' => $request->description_ar,
                 'price' => $request->price,
                 'image' => $imagePath,
                 'sort_order' => $request->sort_order,
