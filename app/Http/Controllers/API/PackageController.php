@@ -21,7 +21,7 @@ class PackageController extends Controller
         return $value === '1' || $value === true || $value === 1;
     }
 
-    public function index()
+    public function index(Request $request)
     {
         if (!$this->packagesEnabled()) {
             return response()->json([
@@ -30,6 +30,10 @@ class PackageController extends Controller
                 'packages_enabled' => false,
             ]);
         }
+
+        // Get language from request header or default to 'en'
+        $language = $request->header('Accept-Language', 'en');
+        $language = in_array($language, ['ar', 'en']) ? $language : 'en';
 
         $packages = Package::active()->with('packageServices.service')->get();
         
@@ -50,11 +54,20 @@ class PackageController extends Controller
                 $hasRemainingServices = $userPackage->hasRemainingServices();
                 $canUpgrade = $isExpired || !$hasRemainingServices;
                 
-                $descriptionData = $this->parsePackageDescription($userPackage->package->description);
+                // Get description based on language
+                $description = $language === 'ar' && $userPackage->package->description_ar 
+                    ? $userPackage->package->description_ar 
+                    : $userPackage->package->description;
+                $descriptionData = $this->parsePackageDescription($description);
+                
+                // Get name based on language
+                $packageName = $language === 'ar' && $userPackage->package->name_ar 
+                    ? $userPackage->package->name_ar 
+                    : $userPackage->package->name;
                 
                 $currentPackage = [
                     'id' => $userPackage->package->id,
-                    'name' => $userPackage->package->name,
+                    'name' => $packageName,
                     'description' => $descriptionData['full'],
                     'description_headers' => $descriptionData['headers'],
                     'price' => $userPackage->package->price,
@@ -66,22 +79,38 @@ class PackageController extends Controller
         }
         
         // Format packages with services and quantities
-        $formattedPackages = $packages->map(function($package) {
-            $services = $package->packageServices->map(function($packageService) {
+        $formattedPackages = $packages->map(function($package) use ($language) {
+            $services = $package->packageServices->map(function($packageService) use ($language) {
+                // Get service name and description based on language
+                $serviceName = $language === 'ar' && $packageService->service && $packageService->service->name_ar
+                    ? $packageService->service->name_ar
+                    : ($packageService->service->name ?? '');
+                $serviceDescription = $language === 'ar' && $packageService->service && $packageService->service->description_ar
+                    ? $packageService->service->description_ar
+                    : ($packageService->service->description ?? '');
+                
                 return [
                     'id' => $packageService->service_id,
-                    'name' => $packageService->service->name ?? '',
-                    'description' => $packageService->service->description ?? '',
+                    'name' => $serviceName,
+                    'description' => $serviceDescription,
                     'quantity' => $packageService->quantity,
                 ];
             });
             
-            // Parse description to get headers and full description
-            $descriptionData = $this->parsePackageDescription($package->description);
+            // Get description based on language
+            $description = $language === 'ar' && $package->description_ar 
+                ? $package->description_ar 
+                : $package->description;
+            $descriptionData = $this->parsePackageDescription($description);
+            
+            // Get name based on language
+            $packageName = $language === 'ar' && $package->name_ar 
+                ? $package->name_ar 
+                : $package->name;
             
             return [
                 'id' => $package->id,
-                'name' => $package->name,
+                'name' => $packageName,
                 'description' => $descriptionData['full'], // Full description for popup
                 'description_headers' => $descriptionData['headers'], // Headers only for card
                 'price' => $package->price,
@@ -101,7 +130,7 @@ class PackageController extends Controller
         ]);
     }
 
-    public function show($id)
+    public function show(Request $request, $id)
     {
         if (!$this->packagesEnabled()) {
             return response()->json([
@@ -110,26 +139,47 @@ class PackageController extends Controller
             ], 403);
         }
 
+        // Get language from request header or default to 'en'
+        $language = $request->header('Accept-Language', 'en');
+        $language = in_array($language, ['ar', 'en']) ? $language : 'en';
+
         $package = Package::active()->with('packageServices.service')->findOrFail($id);
         
-        $services = $package->packageServices->map(function($packageService) {
+        $services = $package->packageServices->map(function($packageService) use ($language) {
+            // Get service name and description based on language
+            $serviceName = $language === 'ar' && $packageService->service && $packageService->service->name_ar
+                ? $packageService->service->name_ar
+                : ($packageService->service->name ?? '');
+            $serviceDescription = $language === 'ar' && $packageService->service && $packageService->service->description_ar
+                ? $packageService->service->description_ar
+                : ($packageService->service->description ?? '');
+            
             return [
                 'id' => $packageService->service_id,
-                'name' => $packageService->service->name ?? '',
-                'description' => $packageService->service->description ?? '',
+                'name' => $serviceName,
+                'description' => $serviceDescription,
                 'price' => $packageService->service->price ?? 0,
                 'quantity' => $packageService->quantity,
             ];
         });
         
-        $descriptionData = $this->parsePackageDescription($package->description);
+        // Get description based on language
+        $description = $language === 'ar' && $package->description_ar 
+            ? $package->description_ar 
+            : $package->description;
+        $descriptionData = $this->parsePackageDescription($description);
+        
+        // Get name based on language
+        $packageName = $language === 'ar' && $package->name_ar 
+            ? $package->name_ar 
+            : $package->name;
         
         return response()->json([
             'success' => true,
             'data' => [
                 'package' => [
                     'id' => $package->id,
-                    'name' => $package->name,
+                    'name' => $packageName,
                     'description' => $descriptionData['full'],
                     'description_headers' => $descriptionData['headers'],
                     'price' => $package->price,
@@ -223,7 +273,7 @@ class PackageController extends Controller
         }
     }
 
-    public function myPackage()
+    public function myPackage(Request $request)
     {
         if (!$this->packagesEnabled()) {
             return response()->json([
@@ -231,6 +281,10 @@ class PackageController extends Controller
                 'message' => 'Packages feature is disabled',
             ], 403);
         }
+
+        // Get language from request header or default to 'en'
+        $language = $request->header('Accept-Language', 'en');
+        $language = in_array($language, ['ar', 'en']) ? $language : 'en';
 
         $user = Auth::user();
         
@@ -254,16 +308,35 @@ class PackageController extends Controller
         $canUpgrade = $isExpired || !$hasRemainingServices;
 
         // Format services with remaining quantities
-        $services = $userPackage->packageServices->map(function($userPackageService) {
+        $services = $userPackage->packageServices->map(function($userPackageService) use ($language) {
+            // Get service name and description based on language
+            $serviceName = $language === 'ar' && $userPackageService->service && $userPackageService->service->name_ar
+                ? $userPackageService->service->name_ar
+                : ($userPackageService->service->name ?? '');
+            $serviceDescription = $language === 'ar' && $userPackageService->service && $userPackageService->service->description_ar
+                ? $userPackageService->service->description_ar
+                : ($userPackageService->service->description ?? '');
+            
             return [
                 'id' => $userPackageService->service_id,
-                'name' => $userPackageService->service->name ?? '',
-                'description' => $userPackageService->service->description ?? '',
+                'name' => $serviceName,
+                'description' => $serviceDescription,
                 'price' => $userPackageService->service->price ?? 0,
                 'total_quantity' => $userPackageService->total_quantity,
                 'remaining_quantity' => $userPackageService->remaining_quantity,
             ];
         });
+
+        // Get description based on language
+        $description = $language === 'ar' && $userPackage->package->description_ar 
+            ? $userPackage->package->description_ar 
+            : $userPackage->package->description;
+        $descriptionData = $this->parsePackageDescription($description);
+        
+        // Get name based on language
+        $packageName = $language === 'ar' && $userPackage->package->name_ar 
+            ? $userPackage->package->name_ar 
+            : $userPackage->package->name;
 
         return response()->json([
             'success' => true,
@@ -271,9 +344,9 @@ class PackageController extends Controller
                 'id' => $userPackage->id,
                 'package' => [
                     'id' => $userPackage->package->id,
-                    'name' => $userPackage->package->name,
-                    'description' => $this->parsePackageDescription($userPackage->package->description)['full'],
-                    'description_headers' => $this->parsePackageDescription($userPackage->package->description)['headers'],
+                    'name' => $packageName,
+                    'description' => $descriptionData['full'],
+                    'description_headers' => $descriptionData['headers'],
                     'price' => $userPackage->package->price,
                 ],
                 'expires_at' => $userPackage->expires_at,
@@ -284,7 +357,7 @@ class PackageController extends Controller
         ]);
     }
 
-    public function availableServices()
+    public function availableServices(Request $request)
     {
         if (!$this->packagesEnabled()) {
             return response()->json([
@@ -292,6 +365,10 @@ class PackageController extends Controller
                 'message' => 'Packages feature is disabled',
             ], 403);
         }
+
+        // Get language from request header or default to 'en'
+        $language = $request->header('Accept-Language', 'en');
+        $language = in_array($language, ['ar', 'en']) ? $language : 'en';
 
         $user = Auth::user();
         
@@ -314,16 +391,29 @@ class PackageController extends Controller
             ->where('remaining_quantity', '>', 0)
             ->with('service')
             ->get()
-            ->map(function($userPackageService) {
+            ->map(function($userPackageService) use ($language) {
+                // Get service name and description based on language
+                $serviceName = $language === 'ar' && $userPackageService->service && $userPackageService->service->name_ar
+                    ? $userPackageService->service->name_ar
+                    : ($userPackageService->service->name ?? '');
+                $serviceDescription = $language === 'ar' && $userPackageService->service && $userPackageService->service->description_ar
+                    ? $userPackageService->service->description_ar
+                    : ($userPackageService->service->description ?? '');
+                
                 return [
                     'id' => $userPackageService->service_id,
-                    'name' => $userPackageService->service->name ?? '',
-                    'description' => $userPackageService->service->description ?? '',
+                    'name' => $serviceName,
+                    'description' => $serviceDescription,
                     'price' => $userPackageService->service->price ?? 0,
                     'total_quantity' => $userPackageService->total_quantity,
                     'remaining_quantity' => $userPackageService->remaining_quantity,
                 ];
             });
+
+        // Get package name based on language
+        $packageName = $language === 'ar' && $userPackage->package->name_ar 
+            ? $userPackage->package->name_ar 
+            : $userPackage->package->name;
 
         return response()->json([
             'success' => true,
@@ -332,7 +422,7 @@ class PackageController extends Controller
                     'id' => $userPackage->id,
                     'package' => [
                         'id' => $userPackage->package->id,
-                        'name' => $userPackage->package->name,
+                        'name' => $packageName,
                     ],
                     'expires_at' => $userPackage->expires_at,
                 ],

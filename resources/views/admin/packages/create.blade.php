@@ -36,11 +36,22 @@
                             <div class="col-md-6">
                                 <div class="form-group mb-3">
                                     <label for="name" class="form-label">
-                                        <i class="fas fa-tag"></i> {{ __('packages.package_name') }} <span class="text-danger">*</span>
+                                        <i class="fas fa-tag"></i> {{ __('packages.package_name') }} (English) <span class="text-danger">*</span>
                                     </label>
                                     <input type="text" class="form-control form-control-lg" id="name" name="name" 
                                            value="{{ old('name') }}" required
                                            placeholder="{{ __('packages.enter_package_name') }}">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="name_ar" class="form-label">
+                                        <i class="fas fa-tag"></i> {{ __('packages.package_name') }} (العربية)
+                                    </label>
+                                    <input type="text" class="form-control form-control-lg" id="name_ar" name="name_ar" 
+                                           value="{{ old('name_ar') }}" dir="rtl"
+                                           placeholder="اسم الباقة بالعربية">
+                                    <small class="form-text text-muted">اسم الباقة بالعربية</small>
                                 </div>
                             </div>
                             
@@ -77,12 +88,12 @@
 
                         <div class="form-group mb-4">
                             <label class="form-label">
-                                <i class="fas fa-align-left"></i> {{ __('packages.package_description') }}
+                                <i class="fas fa-align-left"></i> {{ __('packages.package_description') }} (English)
                             </label>
                             <div class="card">
                                 <div class="card-header d-flex justify-content-between align-items-center">
-                                    <span class="fw-bold">Description Items</span>
-                                    <button type="button" class="btn btn-sm btn-primary" onclick="addDescriptionItem()">
+                                    <span class="fw-bold">Description Items (English)</span>
+                                    <button type="button" class="btn btn-sm btn-primary" onclick="addDescriptionItem('descriptionItemsContainer', 'description_items')">
                                         <i class="fas fa-plus"></i> Add Header
                                     </button>
                                 </div>
@@ -97,6 +108,30 @@
                             </div>
                             <!-- Hidden field for backward compatibility -->
                             <input type="hidden" id="description" name="description" value="">
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <label class="form-label">
+                                <i class="fas fa-align-left"></i> {{ __('packages.package_description') }} (العربية)
+                            </label>
+                            <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <span class="fw-bold">Description Items (العربية)</span>
+                                    <button type="button" class="btn btn-sm btn-primary" onclick="addDescriptionItem('descriptionItemsContainerAr', 'description_items_ar')">
+                                        <i class="fas fa-plus"></i> إضافة عنوان
+                                    </button>
+                                </div>
+                                <div class="card-body">
+                                    <div id="descriptionItemsContainerAr">
+                                        <!-- Arabic description items will be added here dynamically -->
+                                    </div>
+                                    <div class="text-muted small mt-2">
+                                        <i class="fas fa-info-circle"></i> أضف عناوين مع أوصاف. سيتم عرض كل عنوان في بطاقة التطبيق.
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Hidden field for backward compatibility -->
+                            <input type="hidden" id="description_ar" name="description_ar" value="">
                         </div>
 
                         <div class="card mb-4">
@@ -278,55 +313,62 @@ document.getElementById('createPackageForm').addEventListener('submit', function
 
 // Description items management
 let descriptionItemIndex = 0;
+let descriptionItemIndexAr = 0;
 
-function addDescriptionItem(header = '', description = '') {
-    const container = document.getElementById('descriptionItemsContainer');
-    const index = descriptionItemIndex++;
+function addDescriptionItem(containerId = 'descriptionItemsContainer', namePrefix = 'description_items', header = '', description = '') {
+    const container = document.getElementById(containerId);
+    const isArabic = containerId === 'descriptionItemsContainerAr';
+    const index = isArabic ? descriptionItemIndexAr++ : descriptionItemIndex++;
     
     const itemDiv = document.createElement('div');
     itemDiv.className = 'card mb-3 description-item';
     itemDiv.setAttribute('data-index', index);
+    itemDiv.setAttribute('data-container', containerId);
     itemDiv.innerHTML = `
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-start mb-2">
-                <h6 class="card-title mb-0">Item ${index + 1}</h6>
-                <button type="button" class="btn btn-sm btn-danger" onclick="removeDescriptionItem(${index})">
-                    <i class="fas fa-trash"></i> Remove
+                <h6 class="card-title mb-0">${isArabic ? 'عنصر' : 'Item'} ${index + 1}</h6>
+                <button type="button" class="btn btn-sm btn-danger" onclick="removeDescriptionItem('${containerId}', ${index})">
+                    <i class="fas fa-trash"></i> ${isArabic ? 'حذف' : 'Remove'}
                 </button>
             </div>
             <div class="mb-3">
-                <label class="form-label">Header <span class="text-danger">*</span></label>
+                <label class="form-label">${isArabic ? 'العنوان' : 'Header'} <span class="text-danger">*</span></label>
                 <input type="text" class="form-control description-header" 
-                       name="description_items[${index}][header]" 
+                       name="${namePrefix}[${index}][header]" 
                        value="${header}" 
-                       placeholder="Enter header title" required>
+                       dir="${isArabic ? 'rtl' : 'ltr'}"
+                       placeholder="${isArabic ? 'أدخل عنوان' : 'Enter header title'}" required>
             </div>
             <div class="mb-0">
-                <label class="form-label">Description <span class="text-danger">*</span></label>
+                <label class="form-label">${isArabic ? 'الوصف' : 'Description'} <span class="text-danger">*</span></label>
                 <textarea class="form-control description-text" 
-                          name="description_items[${index}][description]" 
+                          name="${namePrefix}[${index}][description]" 
                           rows="3" 
-                          placeholder="Enter description" required>${description}</textarea>
+                          dir="${isArabic ? 'rtl' : 'ltr'}"
+                          placeholder="${isArabic ? 'أدخل الوصف' : 'Enter description'}" required>${description}</textarea>
             </div>
         </div>
     `;
     
     container.appendChild(itemDiv);
-    updateDescriptionHiddenField();
+    updateDescriptionHiddenField(containerId, namePrefix);
 }
 
-function removeDescriptionItem(index) {
-    const item = document.querySelector(`.description-item[data-index="${index}"]`);
+function removeDescriptionItem(containerId, index) {
+    const item = document.querySelector(`.description-item[data-container="${containerId}"][data-index="${index}"]`);
     if (item) {
         item.remove();
-        updateDescriptionHiddenField();
+        const namePrefix = containerId === 'descriptionItemsContainerAr' ? 'description_items_ar' : 'description_items';
+        updateDescriptionHiddenField(containerId, namePrefix);
         // Re-index remaining items
-        reindexDescriptionItems();
+        reindexDescriptionItems(containerId, namePrefix);
     }
 }
 
-function reindexDescriptionItems() {
-    const items = document.querySelectorAll('.description-item');
+function reindexDescriptionItems(containerId, namePrefix) {
+    const items = document.querySelectorAll(`.description-item[data-container="${containerId}"]`);
+    const isArabic = containerId === 'descriptionItemsContainerAr';
     items.forEach((item, newIndex) => {
         item.setAttribute('data-index', newIndex);
         const headerInput = item.querySelector('.description-header');
@@ -334,22 +376,23 @@ function reindexDescriptionItems() {
         const title = item.querySelector('.card-title');
         
         if (headerInput) {
-            headerInput.name = `description_items[${newIndex}][header]`;
+            headerInput.name = `${namePrefix}[${newIndex}][header]`;
         }
         if (descTextarea) {
-            descTextarea.name = `description_items[${newIndex}][description]`;
+            descTextarea.name = `${namePrefix}[${newIndex}][description]`;
         }
         if (title) {
-            title.textContent = `Item ${newIndex + 1}`;
+            title.textContent = `${isArabic ? 'عنصر' : 'Item'} ${newIndex + 1}`;
         }
     });
 }
 
-function updateDescriptionHiddenField() {
+function updateDescriptionHiddenField(containerId, namePrefix) {
     // This is for backward compatibility - we'll use description_items in controller
-    const items = document.querySelectorAll('.description-item');
-    const descriptionField = document.getElementById('description');
-    if (items.length === 0) {
+    const items = document.querySelectorAll(`.description-item[data-container="${containerId}"]`);
+    const fieldId = containerId === 'descriptionItemsContainerAr' ? 'description_ar' : 'description';
+    const descriptionField = document.getElementById(fieldId);
+    if (items.length === 0 && descriptionField) {
         descriptionField.value = '';
     }
 }
@@ -369,8 +412,8 @@ document.addEventListener('DOMContentLoaded', function() {
         updateServiceStatus(input);
     });
     
-    // Add one empty description item by default
-    addDescriptionItem();
+    // Add one empty description item by default for English
+    addDescriptionItem('descriptionItemsContainer', 'description_items');
 });
 </script>
 @endsection 

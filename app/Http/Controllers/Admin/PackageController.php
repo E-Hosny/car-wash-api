@@ -59,9 +59,25 @@ class PackageController extends Controller
                 $descriptionValue = $request->description;
             }
 
+            // Process Arabic description
+            $descriptionArValue = null;
+            if ($request->has('description_items_ar') && is_array($request->description_items_ar) && count($request->description_items_ar) > 0) {
+                // Filter out empty items
+                $filteredItemsAr = array_filter($request->description_items_ar, function($item) {
+                    return !empty($item['header']) && !empty($item['description']);
+                });
+                if (count($filteredItemsAr) > 0) {
+                    $descriptionArValue = json_encode(array_values($filteredItemsAr));
+                }
+            } elseif ($request->has('description_ar') && !empty($request->description_ar)) {
+                $descriptionArValue = $request->description_ar;
+            }
+
             $package = Package::create([
                 'name' => $request->name,
+                'name_ar' => $request->name_ar,
                 'description' => $descriptionValue,
+                'description_ar' => $descriptionArValue,
                 'price' => $request->price,
                 'image' => null,
             ]);
@@ -138,9 +154,25 @@ class PackageController extends Controller
                 $descriptionValue = $request->description;
             }
 
+            // Process Arabic description
+            $descriptionArValue = null;
+            if ($request->has('description_items_ar') && is_array($request->description_items_ar) && count($request->description_items_ar) > 0) {
+                // Filter out empty items
+                $filteredItemsAr = array_filter($request->description_items_ar, function($item) {
+                    return !empty($item['header']) && !empty($item['description']);
+                });
+                if (count($filteredItemsAr) > 0) {
+                    $descriptionArValue = json_encode(array_values($filteredItemsAr));
+                }
+            } elseif ($request->has('description_ar') && !empty($request->description_ar)) {
+                $descriptionArValue = $request->description_ar;
+            }
+
             $package->update([
                 'name' => $request->name,
+                'name_ar' => $request->name_ar,
                 'description' => $descriptionValue,
+                'description_ar' => $descriptionArValue,
                 'price' => $request->price,
             ]);
 
