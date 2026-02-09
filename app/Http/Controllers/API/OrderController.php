@@ -254,11 +254,11 @@ class OrderController extends Controller
     return response()->json($responseData);
 }
 
-    public function myOrders()
+    public function myOrders(Request $request)
 {
     $userId = auth()->id();
     Log::info("Fetching orders for user ID: $userId");
-    
+
     $orders = Order::where('customer_id', $userId)
         ->with(['services', 'car.brand', 'car.model', 'car.year', 'orderCars.car.brand', 'orderCars.car.model', 'orderCars.car.year', 'orderCars.services']) // ✅ تأكد من تضمين العلاقات هنا
         ->latest()
@@ -266,12 +266,19 @@ class OrderController extends Controller
     
     Log::info("Found {$orders->count()} orders for user ID: $userId");
 
+    // Return full service objects (name + name_ar) so the app can display based on user's current language
+    $getServicesForDisplay = function ($services) {
+        return $services->map(function ($s) {
+            return ['name' => $s->name ?? '', 'name_ar' => $s->name_ar ?? null];
+        })->values();
+    };
+
     // Add multi-car information to each order
-    $orders->each(function ($order) {
+    $orders->each(function ($order) use ($getServicesForDisplay) {
         if ($order->orderCars->count() > 0) {
             $order->is_multi_car = $order->orderCars->count() > 1;
             $order->cars_count = $order->orderCars->count();
-            $order->all_cars = $order->orderCars->map(function ($orderCar) {
+            $order->all_cars = $order->orderCars->map(function ($orderCar) use ($getServicesForDisplay) {
                 // التحقق من وجود car و brand و model و year
                 if (!$orderCar->car || !$orderCar->car->brand || !$orderCar->car->model) {
                     return [
@@ -279,7 +286,7 @@ class OrderController extends Controller
                         'brand' => 'Unknown',
                         'model' => 'Unknown',
                         'year' => $orderCar->car && $orderCar->car->year ? $orderCar->car->year->year : null,
-                        'services' => $orderCar->services->pluck('name'),
+                        'services' => $getServicesForDisplay($orderCar->services),
                         'subtotal' => $orderCar->subtotal ?? 0,
                         'points_used' => $orderCar->points_used ?? 0,
                     ];
@@ -289,7 +296,7 @@ class OrderController extends Controller
                     'brand' => $orderCar->car->brand->name,
                     'model' => $orderCar->car->model->name,
                     'year' => $orderCar->car->year ? $orderCar->car->year->year : null,
-                    'services' => $orderCar->services->pluck('name'),
+                    'services' => $getServicesForDisplay($orderCar->services),
                     'subtotal' => $orderCar->subtotal,
                     'points_used' => $orderCar->points_used,
                 ];
@@ -304,7 +311,7 @@ class OrderController extends Controller
                     'brand' => $order->car->brand->name,
                     'model' => $order->car->model->name,
                     'year' => $order->car->year ? $order->car->year->year : null,
-                    'services' => $order->services->pluck('name'),
+                    'services' => $getServicesForDisplay($order->services),
                     'subtotal' => $order->total,
                     'points_used' => 0,
                 ]];
@@ -315,7 +322,7 @@ class OrderController extends Controller
                     'brand' => 'Unknown',
                     'model' => 'Unknown',
                     'year' => null,
-                    'services' => $order->services->pluck('name'),
+                    'services' => $getServicesForDisplay($order->services),
                     'subtotal' => $order->total ?? 0,
                     'points_used' => 0,
                 ]];
