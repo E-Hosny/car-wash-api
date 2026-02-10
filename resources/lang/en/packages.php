@@ -117,6 +117,8 @@ return [
     'package_terms' => 'Package Terms',
     'package_duration' => 'Package Duration',
     'package_services' => 'Package Services',
+    'validity_months' => 'Validity (months)',
+    'validity_months_help' => 'Package validity period in months (e.g. 1 = 1 month, 3 = 3 months)',
 
     // Currency
     'currency' => 'AED',

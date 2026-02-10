@@ -68,6 +68,17 @@
                                     </div>
                                 </div>
                             </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label for="validity_months" class="form-label">
+                                        <i class="fas fa-calendar-alt"></i> {{ __('packages.validity_months') }} <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="number" class="form-control form-control-lg" id="validity_months" name="validity_months" 
+                                           value="{{ old('validity_months', 1) }}" min="1" max="120" required
+                                           placeholder="1">
+                                    <small class="form-text text-muted">{{ __('packages.validity_months_help') }}</small>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="row">

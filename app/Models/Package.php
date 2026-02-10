@@ -15,6 +15,7 @@ class Package extends Model
         'description',
         'description_ar',
         'price',
+        'validity_months',
         'image',
         'is_active',
     ];

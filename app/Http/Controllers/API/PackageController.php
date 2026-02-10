@@ -114,6 +114,7 @@ class PackageController extends Controller
                 'description' => $descriptionData['full'], // Full description for popup
                 'description_headers' => $descriptionData['headers'], // Headers only for card
                 'price' => $package->price,
+                'validity_months' => (int) ($package->validity_months ?? 1),
                 'image' => $package->image, // This should be like 'packages/image.jpg'
                 'is_active' => $package->is_active,
                 'services' => $services,
@@ -183,6 +184,7 @@ class PackageController extends Controller
                     'description' => $descriptionData['full'],
                     'description_headers' => $descriptionData['headers'],
                     'price' => $package->price,
+                    'validity_months' => (int) ($package->validity_months ?? 1),
                     'image' => $package->image,
                     'is_active' => $package->is_active,
                 ],
@@ -235,10 +237,11 @@ class PackageController extends Controller
                 ->where('status', 'active')
                 ->update(['status' => 'expired']);
             
+            $validityMonths = max(1, (int) ($package->validity_months ?? 1));
             $userPackage = UserPackage::create([
                 'user_id' => $user->id,
                 'package_id' => $package->id,
-                'expires_at' => now()->addMonth(),
+                'expires_at' => now()->addMonths($validityMonths),
                 'status' => 'active',
                 'payment_intent_id' => $request->payment_intent_id,
                 'paid_amount' => $request->paid_amount,

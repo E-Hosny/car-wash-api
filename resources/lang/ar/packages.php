@@ -117,6 +117,8 @@ return [
     'package_terms' => 'شروط الباقة',
     'package_duration' => 'مدة الباقة',
     'package_services' => 'خدمات الباقة',
+    'validity_months' => 'صلاحية الباقة (بالأشهر)',
+    'validity_months_help' => 'مدة صلاحية الباقة بالأشهر (مثال: 1 = شهر، 3 = ثلاثة أشهر)',
 
     // Currency
     'currency' => 'درهم',

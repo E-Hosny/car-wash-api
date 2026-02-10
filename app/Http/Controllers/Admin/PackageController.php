@@ -37,6 +37,7 @@ class PackageController extends Controller
             'description_items.*.header' => 'required_with:description_items|string|max:255',
             'description_items.*.description' => 'required_with:description_items|string',
             'price' => 'required|numeric|min:0',
+            'validity_months' => 'required|integer|min:1|max:120',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'services' => 'required|array',
             'services.*.service_id' => 'required|exists:services,id',
@@ -79,6 +80,7 @@ class PackageController extends Controller
                 'description' => $descriptionValue,
                 'description_ar' => $descriptionArValue,
                 'price' => $request->price,
+                'validity_months' => (int) $request->validity_months,
                 'image' => null,
             ]);
 
@@ -130,6 +132,7 @@ class PackageController extends Controller
             'description_items.*.header' => 'required_with:description_items|string|max:255',
             'description_items.*.description' => 'required_with:description_items|string',
             'price' => 'required|numeric|min:0',
+            'validity_months' => 'required|integer|min:1|max:120',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'services' => 'required|array',
             'services.*.service_id' => 'required|exists:services,id',
@@ -174,6 +177,7 @@ class PackageController extends Controller
                 'description' => $descriptionValue,
                 'description_ar' => $descriptionArValue,
                 'price' => $request->price,
+                'validity_months' => (int) $request->validity_months,
             ]);
 
             // Handle image upload
