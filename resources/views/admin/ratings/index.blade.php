@@ -136,8 +136,13 @@
         </div>
 
         <!-- Pagination -->
-        <div class="d-flex justify-content-center mt-4">
-            {{ $ratings->links() }}
+        <div class="d-flex flex-column align-items-center gap-2 mt-4">
+            <div class="text-muted small">
+                عرض {{ $ratings->firstItem() ?? 0 }} إلى {{ $ratings->lastItem() ?? 0 }} من {{ $ratings->total() }} نتيجة
+            </div>
+            <nav aria-label="تنقل التقييمات" class="d-flex justify-content-center">
+                {{ $ratings->withQueryString()->links('pagination::bootstrap-5') }}
+            </nav>
         </div>
     @else
         <div class="alert alert-info text-center mt-5">
