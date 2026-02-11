@@ -21,15 +21,14 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        // 1. معالجة ValidationException - إرجاع JSON واضح يحدد سبب الفشل في كل حقل
+        // 1. معالجة ValidationException - message يحتوي سبب الفشل مباشرة
         $exceptions->render(function (ValidationException $e, \Illuminate\Http\Request $request) {
             if ($request->is('api/*')) {
                 $errors = $e->errors();
                 $firstBag = reset($errors);
                 $firstMessage = is_array($firstBag) ? reset($firstBag) : (string) $firstBag;
                 return response()->json([
-                    'message' => 'Validation failed',
-                    'reason' => $firstMessage,
+                    'message' => $firstMessage,
                     'errors' => $errors,
                 ], 422);
             }
