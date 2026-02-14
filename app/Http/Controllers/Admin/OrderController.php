@@ -20,18 +20,31 @@ class OrderController extends Controller
     public function index()
     {
         $orders = Order::with([
-            'customer', 
-            'provider', 
+            'customer',
+            'provider',
             'services',
             'orderCars.services'
         ])->latest()->get();
-        
-        // حساب إحصائيات الخدمات
+
+        return view('admin.orders.index', compact('orders'));
+    }
+
+    /**
+     * صفحة إحصائيات الخدمات + Retention (نسبة العملاء الذين لديهم أكثر من طلب)
+     */
+    public function statistics()
+    {
+        $orders = Order::with([
+            'customer',
+            'provider',
+            'services',
+            'orderCars.services'
+        ])->get();
+
         $serviceStats = [];
         $totalOrders = $orders->count();
-        
+
         foreach ($orders as $order) {
-            // جمع الخدمات من الطلبات العادية
             if ($order->services && $order->services->count() > 0) {
                 foreach ($order->services as $service) {
                     if (!isset($serviceStats[$service->id])) {
@@ -43,8 +56,6 @@ class OrderController extends Controller
                     $serviceStats[$service->id]['count']++;
                 }
             }
-            
-            // جمع الخدمات من OrderCars (للطلبات متعددة السيارات)
             if ($order->orderCars && $order->orderCars->count() > 0) {
                 foreach ($order->orderCars as $orderCar) {
                     if ($orderCar->services && $orderCar->services->count() > 0) {
@@ -61,20 +72,54 @@ class OrderController extends Controller
                 }
             }
         }
-        
-        // حساب النسبة المئوية لكل خدمة
+
         foreach ($serviceStats as $serviceId => &$stat) {
-            $stat['percentage'] = $totalOrders > 0 
-                ? round(($stat['count'] / $totalOrders) * 100, 2) 
+            $stat['percentage'] = $totalOrders > 0
+                ? round(($stat['count'] / $totalOrders) * 100, 2)
                 : 0;
         }
-        
-        // ترتيب الخدمات حسب عدد المرات (من الأكثر إلى الأقل)
-        usort($serviceStats, function($a, $b) {
+        unset($stat);
+        usort($serviceStats, function ($a, $b) {
             return $b['count'] - $a['count'];
         });
-        
-        return view('admin.orders.index', compact('orders', 'serviceStats', 'totalOrders'));
+
+        // Retention: عملاء لديهم أكثر من طلب
+        $totalUniqueCustomers = (int) Order::selectRaw('COUNT(DISTINCT customer_id) as total')->value('total');
+        $retentionAggregate = Order::selectRaw('customer_id, count(*) as orders_count')
+            ->groupBy('customer_id')
+            ->having('orders_count', '>', 1)
+            ->get();
+        $retentionCount = $retentionAggregate->count();
+        $retentionPercentage = $totalUniqueCustomers > 0
+            ? round(($retentionCount / $totalUniqueCustomers) * 100, 2)
+            : 0;
+
+        $customerIds = $retentionAggregate->pluck('customer_id')->filter()->values()->all();
+        $ordersCountByCustomer = $retentionAggregate->keyBy('customer_id');
+        $customers = \App\Models\User::whereIn('id', $customerIds)->get()->keyBy('id');
+        $retentionDetails = [];
+        foreach ($retentionAggregate as $row) {
+            $customer = $customers->get($row->customer_id);
+            $retentionDetails[] = [
+                'customer_id' => $row->customer_id,
+                'name' => $customer ? $customer->name : '-',
+                'phone' => $customer ? $customer->phone : '-',
+                'email' => $customer ? $customer->email : '-',
+                'orders_count' => (int) $row->orders_count,
+            ];
+        }
+        usort($retentionDetails, function ($a, $b) {
+            return $b['orders_count'] - $a['orders_count'];
+        });
+
+        return view('admin.orders.statistics', compact(
+            'serviceStats',
+            'totalOrders',
+            'totalUniqueCustomers',
+            'retentionCount',
+            'retentionPercentage',
+            'retentionDetails'
+        ));
     }
 
     public function timeSlots(Request $request)
