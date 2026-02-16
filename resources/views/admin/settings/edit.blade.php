@@ -27,6 +27,32 @@
 			<input type="number" class="form-control" id="minimum_booking_advance_minutes" name="minimum_booking_advance_minutes" value="{{ $minimumBookingAdvance }}" min="1" max="1440" required>
 			<small class="form-text text-muted">{{ __('messages.minimum_booking_advance_minutes_help') }}</small>
 		</div>
+
+		<hr class="my-4">
+		<h4 class="mb-3">تحديث التطبيق (إجباري)</h4>
+		<div class="alert alert-info">
+			<small>إذا حددت إصداراً أدنى، سيُطلب من المستخدمين الذين لديهم إصدار أقدم تحديث التطبيق قبل الاستمرار. اترك الحقل فارغاً لعدم فرض تحديث.</small>
+		</div>
+		<div class="row">
+			<div class="col-md-6 mb-3">
+				<label for="min_android_version" class="form-label">أقل إصدار أندرويد (مثال: 1.2.6)</label>
+				<input type="text" class="form-control" id="min_android_version" name="min_android_version" value="{{ old('min_android_version', $minAndroidVersion) }}" placeholder="1.2.6">
+			</div>
+			<div class="col-md-6 mb-3">
+				<label for="min_ios_version" class="form-label">أقل إصدار آيفون (مثال: 1.2.6)</label>
+				<input type="text" class="form-control" id="min_ios_version" name="min_ios_version" value="{{ old('min_ios_version', $minIosVersion) }}" placeholder="1.2.6">
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-md-6 mb-3">
+				<label for="android_store_url" class="form-label">رابط تطبيق أندرويد (Google Play)</label>
+				<input type="url" class="form-control" id="android_store_url" name="android_store_url" value="{{ old('android_store_url', $androidStoreUrl) }}" placeholder="https://play.google.com/store/apps/details?id=...">
+			</div>
+			<div class="col-md-6 mb-3">
+				<label for="ios_store_url" class="form-label">رابط تطبيق آيفون (App Store)</label>
+				<input type="url" class="form-control" id="ios_store_url" name="ios_store_url" value="{{ old('ios_store_url', $iosStoreUrl) }}" placeholder="https://apps.apple.com/app/id...">
+			</div>
+		</div>
 		
 		<hr class="my-4">
 		<h4 class="mb-3">الحدود الجغرافية (قديم - للتوافق فقط)</h4>

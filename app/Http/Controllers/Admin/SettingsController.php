@@ -15,7 +15,13 @@ class SettingsController extends Controller
         $maxSlotsPerHour = (int) Setting::getValue('max_slots_per_hour', 2);
         $supportWhatsapp = Setting::getValue('support_whatsapp', '966542327025');
         $minimumBookingAdvance = (int) Setting::getValue('minimum_booking_advance_minutes', 60);
-        
+
+        // تحديث التطبيق (إجباري)
+        $minAndroidVersion = (string) Setting::getValue('min_android_version', '');
+        $minIosVersion = (string) Setting::getValue('min_ios_version', '');
+        $androidStoreUrl = (string) Setting::getValue('android_store_url', '');
+        $iosStoreUrl = (string) Setting::getValue('ios_store_url', '');
+
         // الحدود الجغرافية (للتوافق مع البيانات القديمة)
         $dubaiMinLat = (float) Setting::getValue('dubai_min_latitude', 24.5);
         $dubaiMaxLat = (float) Setting::getValue('dubai_max_latitude', 25.5);
@@ -30,6 +36,10 @@ class SettingsController extends Controller
             'maxSlotsPerHour', 
             'supportWhatsapp', 
             'minimumBookingAdvance',
+            'minAndroidVersion',
+            'minIosVersion',
+            'androidStoreUrl',
+            'iosStoreUrl',
             'dubaiMinLat',
             'dubaiMaxLat',
             'dubaiMinLng',
@@ -45,6 +55,10 @@ class SettingsController extends Controller
             'max_slots_per_hour' => 'required|integer|min:1|max:10',
             'support_whatsapp' => 'required|string|max:20|regex:/^[0-9+]+$/',
             'minimum_booking_advance_minutes' => 'required|integer|min:1|max:1440',
+            'min_android_version' => 'nullable|string|max:20',
+            'min_ios_version' => 'nullable|string|max:20',
+            'android_store_url' => 'nullable|url|max:500',
+            'ios_store_url' => 'nullable|url|max:500',
             'dubai_min_latitude' => 'required|numeric|min:-90|max:90',
             'dubai_max_latitude' => 'required|numeric|min:-90|max:90',
             'dubai_min_longitude' => 'required|numeric|min:-180|max:180',
@@ -78,6 +92,12 @@ class SettingsController extends Controller
         Setting::setValue('dubai_max_latitude', (float) $request->dubai_max_latitude);
         Setting::setValue('dubai_min_longitude', (float) $request->dubai_min_longitude);
         Setting::setValue('dubai_max_longitude', (float) $request->dubai_max_longitude);
+
+        // تحديث التطبيق
+        Setting::setValue('min_android_version', trim((string) $request->input('min_android_version', '')));
+        Setting::setValue('min_ios_version', trim((string) $request->input('min_ios_version', '')));
+        Setting::setValue('android_store_url', trim((string) $request->input('android_store_url', '')));
+        Setting::setValue('ios_store_url', trim((string) $request->input('ios_store_url', '')));
 
         return redirect()->route('admin.settings.index')->with('success', __('messages.updated_successfully'));
     }
