@@ -21,6 +21,65 @@ class WhatsAppService
     }
 
     /**
+     * إرسال OTP عبر رقم واتساب المستقل (قالب otp_luxuria_wash).
+     * يستخدم إعدادات whatsapp_otp فقط — لا يستخدم الرقم القديم.
+     */
+    public function sendOtp(string $toE164, string $otp): array
+    {
+        $token = (string) config('services.whatsapp_otp.token');
+        $phoneNumberId = (string) config('services.whatsapp_otp.phone_number_id');
+        $templateName = (string) config('services.whatsapp_otp.template_name', 'otp_luxuria_wash');
+        $templateLang = (string) config('services.whatsapp_otp.template_lang', 'en_US');
+
+        if (empty($token) || empty($phoneNumberId)) {
+            Log::warning('WhatsApp OTP: missing credentials. Skipping send.');
+            return [];
+        }
+
+        $url = "https://graph.facebook.com/v22.0/{$phoneNumberId}/messages";
+        $to = preg_replace('/\D/', '', $toE164);
+
+        $payload = [
+            'messaging_product' => 'whatsapp',
+            'to' => $to,
+            'type' => 'template',
+            'template' => [
+                'name' => $templateName,
+                'language' => ['code' => $templateLang],
+                'components' => [
+                    [
+                        'type' => 'body',
+                        'parameters' => [
+                            ['type' => 'text', 'text' => $otp],
+                        ],
+                    ],
+                    [
+                        'type' => 'button',
+                        'sub_type' => 'url',
+                        'index' => '0',
+                        'parameters' => [
+                            ['type' => 'text', 'text' => $otp],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        $response = Http::withToken($token)
+            ->acceptJson()
+            ->post($url, $payload);
+
+        if (! $response->successful()) {
+            Log::error('WhatsApp OTP send failed', [
+                'status' => $response->status(),
+                'body' => $response->json(),
+            ]);
+        }
+
+        return $response->json() ?? [];
+    }
+
+    /**
      * Send a WhatsApp template message to a single E.164 number.
      * $components follows Meta's API format. Leave empty for templates without params.
      */

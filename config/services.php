@@ -35,7 +35,7 @@ return [
         ],
     ],
 
-    // WhatsApp (Meta) configuration
+    // WhatsApp (Meta) configuration — الطلبات والإشعارات
     'whatsapp' => [
         'token' => env('WHATSAPP_TOKEN'),
         'phone_number_id' => env('WHATSAPP_PHONE_NUMBER_ID'),
@@ -43,6 +43,14 @@ return [
         'template_lang' => env('WHATSAPP_TEMPLATE_LANG', 'en'),
         // Comma-separated E.164 numbers to notify, e.g. "9715XXXXXXX,9665XXXXXXX"
         'notify_recipients' => env('WHATSAPP_NOTIFY_RECIPIENTS', ''),
+    ],
+
+    // WhatsApp OTP (رقم مستقل لرسائل OTP تسجيل الدخول فقط)
+    'whatsapp_otp' => [
+        'token' => env('WHATSAPP_OTP_TOKEN'),
+        'phone_number_id' => env('WHATSAPP_OTP_PHONE_NUMBER_ID'),
+        'template_name' => env('WHATSAPP_OTP_TEMPLATE_NAME', 'otp_luxuria_wash'),
+        'template_lang' => env('WHATSAPP_OTP_TEMPLATE_LANG', 'en_US'),
     ],
 
     'onesignal' => [

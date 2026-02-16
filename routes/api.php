@@ -27,8 +27,9 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
-// ✅ OTP Authentication
+// ✅ OTP Authentication (الرقم الجديد فقط — الرقم القديم متوقف عن OTP)
 Route::post('/check-phone', [AuthController::class, 'checkPhone']);
+Route::post('/request-otp', [AuthController::class, 'requestOtp']);
 Route::post('/login-with-otp', [AuthController::class, 'loginWithOtp']);
 
 // ✅ Public endpoints (no authentication required)

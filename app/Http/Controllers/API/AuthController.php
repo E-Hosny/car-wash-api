@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\API;
 
 use App\Models\User;
+use App\Services\WhatsAppService;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
@@ -149,8 +151,22 @@ class AuthController extends Controller
         ]);
     }
 
-    // ✅ تسجيل الدخول باستخدام OTP
-    public function loginWithOtp(Request $request)
+    /** مفتاح الكاش لـ OTP حسب رقم الهاتف */
+    private function otpCacheKey(string $normalizedPhone): string
+    {
+        return 'otp:' . $normalizedPhone;
+    }
+
+    /** إنشاء OTP عشوائي مكون من 4 أرقام من الـ backend */
+    private function generateOtp(): string
+    {
+        return (string) random_int(1000, 9999);
+    }
+
+    /**
+     * طلب إرسال OTP — يولد الرقم من الـ backend ويرسله عبر واتساب الرقم الجديد فقط.
+     */
+    public function requestOtp(Request $request)
     {
         $request->validate([
             'phone' => 'required',
@@ -164,6 +180,44 @@ class AuthController extends Controller
                 'phone' => ['Phone number not found.'],
             ]);
         }
+
+        $otp = $this->generateOtp();
+        Cache::put($this->otpCacheKey($normalizedPhone), $otp, now()->addMinutes(5));
+
+        app(WhatsAppService::class)->sendOtp($normalizedPhone, $otp);
+
+        return response()->json([
+            'message' => 'OTP sent.',
+        ]);
+    }
+
+    /**
+     * تسجيل الدخول بالتحقق من OTP (الرقم يُولَّد ويُرسل من الـ backend عبر الرقم الجديد فقط).
+     */
+    public function loginWithOtp(Request $request)
+    {
+        $request->validate([
+            'phone' => 'required',
+            'otp' => 'required|string|size:4',
+        ]);
+
+        $normalizedPhone = $this->normalizePhone($request->phone);
+        $user = User::where('phone', $normalizedPhone)->first();
+
+        if (! $user) {
+            throw ValidationException::withMessages([
+                'phone' => ['Phone number not found.'],
+            ]);
+        }
+
+        $cachedOtp = Cache::get($this->otpCacheKey($normalizedPhone));
+        if ($cachedOtp === null || (string) $request->otp !== (string) $cachedOtp) {
+            throw ValidationException::withMessages([
+                'otp' => ['Invalid or expired OTP.'],
+            ]);
+        }
+
+        Cache::forget($this->otpCacheKey($normalizedPhone));
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
