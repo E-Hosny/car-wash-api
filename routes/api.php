@@ -110,9 +110,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/ratings/order/{orderId}', [RatingController::class, 'checkOrderRating']);
 });
 
-// Provider/Worker Time Slots Management
-Route::middleware(['auth:sanctum'])->group(function () {
+// عرض المواعيد: provider و worker (عرض فقط)
+Route::middleware(['auth:sanctum', 'provider_or_worker'])->group(function () {
     Route::get('/provider/time-slots/today', [ProviderTimeSlotController::class, 'getTodayTimeSlots']);
+});
+// تبديل حالة الموعد: مقدم الخدمة (provider) فقط - worker لا يستطيع toggle
+Route::middleware(['auth:sanctum', 'provider_only'])->group(function () {
     Route::post('/provider/time-slots/{hour}/toggle', [ProviderTimeSlotController::class, 'toggleSlot']);
 });
 

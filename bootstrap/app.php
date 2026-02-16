@@ -18,6 +18,8 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
+            'provider_only' => \App\Http\Middleware\ProviderOnlyMiddleware::class,
+            'provider_or_worker' => \App\Http\Middleware\ProviderOrWorkerMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
