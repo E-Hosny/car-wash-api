@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use App\Models\GeographicalBound;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class SettingsController extends Controller
 {
@@ -21,6 +22,14 @@ class SettingsController extends Controller
         $minIosVersion = (string) Setting::getValue('min_ios_version', '');
         $androidStoreUrl = (string) Setting::getValue('android_store_url', '');
         $iosStoreUrl = (string) Setting::getValue('ios_store_url', '');
+
+        // بانر الصفحة الرئيسية
+        $homeBannerPath = (string) Setting::getValue('home_banner_image_url', '');
+        $homeBannerPreviewUrl = $homeBannerPath !== '' && ! str_starts_with($homeBannerPath, 'http')
+            ? rtrim(config('app.url'), '/') . '/storage/' . ltrim($homeBannerPath, '/')
+            : ($homeBannerPath !== '' ? $homeBannerPath : '');
+        $homeBannerLinkType = (string) Setting::getValue('home_banner_link_type', 'none');
+        $homeBannerLinkExternalUrl = (string) Setting::getValue('home_banner_link_external_url', '');
 
         // الحدود الجغرافية (للتوافق مع البيانات القديمة)
         $dubaiMinLat = (float) Setting::getValue('dubai_min_latitude', 24.5);
@@ -40,6 +49,10 @@ class SettingsController extends Controller
             'minIosVersion',
             'androidStoreUrl',
             'iosStoreUrl',
+            'homeBannerPath',
+            'homeBannerPreviewUrl',
+            'homeBannerLinkType',
+            'homeBannerLinkExternalUrl',
             'dubaiMinLat',
             'dubaiMaxLat',
             'dubaiMinLng',
@@ -59,11 +72,20 @@ class SettingsController extends Controller
             'min_ios_version' => 'nullable|string|max:20',
             'android_store_url' => 'nullable|url|max:500',
             'ios_store_url' => 'nullable|url|max:500',
+            'banner_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'banner_link_type' => 'nullable|string|in:none,single_wash,multi_car,packages,orders,support,external',
+            'banner_link_external_url' => 'nullable|url|max:500',
             'dubai_min_latitude' => 'required|numeric|min:-90|max:90',
             'dubai_max_latitude' => 'required|numeric|min:-90|max:90',
             'dubai_min_longitude' => 'required|numeric|min:-180|max:180',
             'dubai_max_longitude' => 'required|numeric|min:-180|max:180',
         ]);
+
+        if ($request->banner_link_type === 'external' && empty(trim((string) $request->banner_link_external_url))) {
+            return redirect()->back()->withErrors([
+                'banner_link_external_url' => 'يجب إدخال الرابط الخارجي عند اختيار "رابط خارجي"'
+            ])->withInput();
+        }
 
         // التحقق من أن الحد الأدنى أقل من الحد الأقصى
         if ($request->dubai_min_latitude >= $request->dubai_max_latitude) {
@@ -98,6 +120,16 @@ class SettingsController extends Controller
         Setting::setValue('min_ios_version', trim((string) $request->input('min_ios_version', '')));
         Setting::setValue('android_store_url', trim((string) $request->input('android_store_url', '')));
         Setting::setValue('ios_store_url', trim((string) $request->input('ios_store_url', '')));
+
+        // بانر الصفحة الرئيسية
+        if ($request->hasFile('banner_image')) {
+            $file = $request->file('banner_image');
+            Storage::disk('public')->deleteDirectory('banner');
+            $path = $file->store('banner', 'public');
+            Setting::setValue('home_banner_image_url', $path);
+        }
+        Setting::setValue('home_banner_link_type', $request->input('banner_link_type', 'none'));
+        Setting::setValue('home_banner_link_external_url', trim((string) $request->input('banner_link_external_url', '')));
 
         return redirect()->route('admin.settings.index')->with('success', __('messages.updated_successfully'));
     }

@@ -6,7 +6,7 @@
 	@if(session('success'))
 		<div class="alert alert-success">{{ session('success') }}</div>
 	@endif
-	<form method="POST" action="{{ route('admin.settings.update') }}">
+	<form method="POST" action="{{ route('admin.settings.update') }}" enctype="multipart/form-data">
 		@csrf
 		<div class="form-check form-switch mb-3">
 			<input class="form-check-input" type="checkbox" id="packages_enabled" name="packages_enabled" value="1" {{ $packagesEnabled ? 'checked' : '' }}>
@@ -53,6 +53,50 @@
 				<input type="url" class="form-control" id="ios_store_url" name="ios_store_url" value="{{ old('ios_store_url', $iosStoreUrl) }}" placeholder="https://apps.apple.com/app/id...">
 			</div>
 		</div>
+
+		<hr class="my-4">
+		<h4 class="mb-3">بانر الصفحة الرئيسية</h4>
+		<div class="alert alert-info">
+			<small>صورة البانر تظهر في الصفحة الرئيسية للتطبيق. يمكن جعلها قابلة للنقر وتحديد الصفحة أو الرابط الذي ينتقل إليه المستخدم عند الضغط.</small>
+		</div>
+		<div class="mb-3">
+			<label for="banner_image" class="form-label">صورة البانر</label>
+			<input type="file" class="form-control @error('banner_image') is-invalid @enderror" id="banner_image" name="banner_image" accept="image/jpeg,image/png,image/jpg,image/gif,image/webp">
+			@error('banner_image')
+				<div class="invalid-feedback">{{ $message }}</div>
+			@enderror
+			<small class="form-text text-muted">jpeg, png, jpg, gif, webp — حد أقصى 5 ميجا. <strong>ترك الحقل فارغاً:</strong> يبقى التطبيق يعرض الصورة الافتراضية الحالية (بدون رفع صورة جديدة).</small>
+			@if(!empty($homeBannerPreviewUrl))
+			<div class="mt-2">
+				<strong>المعاينة الحالية:</strong>
+				<img src="{{ $homeBannerPreviewUrl }}" alt="بانر" class="img-thumbnail mt-1" style="max-height: 120px;">
+			</div>
+			@endif
+		</div>
+		<div class="mb-3">
+			<label for="banner_link_type" class="form-label">وجهة الضغط على البانر</label>
+			<select class="form-select" id="banner_link_type" name="banner_link_type">
+				<option value="none" {{ old('banner_link_type', $homeBannerLinkType) === 'none' ? 'selected' : '' }}>لا شيء</option>
+				<option value="single_wash" {{ old('banner_link_type', $homeBannerLinkType) === 'single_wash' ? 'selected' : '' }}>غسيل سيارة واحدة</option>
+				<option value="multi_car" {{ old('banner_link_type', $homeBannerLinkType) === 'multi_car' ? 'selected' : '' }}>طلب متعدد السيارات</option>
+				<option value="packages" {{ old('banner_link_type', $homeBannerLinkType) === 'packages' ? 'selected' : '' }}>الباقات</option>
+				<option value="orders" {{ old('banner_link_type', $homeBannerLinkType) === 'orders' ? 'selected' : '' }}>الطلبات</option>
+				<option value="support" {{ old('banner_link_type', $homeBannerLinkType) === 'support' ? 'selected' : '' }}>الدعم</option>
+				<option value="external" {{ old('banner_link_type', $homeBannerLinkType) === 'external' ? 'selected' : '' }}>رابط خارجي</option>
+			</select>
+		</div>
+		<div class="mb-3" id="banner_external_url_wrap" style="{{ old('banner_link_type', $homeBannerLinkType) === 'external' ? '' : 'display:none;' }}">
+			<label for="banner_link_external_url" class="form-label">رابط خارجي</label>
+			<input type="url" class="form-control @error('banner_link_external_url') is-invalid @enderror" id="banner_link_external_url" name="banner_link_external_url" value="{{ old('banner_link_external_url', $homeBannerLinkExternalUrl) }}" placeholder="https://...">
+			@error('banner_link_external_url')
+				<div class="invalid-feedback">{{ $message }}</div>
+			@enderror
+		</div>
+		<script>
+			document.getElementById('banner_link_type').addEventListener('change', function() {
+				document.getElementById('banner_external_url_wrap').style.display = this.value === 'external' ? 'block' : 'none';
+			});
+		</script>
 		
 		<hr class="my-4">
 		<h4 class="mb-3">الحدود الجغرافية (قديم - للتوافق فقط)</h4>
