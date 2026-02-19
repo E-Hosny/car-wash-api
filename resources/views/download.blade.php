@@ -3,8 +3,8 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>First Car Wash for Only 20 AED - 50% OFF | Luxuria Car Wash</title>
-    <meta name="description" content="Get your first car wash for only 20 AED! 50% OFF limited-time offer for new users. Premium car wash at your home or office - Download Luxuria Car Wash app now">
+    <title>Luxuria Car Wash | Premium Car Wash at Your Home or Office</title>
+    <meta name="description" content="Premium car wash at your home or office. Download Luxuria Car Wash app now.">
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -99,25 +99,6 @@
             50% { box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3); }
         }
         
-        .discount-badge {
-            display: inline-block;
-            background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
-            color: white;
-            padding: 10px 25px;
-            border-radius: 25px;
-            font-weight: 700;
-            font-size: 0.95rem;
-            margin-bottom: 20px;
-            box-shadow: 0 8px 20px rgba(238, 90, 111, 0.3);
-            animation: pulse-badge 2s ease-in-out infinite;
-            letter-spacing: 0.5px;
-        }
-        
-        @keyframes pulse-badge {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-        
         .title {
             font-size: 2.5rem;
             font-weight: 700;
@@ -130,31 +111,11 @@
             line-height: 1.2;
         }
         
-        .price-highlight {
-            font-size: 3rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            display: block;
-            margin-top: 10px;
-            text-shadow: 0 2px 10px rgba(238, 90, 111, 0.2);
-        }
-        
         .subtitle {
             font-size: 1.2rem;
             color: #718096;
             margin-bottom: 50px;
             line-height: 1.6;
-        }
-        
-        .urgency-note {
-            font-size: 0.85rem;
-            color: #ee5a6f;
-            font-style: italic;
-            margin-top: 15px;
-            font-weight: 500;
         }
         
         .social-proof {
@@ -281,18 +242,8 @@
                 margin: 10px;
             }
             
-            .discount-badge {
-                font-size: 0.85rem;
-                padding: 8px 20px;
-                margin-bottom: 15px;
-            }
-            
             .title {
                 font-size: 2rem;
-            }
-            
-            .price-highlight {
-                font-size: 2.2rem;
             }
             
             .subtitle {
@@ -302,10 +253,6 @@
             .download-btn {
                 padding: 15px 25px;
                 font-size: 1rem;
-            }
-            
-            .urgency-note {
-                font-size: 0.8rem;
             }
             
             .social-proof {
@@ -350,14 +297,9 @@
             <img src="{{ asset('logo.png') }}" alt="Luxuria Car Wash Logo" class="logo">
         </div>
         
-        <div class="discount-badge">50% OFF for New Users – Limited Time Offer</div>
-        
-        <h1 class="title">
-            First Car Wash for Only<br>
-            <span class="price-highlight">20 AED</span>
-        </h1>
+        <h1 class="title">Luxuria Car Wash</h1>
         <p class="subtitle">
-            Premium car wash at your home or office – limited-time offer for new users
+            Premium car wash at your home or office
         </p>
         
         <div class="download-buttons">
@@ -366,7 +308,7 @@
                class="download-btn android-btn"
                onclick="trackDownload('android')">
                 <i class="fab fa-google-play btn-icon"></i>
-                <span>Get 50% OFF – Download App</span>
+                <span>Download App</span>
             </a>
             
             <a href="https://apps.apple.com/us/app/luxuria-car-wash/id6748601716" 
@@ -374,11 +316,9 @@
                class="download-btn ios-btn"
                onclick="trackDownload('ios')">
                 <i class="fab fa-apple btn-icon"></i>
-                <span>Get 50% OFF – Download App</span>
+                <span>Download App</span>
             </a>
         </div>
-        
-        <p class="urgency-note">Limited-time offer – new users only</p>
         
         <div class="social-proof">
             <i class="fas fa-star"></i>
@@ -390,7 +330,7 @@
                 <div class="feature-icon">
                     <i class="fas fa-tag"></i>
                 </div>
-                <div class="feature-text">First wash for only 20 AED</div>
+                <div class="feature-text">Competitive pricing</div>
             </div>
             
             <div class="feature">
