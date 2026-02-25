@@ -24,7 +24,7 @@ class OrderController extends Controller
             'provider',
             'services',
             'orderCars.services'
-        ])->latest()->get();
+        ])->latest()->paginate(20);
 
         return view('admin.orders.index', compact('orders'));
     }

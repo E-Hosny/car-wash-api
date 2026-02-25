@@ -122,6 +122,12 @@
             @endforelse
         </tbody>
     </table>
+
+    @if($orders instanceof \Illuminate\Pagination\LengthAwarePaginator)
+        <div class="d-flex justify-content-center mt-3">
+            {{ $orders->links() }}
+        </div>
+    @endif
 </div>
 
 <style>
