@@ -14,6 +14,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use App\Services\OneSignalService;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
@@ -603,5 +604,48 @@ class OrderController extends Controller
         $history = $query->paginate(50);
 
         return view('admin.orders.slot-history', compact('history'));
+    }
+
+    /**
+     * إحصائيات العمال (عدد الطلبات وإجمالي المبالغ لكل مزود خدمة)
+     */
+    public function workersStatistics(Request $request)
+    {
+        // التاريخ الافتراضي: من بداية الشهر الحالي إلى اليوم
+        $defaultFrom = Carbon::now()->startOfMonth()->toDateString();
+        $defaultTo = Carbon::now()->toDateString();
+
+        $fromDate = $request->input('from_date', $defaultFrom);
+        $toDate = $request->input('to_date', $defaultTo);
+
+        // التأكد أن toDate لا يسبق fromDate
+        if ($toDate < $fromDate) {
+            $toDate = $fromDate;
+        }
+
+        $stats = Order::select(
+                'provider_id',
+                DB::raw('COUNT(*) as orders_count'),
+                DB::raw('SUM(total) as total_amount')
+            )
+            ->whereNotNull('provider_id')
+            ->whereBetween('created_at', [
+                $fromDate . ' 00:00:00',
+                $toDate . ' 23:59:59',
+            ])
+            ->where('status', '!=', 'cancelled')
+            ->groupBy('provider_id')
+            ->orderBy('orders_count')
+            ->get();
+
+        $providerIds = $stats->pluck('provider_id')->filter()->values()->all();
+        $providers = \App\Models\User::whereIn('id', $providerIds)->get()->keyBy('id');
+
+        return view('admin.orders.workers-statistics', [
+            'stats' => $stats,
+            'providers' => $providers,
+            'fromDate' => $fromDate,
+            'toDate' => $toDate,
+        ]);
     }
 }

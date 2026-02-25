@@ -4,9 +4,12 @@
 <div class="container mt-4">
     <h3 class="mb-4 text-center">{{ __('messages.order_list') }}</h3>
 
-    <div class="mb-4">
+    <div class="mb-4 d-flex gap-2 flex-wrap">
         <a href="{{ route('admin.orders.statistics') }}" class="btn btn-dark btn-lg">
             <i class="fas fa-chart-pie"></i> إحصائيات الخدمات / Services Statistics
+        </a>
+        <a href="{{ route('admin.orders.workers-statistics') }}" class="btn btn-secondary btn-lg">
+            <i class="fas fa-user-cog"></i> احصائيات العمال
         </a>
     </div>
 

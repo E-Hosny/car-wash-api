@@ -96,6 +96,7 @@ Route::middleware([
         Route::get('/orders', [OrderController::class, 'index'])->name('admin.orders.index');
         Route::get('/orders/time-slots', [OrderController::class, 'timeSlots'])->name('admin.orders.time-slots');
         Route::get('/orders/statistics', [OrderController::class, 'statistics'])->name('admin.orders.statistics');
+        Route::get('/orders/workers-statistics', [OrderController::class, 'workersStatistics'])->name('admin.orders.workers-statistics');
         Route::get('/orders/{order}', [OrderController::class, 'show'])->name('admin.orders.show');
         Route::get('/orders/{order}/history', [OrderController::class, 'history'])->name('admin.orders.history');
         Route::get('/orders/{order}/status', [OrderController::class, 'getStatus'])->name('admin.orders.status');
