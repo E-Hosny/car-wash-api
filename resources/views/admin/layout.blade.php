@@ -456,6 +456,9 @@
             <!-- Orders Section -->
             <div class="nav-section">
                 <div class="nav-section-title">الطلبات</div>
+                <a href="{{ route('admin.orders.index') }}" class="{{ request()->routeIs('admin.orders.index') ? 'active' : '' }}">
+                    <i class="fas fa-list"></i> {{ __('messages.order_list') }}
+                </a>
                 <a href="{{ route('admin.orders.time-slots') }}" class="{{ request()->routeIs('admin.orders.time-slots') ? 'active' : '' }}">
                     <i class="fas fa-calendar-alt"></i> {{ __('messages.time_slots_management') }}
                 </a>
@@ -535,6 +538,9 @@
             <!-- Orders Section -->
             <div class="nav-section">
                 <div class="nav-section-title">الطلبات</div>
+                <a href="{{ route('admin.orders.index') }}" class="{{ request()->routeIs('admin.orders.index') ? 'active' : '' }}">
+                    <i class="fas fa-list"></i> {{ __('messages.order_list') }}
+                </a>
                 <a href="{{ route('admin.orders.time-slots') }}" class="{{ request()->routeIs('admin.orders.time-slots') ? 'active' : '' }}">
                     <i class="fas fa-calendar-alt"></i> {{ __('messages.time_slots_management') }}
                 </a>
