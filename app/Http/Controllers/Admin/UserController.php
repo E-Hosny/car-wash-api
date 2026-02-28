@@ -11,19 +11,19 @@ class UserController extends Controller
 {
     public function index()
     {
-        $users = User::latest()->get();
+        $users = User::latest()->paginate(20);
         return view('admin.users.index', compact('users'));
     }
 
     public function customers()
     {
-        $users = User::where('role', 'customer')->latest()->get();
+        $users = User::where('role', 'customer')->latest()->paginate(20);
         return view('admin.users.index', compact('users'));
     }
 
     public function providers()
     {
-        $users = User::where('role', 'provider')->latest()->get();
+        $users = User::where('role', 'provider')->latest()->paginate(20);
         return view('admin.users.index', compact('users'));
     }
 

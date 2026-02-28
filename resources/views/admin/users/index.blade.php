@@ -71,7 +71,13 @@
                             <tbody>
                                 @forelse ($users as $user)
                                 <tr>
-                                    <td class="d-none d-sm-table-cell">{{ $loop->iteration }}</td>
+                                    <td class="d-none d-sm-table-cell">
+                                        @if($users instanceof \Illuminate\Pagination\LengthAwarePaginator)
+                                            {{ $users->firstItem() + $loop->index }}
+                                        @else
+                                            {{ $loop->iteration }}
+                                        @endif
+                                    </td>
                                     <td>
                                         <div class="d-flex align-items-center">
                                             <div class="avatar-sm bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2 d-none d-sm-flex">
@@ -121,6 +127,11 @@
                                 @endforelse
                             </tbody>
                         </table>
+                        @if($users instanceof \Illuminate\Pagination\LengthAwarePaginator)
+                            <div class="d-flex justify-content-center mt-3 mb-3">
+                                {{ $users->links() }}
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>
