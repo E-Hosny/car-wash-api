@@ -135,6 +135,8 @@ Route::middleware([
         // Settings
         Route::get('/settings', [SettingsController::class, 'edit'])->name('admin.settings.index');
         Route::post('/settings', [SettingsController::class, 'update'])->name('admin.settings.update');
+        Route::get('/settings/slot-workers', [SettingsController::class, 'slotWorkers'])->name('admin.settings.slot-workers');
+        Route::post('/settings/slot-workers', [SettingsController::class, 'updateSlotWorkers'])->name('admin.settings.slot-workers.update');
         
         // Geographical Bounds Management
         Route::post('/settings/bounds', [SettingsController::class, 'boundsStore'])->name('admin.settings.bounds.store');

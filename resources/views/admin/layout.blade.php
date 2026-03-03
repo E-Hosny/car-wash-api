@@ -502,8 +502,11 @@
             <!-- Settings Section -->
             <div class="nav-section">
                 <div class="nav-section-title">الإعدادات</div>
-                <a href="{{ route('admin.settings.index') }}" class="{{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
+                <a href="{{ route('admin.settings.index') }}" class="{{ request()->routeIs('admin.settings.index') || request()->routeIs('admin.settings.update') ? 'active' : '' }}">
                     <i class="fas fa-cog"></i> {{ __('messages.settings') }}
+                </a>
+                <a href="{{ route('admin.settings.slot-workers') }}" class="{{ request()->routeIs('admin.settings.slot-workers*') ? 'active' : '' }}">
+                    <i class="fas fa-user-clock"></i> ربط Slots بالعمال
                 </a>
             </div>
         </div>
@@ -584,8 +587,11 @@
             <!-- Settings Section -->
             <div class="nav-section">
                 <div class="nav-section-title">الإعدادات</div>
-                <a href="{{ route('admin.settings.index') }}" class="{{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
+                <a href="{{ route('admin.settings.index') }}" class="{{ request()->routeIs('admin.settings.index') || request()->routeIs('admin.settings.update') ? 'active' : '' }}">
                     <i class="fas fa-cog"></i> {{ __('messages.settings') }}
+                </a>
+                <a href="{{ route('admin.settings.slot-workers') }}" class="{{ request()->routeIs('admin.settings.slot-workers*') ? 'active' : '' }}">
+                    <i class="fas fa-user-clock"></i> ربط Slots بالعمال
                 </a>
             </div>
         </div>

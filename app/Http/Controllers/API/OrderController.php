@@ -186,6 +186,41 @@ class OrderController extends Controller
         $scheduledDate = Carbon::parse($request->scheduled_at)->toDateString();
         $scheduledHour = Carbon::parse($request->scheduled_at)->hour;
         HourSlotInstance::bookSlot($scheduledDate, $scheduledHour, $availableSlotIndex, $order->id);
+
+        // توجيه تلقائي للعامل المرتبط بهذا الـ slot (من إعدادات الأدمن)
+        $slotWorkerIds = Setting::getValue('slot_worker_ids', []);
+        if (is_array($slotWorkerIds)) {
+            $slotKey = (string) $availableSlotIndex;
+            $workerId = isset($slotWorkerIds[$slotKey]) ? (int) $slotWorkerIds[$slotKey] : null;
+            if ($workerId) {
+                $worker = User::find($workerId);
+                if ($worker && $worker->role === 'worker') {
+                    $order->assigned_to = $workerId;
+                    $order->save();
+                    $tokens = $worker->fcmTokens->pluck('token')->toArray();
+                    $firebase = new FirebaseNotificationService();
+                    foreach ($tokens as $token) {
+                        $firebase->sendToToken($token, '🧽 New assignment', 'A new order has been assigned to you');
+                    }
+                    try {
+                        if ($worker->phone) {
+                            $workerPhone = trim($worker->phone);
+                            if (!str_starts_with($workerPhone, '+')) {
+                                $workerPhone = '+' . $workerPhone;
+                            }
+                            $components = [];
+                            app(WhatsAppService::class)->sendTemplate($workerPhone, $components);
+                        }
+                    } catch (\Throwable $e) {
+                        Log::error('Failed to send WhatsApp to worker after auto-assign by slot', [
+                            'error' => $e->getMessage(),
+                            'worker_id' => $worker->id,
+                            'order_id' => $order->id,
+                        ]);
+                    }
+                }
+            }
+        }
     }
     // 🟢 إرسال رسالة واتساب بقالب Meta إلى مستلمين محددين (يدعم عدة أرقام مستقبلًا)
     try {

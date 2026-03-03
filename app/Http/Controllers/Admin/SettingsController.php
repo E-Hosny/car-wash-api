@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
+use App\Models\User;
 use App\Models\GeographicalBound;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -132,6 +133,44 @@ class SettingsController extends Controller
         Setting::setValue('home_banner_link_external_url', trim((string) $request->input('banner_link_external_url', '')));
 
         return redirect()->route('admin.settings.index')->with('success', __('messages.updated_successfully'));
+    }
+
+    /**
+     * صفحة ربط كل slot بعامل معين (للتوجيه التلقائي للطلبات)
+     */
+    public function slotWorkers()
+    {
+        $maxSlotsPerHour = (int) Setting::getValue('max_slots_per_hour', 2);
+        $slotWorkerIds = Setting::getValue('slot_worker_ids', []);
+        if (!is_array($slotWorkerIds)) {
+            $slotWorkerIds = [];
+        }
+        $workers = User::where('role', 'worker')->orderBy('name')->get(['id', 'name', 'phone']);
+        return view('admin.settings.slot-workers', compact('maxSlotsPerHour', 'slotWorkerIds', 'workers'));
+    }
+
+    /**
+     * حفظ ربط Slots بالعمال
+     */
+    public function updateSlotWorkers(Request $request)
+    {
+        $maxSlotsPerHour = (int) Setting::getValue('max_slots_per_hour', 2);
+        $rules = [];
+        for ($i = 1; $i <= $maxSlotsPerHour; $i++) {
+            $rules["slot_{$i}_worker_id"] = 'nullable|exists:users,id';
+        }
+        $request->validate($rules);
+
+        $mapping = [];
+        for ($i = 1; $i <= $maxSlotsPerHour; $i++) {
+            $workerId = $request->input("slot_{$i}_worker_id");
+            if ($workerId) {
+                $mapping[(string) $i] = (int) $workerId;
+            }
+        }
+        Setting::setValue('slot_worker_ids', $mapping);
+
+        return redirect()->route('admin.settings.slot-workers')->with('success', 'تم حفظ ربط الـ Slots بالعمال بنجاح');
     }
 
     /**
