@@ -29,6 +29,81 @@
 		</div>
 
 		<hr class="my-4">
+		<h4 class="mb-3">أنواع السيارات ونسبة الزيادة</h4>
+		<div class="alert alert-info">
+			<small>هذه الأنواع تظهر داخل التطبيق في صفحة إضافة السيارة. نسبة الزيادة تُطبّق على السعر الأساسي للخدمات.</small>
+		</div>
+		<div class="table-responsive">
+			<table class="table table-bordered">
+				<thead>
+					<tr>
+						<th style="width: 20%">المفتاح (key)</th>
+						<th style="width: 25%">الاسم (EN)</th>
+						<th style="width: 25%">الاسم (AR)</th>
+						<th style="width: 20%">نسبة الزيادة %</th>
+						<th style="width: 10%">إجراء</th>
+					</tr>
+				</thead>
+				<tbody id="car-type-rules-body">
+					@foreach($carTypePricingRules as $rule)
+					<tr>
+						<td>
+							<input type="text" class="form-control" name="car_type_key[]" value="{{ $rule['key'] }}" required>
+						</td>
+						<td>
+							<input type="text" class="form-control" name="car_type_label_en[]" value="{{ $rule['label_en'] ?? $rule['key'] }}" required>
+						</td>
+						<td>
+							<input type="text" class="form-control" name="car_type_label_ar[]" value="{{ $rule['label_ar'] ?? $rule['key'] }}" required>
+						</td>
+						<td>
+							<input type="number" step="0.01" min="0" max="1000" class="form-control" name="car_type_percentage[]" value="{{ $rule['percentage'] }}" required>
+						</td>
+						<td class="text-center">
+							<button type="button" class="btn btn-sm btn-outline-danger js-remove-car-type-row">حذف</button>
+						</td>
+					</tr>
+					@endforeach
+				</tbody>
+			</table>
+		</div>
+		<div class="d-flex justify-content-end">
+			<button type="button" class="btn btn-outline-primary btn-sm" id="add-car-type-row">+ إضافة نوع جديد</button>
+		</div>
+		<script>
+			(function () {
+				const tbody = document.getElementById('car-type-rules-body');
+				const addBtn = document.getElementById('add-car-type-row');
+				if (!tbody || !addBtn) return;
+
+				function bindRemoveButtons() {
+					tbody.querySelectorAll('.js-remove-car-type-row').forEach((btn) => {
+						btn.onclick = function () {
+							const rows = tbody.querySelectorAll('tr');
+							if (rows.length <= 1) return;
+							this.closest('tr')?.remove();
+						};
+					});
+				}
+
+				addBtn.addEventListener('click', function () {
+					const tr = document.createElement('tr');
+					tr.innerHTML = `
+						<td><input type="text" class="form-control" name="car_type_key[]" value="" required></td>
+						<td><input type="text" class="form-control" name="car_type_label_en[]" value="" required></td>
+						<td><input type="text" class="form-control" name="car_type_label_ar[]" value="" required></td>
+						<td><input type="number" step="0.01" min="0" max="1000" class="form-control" name="car_type_percentage[]" value="0" required></td>
+						<td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger js-remove-car-type-row">حذف</button></td>
+					`;
+					tbody.appendChild(tr);
+					bindRemoveButtons();
+				});
+
+				bindRemoveButtons();
+			})();
+		</script>
+
+		<hr class="my-4">
 		<h4 class="mb-3">تحديث التطبيق (إجباري)</h4>
 		<div class="alert alert-info">
 			<small>إذا حددت إصداراً أدنى، سيُطلب من المستخدمين الذين لديهم إصدار أقدم تحديث التطبيق قبل الاستمرار. اترك الحقل فارغاً لعدم فرض تحديث.</small>

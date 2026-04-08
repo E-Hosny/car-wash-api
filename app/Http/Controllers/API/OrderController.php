@@ -21,6 +21,13 @@ use App\Services\OneSignalService;
 
 class OrderController extends Controller
 {
+    private const DEFAULT_CAR_TYPE_RULES = [
+        ['key' => 'sedan', 'label' => 'sedan', 'percentage' => 0],
+        ['key' => '4x4_5', 'label' => '4*4 (5 seats)', 'percentage' => 15],
+        ['key' => '4x4_7', 'label' => '4*4 (7 seats)', 'percentage' => 20],
+        ['key' => 'carnival', 'label' => 'carnival', 'percentage' => 25],
+    ];
+
     // ✅ إنشاء طلب
  public function store(Request $request)
 {
@@ -125,7 +132,8 @@ class OrderController extends Controller
         $total = 0; // Free when using package
     } else {
         // Calculate total from service prices
-        $total = Service::whereIn('id', $request->services)->sum('price');
+        $baseTotal = (float) Service::whereIn('id', $request->services)->sum('price');
+        $total = $this->applyCarTypeMarkup($baseTotal, $car);
     }
 
     // التحقق من توفر slot إذا كان هناك scheduled_at
@@ -980,7 +988,8 @@ public function updateStatus(Request $request, $id)
                 }
                 $carTotal = 0; // Free when using package
             } else {
-                $carTotal = Service::whereIn('id', $carData['services'])->sum('price');
+                $baseCarTotal = (float) Service::whereIn('id', $carData['services'])->sum('price');
+                $carTotal = $this->applyCarTypeMarkup($baseCarTotal, $car);
                 $total += $carTotal;
             }
 
@@ -1264,5 +1273,29 @@ public function updateStatus(Request $request, $id)
             'valid' => true,
             'message' => 'Location is within service area'
         ], 200);
+    }
+
+    private function applyCarTypeMarkup(float $baseTotal, Car $car): float
+    {
+        $percentage = $this->getCarTypePercentage($car->car_type);
+        $multiplied = $baseTotal * (1 + ($percentage / 100));
+        return round($multiplied, 2);
+    }
+
+    private function getCarTypePercentage(?string $carType): float
+    {
+        if (!$carType) {
+            return 0;
+        }
+        $rules = Setting::getValue('car_type_pricing_rules', self::DEFAULT_CAR_TYPE_RULES);
+        if (!is_array($rules)) {
+            return 0;
+        }
+        foreach ($rules as $rule) {
+            if (is_array($rule) && isset($rule['key']) && (string) $rule['key'] === $carType) {
+                return (float) ($rule['percentage'] ?? 0);
+            }
+        }
+        return 0;
     }
 }

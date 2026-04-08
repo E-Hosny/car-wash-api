@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Car extends Model
 {
-    protected $fillable = ['user_id', 'brand_id', 'model_id', 'car_year_id', 'color', 'license_plate'];
+    protected $fillable = ['user_id', 'brand_id', 'model_id', 'car_year_id', 'car_type', 'color', 'license_plate'];
 
     public function user()
     {

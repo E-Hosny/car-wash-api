@@ -11,6 +11,13 @@ use Illuminate\Support\Facades\Storage;
 
 class SettingsController extends Controller
 {
+    private const DEFAULT_CAR_TYPE_RULES = [
+        ['key' => 'sedan', 'label_en' => 'Sedan', 'label_ar' => 'سيدان', 'percentage' => 0],
+        ['key' => '4x4_5', 'label_en' => '4*4 (5 seats)', 'label_ar' => '4*4 (5 مقاعد)', 'percentage' => 15],
+        ['key' => '4x4_7', 'label_en' => '4*4 (7 seats)', 'label_ar' => '4*4 (7 مقاعد)', 'percentage' => 20],
+        ['key' => 'carnival', 'label_en' => 'Carnival', 'label_ar' => 'كارنفال', 'percentage' => 25],
+    ];
+
     public function edit()
     {
         $packagesEnabled = (bool) (Setting::getValue('packages_enabled', '1') === '1' || Setting::getValue('packages_enabled', true));
@@ -31,6 +38,9 @@ class SettingsController extends Controller
             : ($homeBannerPath !== '' ? $homeBannerPath : '');
         $homeBannerLinkType = (string) Setting::getValue('home_banner_link_type', 'none');
         $homeBannerLinkExternalUrl = (string) Setting::getValue('home_banner_link_external_url', '');
+        $carTypePricingRules = $this->normalizeCarTypeRules(
+            Setting::getValue('car_type_pricing_rules', self::DEFAULT_CAR_TYPE_RULES)
+        );
 
         // الحدود الجغرافية (للتوافق مع البيانات القديمة)
         $dubaiMinLat = (float) Setting::getValue('dubai_min_latitude', 24.5);
@@ -54,6 +64,7 @@ class SettingsController extends Controller
             'homeBannerPreviewUrl',
             'homeBannerLinkType',
             'homeBannerLinkExternalUrl',
+            'carTypePricingRules',
             'dubaiMinLat',
             'dubaiMaxLat',
             'dubaiMinLng',
@@ -131,6 +142,7 @@ class SettingsController extends Controller
         }
         Setting::setValue('home_banner_link_type', $request->input('banner_link_type', 'none'));
         Setting::setValue('home_banner_link_external_url', trim((string) $request->input('banner_link_external_url', '')));
+        Setting::setValue('car_type_pricing_rules', $this->extractCarTypeRulesFromRequest($request));
 
         return redirect()->route('admin.settings.index')->with('success', __('messages.updated_successfully'));
     }
@@ -373,5 +385,50 @@ class SettingsController extends Controller
         
         // لا نحتاج للتحقق من إغلاق المضلع - Google Maps يغلقه تلقائياً
         return ['valid' => true];
+    }
+
+    private function normalizeCarTypeRules($rawRules): array
+    {
+        $rules = is_array($rawRules) ? $rawRules : self::DEFAULT_CAR_TYPE_RULES;
+        $normalized = [];
+        foreach ($rules as $rule) {
+            if (!is_array($rule) || empty($rule['key'])) {
+                continue;
+            }
+            $normalized[] = [
+                'key' => (string) $rule['key'],
+                'label_en' => (string) ($rule['label_en'] ?? $rule['label'] ?? $rule['key']),
+                'label_ar' => (string) ($rule['label_ar'] ?? $rule['label'] ?? $rule['key']),
+                'percentage' => (float) ($rule['percentage'] ?? 0),
+            ];
+        }
+        return !empty($normalized) ? $normalized : self::DEFAULT_CAR_TYPE_RULES;
+    }
+
+    private function extractCarTypeRulesFromRequest(Request $request): array
+    {
+        $keys = $request->input('car_type_key', []);
+        $labelsEn = $request->input('car_type_label_en', []);
+        $labelsAr = $request->input('car_type_label_ar', []);
+        $percentages = $request->input('car_type_percentage', []);
+
+        $rules = [];
+        foreach ($keys as $index => $key) {
+            $normalizedKey = trim((string) $key);
+            if ($normalizedKey === '') {
+                continue;
+            }
+            $normalizedLabelEn = trim((string) ($labelsEn[$index] ?? $normalizedKey));
+            $normalizedLabelAr = trim((string) ($labelsAr[$index] ?? $normalizedKey));
+            $percentage = is_numeric($percentages[$index] ?? null) ? (float) $percentages[$index] : 0.0;
+            $rules[] = [
+                'key' => $normalizedKey,
+                'label_en' => $normalizedLabelEn === '' ? $normalizedKey : $normalizedLabelEn,
+                'label_ar' => $normalizedLabelAr === '' ? $normalizedKey : $normalizedLabelAr,
+                'percentage' => max(0, min(1000, $percentage)),
+            ];
+        }
+
+        return !empty($rules) ? $rules : self::DEFAULT_CAR_TYPE_RULES;
     }
 } 
