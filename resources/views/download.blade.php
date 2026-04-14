@@ -114,8 +114,55 @@
         .subtitle {
             font-size: 1.2rem;
             color: #718096;
-            margin-bottom: 50px;
+            margin-bottom: 18px;
             line-height: 1.6;
+        }
+
+        .offer-line {
+            margin: 8px auto 36px;
+            padding: 12px 18px;
+            max-width: 420px;
+            border-radius: 16px;
+            font-size: 1.05rem;
+            color: #3f4b63;
+            font-weight: 700;
+            line-height: 1.7;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.08));
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            box-shadow: 0 10px 24px rgba(102, 126, 234, 0.15);
+        }
+
+        .offer-price {
+            display: inline-flex;
+            align-items: baseline;
+            gap: 2px;
+            margin: 0 4px;
+            color: #ef4444;
+            font-weight: 900;
+        }
+
+        .offer-number {
+            display: inline-block;
+            font-size: 1.55rem;
+            line-height: 1;
+            letter-spacing: 0.3px;
+            color: #ffffff;
+            padding: 2px 10px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, #f59e0b 0%, #ef4444 60%, #c81e1e 100%);
+            box-shadow: 0 8px 18px rgba(239, 68, 68, 0.38);
+            animation: numberPop 1.6s ease-in-out infinite;
+        }
+
+        @keyframes numberPop {
+            0%, 100% {
+                transform: translateY(0) scale(1);
+                box-shadow: 0 8px 18px rgba(239, 68, 68, 0.38);
+            }
+            50% {
+                transform: translateY(-2px) scale(1.07);
+                box-shadow: 0 12px 24px rgba(239, 68, 68, 0.5);
+            }
         }
         
         .social-proof {
@@ -300,6 +347,9 @@
         <h1 class="title">Luxuria Car Wash</h1>
         <p class="subtitle">
             Premium car wash at your home or office
+        </p>
+        <p class="offer-line">
+            Only <span class="offer-price"><span class="offer-number">40</span> AED</span> per wash
         </p>
         
         <div class="download-buttons">
