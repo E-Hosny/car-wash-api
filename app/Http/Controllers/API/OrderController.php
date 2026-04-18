@@ -189,46 +189,9 @@ class OrderController extends Controller
 
     $order->services()->attach($request->services);
     
-    // ربط الطلب مع slot محدد
+    // ربط الطلب مع slot محدد + توجيه تلقائي للعامل حسب إعدادات الأدمن
     if ($request->scheduled_at && isset($availableSlotIndex)) {
-        $scheduledDate = Carbon::parse($request->scheduled_at)->toDateString();
-        $scheduledHour = Carbon::parse($request->scheduled_at)->hour;
-        HourSlotInstance::bookSlot($scheduledDate, $scheduledHour, $availableSlotIndex, $order->id);
-
-        // توجيه تلقائي للعامل المرتبط بهذا الـ slot (من إعدادات الأدمن)
-        $slotWorkerIds = Setting::getValue('slot_worker_ids', []);
-        if (is_array($slotWorkerIds)) {
-            $slotKey = (string) $availableSlotIndex;
-            $workerId = isset($slotWorkerIds[$slotKey]) ? (int) $slotWorkerIds[$slotKey] : null;
-            if ($workerId) {
-                $worker = User::find($workerId);
-                if ($worker && $worker->role === 'worker') {
-                    $order->assigned_to = $workerId;
-                    $order->save();
-                    $tokens = $worker->fcmTokens->pluck('token')->toArray();
-                    $firebase = new FirebaseNotificationService();
-                    foreach ($tokens as $token) {
-                        $firebase->sendToToken($token, '🧽 New assignment', 'A new order has been assigned to you');
-                    }
-                    try {
-                        if ($worker->phone) {
-                            $workerPhone = trim($worker->phone);
-                            if (!str_starts_with($workerPhone, '+')) {
-                                $workerPhone = '+' . $workerPhone;
-                            }
-                            $components = [];
-                            app(WhatsAppService::class)->sendTemplate($workerPhone, $components);
-                        }
-                    } catch (\Throwable $e) {
-                        Log::error('Failed to send WhatsApp to worker after auto-assign by slot', [
-                            'error' => $e->getMessage(),
-                            'worker_id' => $worker->id,
-                            'order_id' => $order->id,
-                        ]);
-                    }
-                }
-            }
-        }
+        $this->bookSlotAndAutoAssignWorkerForOrder($order, $availableSlotIndex, (string) $request->scheduled_at);
     }
     // 🟢 إرسال رسالة واتساب بقالب Meta إلى مستلمين محددين (يدعم عدة أرقام مستقبلًا)
     try {
@@ -1001,6 +964,39 @@ public function updateStatus(Request $request, $id)
             ];
         }
 
+        $availableSlotIndex = null;
+        // التحقق من توفر slot إذا كان هناك scheduled_at (نفس منطق الطلب العادي)
+        if ($request->scheduled_at) {
+            $scheduledDate = Carbon::parse($request->scheduled_at)->toDateString();
+            $scheduledHour = Carbon::parse($request->scheduled_at)->hour;
+            $maxSlotsPerHour = (int) Setting::getValue('max_slots_per_hour', 2);
+
+            $isUnavailable = HourSlotInstance::areAllSlotsUnavailable($scheduledDate, $scheduledHour, $maxSlotsPerHour);
+
+            if ($isUnavailable) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'الساعة المحددة غير متاحة للحجز',
+                ], 400);
+            }
+
+            $slots = HourSlotInstance::getSlotsForHour($scheduledDate, $scheduledHour, $maxSlotsPerHour);
+
+            foreach ($slots as $index => $slot) {
+                if ($slot['status'] === 'available' && !$slot['order_id']) {
+                    $availableSlotIndex = $index;
+                    break;
+                }
+            }
+
+            if (!$availableSlotIndex) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'لا توجد slots متاحة في الساعة المحددة',
+                ], 400);
+            }
+        }
+
         // Create single order for all cars
         $order = Order::create([
             'customer_id' => $user->id,
@@ -1039,6 +1035,10 @@ public function updateStatus(Request $request, $id)
             ]);
         }
 
+        if ($request->scheduled_at && isset($availableSlotIndex)) {
+            $this->bookSlotAndAutoAssignWorkerForOrder($order, $availableSlotIndex, (string) $request->scheduled_at);
+        }
+
         // Send notification to providers
         $this->sendOrderNotification([$order]);
 
@@ -1062,6 +1062,53 @@ public function updateStatus(Request $request, $id)
             'total_amount' => $total,
             'points_used' => $pointsUsed,
         ], 201);
+    }
+
+    /**
+     * حجز الـ slot للطلب وتوجيه العامل المرتبط به (إن وُجد في إعدادات الأدمن).
+     */
+    private function bookSlotAndAutoAssignWorkerForOrder(Order $order, int $availableSlotIndex, string $scheduledAt): void
+    {
+        $scheduledDate = Carbon::parse($scheduledAt)->toDateString();
+        $scheduledHour = Carbon::parse($scheduledAt)->hour;
+        HourSlotInstance::bookSlot($scheduledDate, $scheduledHour, $availableSlotIndex, $order->id);
+
+        $slotWorkerIds = Setting::getValue('slot_worker_ids', []);
+        if (!is_array($slotWorkerIds)) {
+            return;
+        }
+        $slotKey = (string) $availableSlotIndex;
+        $workerId = isset($slotWorkerIds[$slotKey]) ? (int) $slotWorkerIds[$slotKey] : null;
+        if (!$workerId) {
+            return;
+        }
+        $worker = User::find($workerId);
+        if (!$worker || $worker->role !== 'worker') {
+            return;
+        }
+        $order->assigned_to = $workerId;
+        $order->save();
+        $tokens = $worker->fcmTokens->pluck('token')->toArray();
+        $firebase = new FirebaseNotificationService();
+        foreach ($tokens as $token) {
+            $firebase->sendToToken($token, '🧽 New assignment', 'A new order has been assigned to you');
+        }
+        try {
+            if ($worker->phone) {
+                $workerPhone = trim($worker->phone);
+                if (!str_starts_with($workerPhone, '+')) {
+                    $workerPhone = '+' . $workerPhone;
+                }
+                $components = [];
+                app(WhatsAppService::class)->sendTemplate($workerPhone, $components);
+            }
+        } catch (\Throwable $e) {
+            Log::error('Failed to send WhatsApp to worker after auto-assign by slot', [
+                'error' => $e->getMessage(),
+                'worker_id' => $worker->id,
+                'order_id' => $order->id,
+            ]);
+        }
     }
 
     private function sendOrderNotification($orders)
