@@ -348,10 +348,6 @@
         <p class="subtitle">
             Premium car wash at your home or office
         </p>
-        <p class="offer-line">
-            Only <span class="offer-price"><span class="offer-number">40</span> AED</span> per wash
-        </p>
-        
         <div class="download-buttons">
             <a href="https://play.google.com/store/apps/details?id=com.washluxuria.carwash" 
                target="_blank" 
