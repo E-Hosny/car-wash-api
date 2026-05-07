@@ -21,6 +21,13 @@
                     <p class="text-muted mb-0">{{ __('messages.manage_users_description') ?? 'إدارة المستخدمين في النظام' }}</p>
                 </div>
                 <div class="d-flex flex-wrap gap-2">
+                    @if(request()->routeIs('admin.users.customers'))
+                        <a href="{{ route('admin.users.customers.export') }}" class="btn btn-success">
+                            <i class="bi bi-file-earmark-excel"></i>
+                            <span class="d-none d-sm-inline">تصدير العملاء Excel</span>
+                            <span class="d-sm-none">Excel</span>
+                        </a>
+                    @endif
                     <a href="{{ route('admin.users.create') }}" class="btn btn-primary">
                         <i class="bi bi-person-plus"></i> <span class="d-none d-sm-inline">{{ __('messages.add_user') }}</span>
                     </a>

@@ -86,6 +86,7 @@ Route::middleware([
 
         Route::get('/users', [UserController::class, 'index'])->name('admin.users.index');
         Route::get('/users/customers', [UserController::class, 'customers'])->name('admin.users.customers');
+        Route::get('/users/customers/export', [UserController::class, 'exportCustomers'])->name('admin.users.customers.export');
         Route::get('/users/providers', [UserController::class, 'providers'])->name('admin.users.providers');
         Route::put('/users/{user}/role', [UserController::class, 'updateRole'])->name('admin.users.updateRole');
         Route::get('/users/create', [UserController::class, 'create'])->name('admin.users.create');

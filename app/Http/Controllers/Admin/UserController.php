@@ -21,6 +21,47 @@ class UserController extends Controller
         return view('admin.users.index', compact('users'));
     }
 
+    public function exportCustomers()
+    {
+        $customers = User::where('role', 'customer')
+            ->orderBy('id')
+            ->get(['id', 'name', 'email', 'phone', 'role', 'created_at', 'updated_at']);
+
+        $fileName = 'customers_' . now()->format('Y_m_d_His') . '.csv';
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0',
+        ];
+
+        $callback = function () use ($customers) {
+            $file = fopen('php://output', 'w');
+
+            // Add BOM so Arabic text renders correctly in Excel.
+            fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
+
+            fputcsv($file, ['ID', 'Name', 'Email', 'Phone', 'Role', 'Created At', 'Updated At']);
+
+            foreach ($customers as $customer) {
+                fputcsv($file, [
+                    $customer->id,
+                    $customer->name,
+                    $customer->email,
+                    $customer->phone,
+                    $customer->role,
+                    optional($customer->created_at)->format('Y-m-d H:i:s'),
+                    optional($customer->updated_at)->format('Y-m-d H:i:s'),
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
     public function providers()
     {
         $users = User::where('role', 'provider')->latest()->paginate(20);
