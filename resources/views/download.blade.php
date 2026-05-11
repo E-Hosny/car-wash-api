@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Luxuria Car Wash | Premium Car Wash at Your Home or Office</title>
-    <meta name="description" content="Premium car wash at your home or office. Download Luxuria Car Wash app now.">
+    <meta name="description" content="Luxuria Car Wash — 30% off all services from 38 AED. Premium car wash at your home or office. Download the app today.">
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -28,9 +28,51 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
+            padding: 56px 20px 24px;
             position: relative;
             overflow-x: hidden;
+        }
+
+        /* Top urgency strip — impossible to miss */
+        .promo-top-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding: 11px 16px;
+            font-size: 0.92rem;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: #fff;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            background: linear-gradient(90deg, #ea580c 0%, #f59e0b 35%, #fbbf24 50%, #f59e0b 65%, #ea580c 100%);
+            background-size: 220% 100%;
+            animation: promoBarGlow 4s ease-in-out infinite;
+            box-shadow: 0 6px 24px rgba(234, 88, 12, 0.45);
+        }
+
+        .promo-top-bar i {
+            font-size: 1rem;
+            filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.15));
+        }
+
+        .promo-top-bar .promo-highlight {
+            background: rgba(0, 0, 0, 0.18);
+            padding: 3px 10px;
+            border-radius: 999px;
+            font-weight: 900;
+        }
+
+        @keyframes promoBarGlow {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
         }
         
         /* Animated Background */
@@ -114,57 +156,93 @@
         .subtitle {
             font-size: 1.2rem;
             color: #718096;
-            margin-bottom: 18px;
+            margin-bottom: 22px;
             line-height: 1.6;
         }
 
-        .offer-line {
-            margin: 8px auto 36px;
-            padding: 12px 18px;
-            max-width: 420px;
-            border-radius: 16px;
-            font-size: 1.05rem;
-            color: #3f4b63;
-            font-weight: 700;
-            line-height: 1.7;
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.08));
-            border: 1px solid rgba(102, 126, 234, 0.2);
-            box-shadow: 0 10px 24px rgba(102, 126, 234, 0.15);
+        /* In-card promo — conversion-focused */
+        .promo-hero {
+            margin: 0 auto 30px;
+            max-width: 460px;
+            padding: 20px 24px;
+            border-radius: 22px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid rgba(245, 158, 11, 0.65);
+            background:
+                linear-gradient(145deg, rgba(255, 255, 255, 0.97) 0%, #fff7ed 42%, #ffedd5 100%);
+            box-shadow:
+                0 16px 48px rgba(234, 88, 12, 0.22),
+                inset 0 1px 0 rgba(255, 255, 255, 0.95);
+            animation: promoHeroLift 5s ease-in-out infinite;
         }
 
-        .offer-price {
-            display: inline-flex;
-            align-items: baseline;
-            gap: 2px;
-            margin: 0 4px;
-            color: #ef4444;
+        @keyframes promoHeroLift {
+            0%, 100% { transform: translateY(0); box-shadow: 0 16px 48px rgba(234, 88, 12, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.95); }
+            50% { transform: translateY(-3px); box-shadow: 0 22px 56px rgba(234, 88, 12, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.95); }
+        }
+
+        .promo-hero::after {
+            content: '';
+            position: absolute;
+            inset: -40%;
+            background: linear-gradient(105deg, transparent 42%, rgba(255, 255, 255, 0.55) 50%, transparent 58%);
+            animation: promoHeroSheen 5s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes promoHeroSheen {
+            0%, 100% { transform: translateX(-18%) rotate(12deg); opacity: 0.35; }
+            50% { transform: translateX(18%) rotate(12deg); opacity: 0.85; }
+        }
+
+        .promo-hero-inner {
+            position: relative;
+            z-index: 1;
+        }
+
+        .promo-headline {
+            font-size: 1.65rem;
             font-weight: 900;
+            line-height: 1.2;
+            color: #1e293b;
+            margin-bottom: 10px;
         }
 
-        .offer-number {
+        .promo-headline em {
+            font-style: normal;
+            background: linear-gradient(135deg, #ea580c, #dc2626);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .promo-price-row {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #334155;
+            margin-bottom: 0;
+        }
+
+        .promo-price-row .aed {
             display: inline-block;
-            font-size: 1.55rem;
-            line-height: 1;
-            letter-spacing: 0.3px;
-            color: #ffffff;
-            padding: 2px 10px;
+            margin-left: 4px;
+            padding: 4px 14px;
             border-radius: 999px;
-            background: linear-gradient(135deg, #f59e0b 0%, #ef4444 60%, #c81e1e 100%);
-            box-shadow: 0 8px 18px rgba(239, 68, 68, 0.38);
-            animation: numberPop 1.6s ease-in-out infinite;
+            font-size: 1.35rem;
+            font-weight: 900;
+            color: #fff;
+            background: linear-gradient(135deg, #16a34a, #15803d);
+            box-shadow: 0 8px 22px rgba(22, 163, 74, 0.45);
+            animation: aedPulse 2.2s ease-in-out infinite;
         }
 
-        @keyframes numberPop {
-            0%, 100% {
-                transform: translateY(0) scale(1);
-                box-shadow: 0 8px 18px rgba(239, 68, 68, 0.38);
-            }
-            50% {
-                transform: translateY(-2px) scale(1.07);
-                box-shadow: 0 12px 24px rgba(239, 68, 68, 0.5);
-            }
+        @keyframes aedPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
-        
+
         .social-proof {
             font-size: 0.9rem;
             color: #667eea;
@@ -284,6 +362,20 @@
         
         /* Responsive Design */
         @media (max-width: 768px) {
+            body {
+                padding: 52px 16px 20px;
+            }
+
+            .promo-top-bar {
+                font-size: 0.78rem;
+                padding: 10px 12px;
+                gap: 8px;
+            }
+
+            .promo-headline {
+                font-size: 1.38rem;
+            }
+
             .container {
                 padding: 40px 20px;
                 margin: 10px;
@@ -339,6 +431,13 @@
 </script>
 
 <body>
+    <div class="promo-top-bar" role="banner">
+        <i class="fas fa-fire" aria-hidden="true"></i>
+        <span><span class="promo-highlight">30% OFF</span> every service</span>
+        <span aria-hidden="true">·</span>
+        <span>from <span class="promo-highlight">38 AED</span></span>
+    </div>
+
     <div class="container">
         <div class="logo-container">
             <img src="{{ asset('logo.png') }}" alt="Luxuria Car Wash Logo" class="logo">
@@ -348,6 +447,18 @@
         <p class="subtitle">
             Premium car wash at your home or office
         </p>
+
+        <aside class="promo-hero" aria-labelledby="promo-heading">
+            <div class="promo-hero-inner">
+                <p id="promo-heading" class="promo-headline">
+                    Get <em>30% off</em> on all services
+                </p>
+                <p class="promo-price-row">
+                    Starting from <span class="aed">38 AED</span>
+                </p>
+            </div>
+        </aside>
+
         <div class="download-buttons">
             <a href="https://play.google.com/store/apps/details?id=com.washluxuria.carwash" 
                target="_blank" 
