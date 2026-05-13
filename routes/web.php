@@ -29,7 +29,11 @@ Route::middleware([
 
     // ✅ تغيير اللغة
     Route::get('/lang/{locale}', function ($locale) {
+        if (! in_array($locale, ['ar', 'en'], true)) {
+            abort(404);
+        }
         session(['locale' => $locale]);
+
         return back();
     })->name('lang.switch');
 

@@ -9,7 +9,16 @@ class SetLocale
 {
     public function handle(Request $request, Closure $next)
     {
-        app()->setLocale(session('locale', config('app.locale')));
+        $sessionLocale = session('locale');
+
+        if (in_array($sessionLocale, ['ar', 'en'], true)) {
+            app()->setLocale($sessionLocale);
+        } else {
+            $path = trim($request->path(), '/');
+            $landingUsesArabicDefault = $path === '' || $path === 'download';
+
+            app()->setLocale($landingUsesArabicDefault ? 'ar' : config('app.locale'));
+        }
 
         return $next($request);
     }

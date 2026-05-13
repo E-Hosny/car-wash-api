@@ -1,15 +1,15 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ app()->isLocale('ar') ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Luxuria Car Wash | Premium Car Wash at Your Home or Office</title>
-    <meta name="description" content="Luxuria Car Wash — 30% off all services from 38 AED. Premium car wash at your home or office. Download the app today.">
+    <title>{{ __('download.page_title') }}</title>
+    <meta name="description" content="{{ __('download.meta_description') }}">
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -31,6 +31,41 @@
             padding: 56px 20px 24px;
             position: relative;
             overflow-x: hidden;
+        }
+
+        html[dir="rtl"] body {
+            font-family: 'Cairo', 'Inter', sans-serif;
+        }
+
+        /* Language toggle */
+        .lang-switch {
+            position: fixed;
+            top: 52px;
+            inset-inline-end: 16px;
+            z-index: 1001;
+        }
+
+        .lang-switch-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 16px;
+            border-radius: 999px;
+            font-size: 0.875rem;
+            font-weight: 700;
+            text-decoration: none;
+            color: #fff;
+            background: rgba(255, 255, 255, 0.22);
+            border: 1px solid rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+            transition: background 0.2s ease, transform 0.2s ease;
+        }
+
+        .lang-switch-link:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.35);
+            transform: translateY(-1px);
         }
 
         /* Top urgency strip — impossible to miss */
@@ -56,6 +91,11 @@
             background-size: 220% 100%;
             animation: promoBarGlow 4s ease-in-out infinite;
             box-shadow: 0 6px 24px rgba(234, 88, 12, 0.45);
+        }
+
+        html[dir="rtl"] .promo-top-bar {
+            text-transform: none;
+            letter-spacing: 0.02em;
         }
 
         .promo-top-bar i {
@@ -227,7 +267,7 @@
 
         .promo-price-row .aed {
             display: inline-block;
-            margin-left: 4px;
+            margin-inline-start: 4px;
             padding: 4px 14px;
             border-radius: 999px;
             font-size: 1.35rem;
@@ -321,7 +361,7 @@
         
         .btn-icon {
             font-size: 1.5rem;
-            margin-right: 15px;
+            margin-inline-end: 15px;
         }
         
         .features {
@@ -364,6 +404,16 @@
         @media (max-width: 768px) {
             body {
                 padding: 52px 16px 20px;
+            }
+
+            .lang-switch {
+                top: 48px;
+                inset-inline-end: 10px;
+            }
+
+            .lang-switch-link {
+                padding: 7px 12px;
+                font-size: 0.8rem;
             }
 
             .promo-top-bar {
@@ -430,31 +480,39 @@
   gtag('config', 'G-J663ES0FEL');
 </script>
 
-<body>
+<body data-redirecting="{{ __('download.redirecting') }}">
+    <nav class="lang-switch" aria-label="{{ __('download.lang_switch_aria') }}">
+        @if (app()->isLocale('ar'))
+            <a href="{{ route('lang.switch', ['locale' => 'en']) }}" class="lang-switch-link">{{ __('download.switch_to_en') }}</a>
+        @else
+            <a href="{{ route('lang.switch', ['locale' => 'ar']) }}" class="lang-switch-link">{{ __('download.switch_to_ar') }}</a>
+        @endif
+    </nav>
+
     <div class="promo-top-bar" role="banner">
         <i class="fas fa-fire" aria-hidden="true"></i>
-        <span><span class="promo-highlight">30% OFF</span> every service</span>
+        <span><span class="promo-highlight">{{ __('download.promo_bar_off') }}</span> {{ __('download.promo_bar_services') }}</span>
         <span aria-hidden="true">·</span>
-        <span>from <span class="promo-highlight">38 AED</span></span>
+        <span>{{ __('download.promo_bar_from') }} <span class="promo-highlight">{{ __('download.promo_bar_price') }}</span></span>
     </div>
 
     <div class="container">
         <div class="logo-container">
-            <img src="{{ asset('logo.png') }}" alt="Luxuria Car Wash Logo" class="logo">
+            <img src="{{ asset('logo.png') }}" alt="{{ __('download.logo_alt') }}" class="logo">
         </div>
         
-        <h1 class="title">Luxuria Car Wash</h1>
+        <h1 class="title">{{ __('download.brand_title') }}</h1>
         <p class="subtitle">
-            Premium car wash at your home or office
+            {{ __('download.subtitle') }}
         </p>
 
         <aside class="promo-hero" aria-labelledby="promo-heading">
             <div class="promo-hero-inner">
                 <p id="promo-heading" class="promo-headline">
-                    Get <em>30% off</em> on all services
+                    {{ __('download.promo_headline_prefix') }}<em>{{ __('download.promo_headline_em') }}</em>{{ __('download.promo_headline_suffix') }}
                 </p>
                 <p class="promo-price-row">
-                    Starting from <span class="aed">38 AED</span>
+                    {{ __('download.promo_starting') }} <span class="aed">{{ __('download.promo_currency') }}</span>
                 </p>
             </div>
         </aside>
@@ -463,23 +521,23 @@
             <a href="https://play.google.com/store/apps/details?id=com.washluxuria.carwash" 
                target="_blank" 
                class="download-btn android-btn"
-               onclick="trackDownload('android')">
+               onclick="trackDownload(event, 'android')">
                 <i class="fab fa-google-play btn-icon"></i>
-                <span>Download App</span>
+                <span>{{ __('download.download_app') }}</span>
             </a>
             
             <a href="https://apps.apple.com/us/app/luxuria-car-wash/id6748601716" 
                target="_blank" 
                class="download-btn ios-btn"
-               onclick="trackDownload('ios')">
+               onclick="trackDownload(event, 'ios')">
                 <i class="fab fa-apple btn-icon"></i>
-                <span>Download App</span>
+                <span>{{ __('download.download_app') }}</span>
             </a>
         </div>
         
         <div class="social-proof">
             <i class="fas fa-star"></i>
-            <span>Trusted by car owners across the UAE</span>
+            <span>{{ __('download.trusted') }}</span>
         </div>
         
         <div class="features">
@@ -487,53 +545,51 @@
                 <div class="feature-icon">
                     <i class="fas fa-tag"></i>
                 </div>
-                <div class="feature-text">Competitive pricing</div>
+                <div class="feature-text">{{ __('download.feature_pricing') }}</div>
             </div>
             
             <div class="feature">
                 <div class="feature-icon">
                     <i class="fas fa-map-marker-alt"></i>
                 </div>
-                <div class="feature-text">Service at your home or office</div>
+                <div class="feature-text">{{ __('download.feature_location') }}</div>
             </div>
             
             <div class="feature">
                 <div class="feature-icon">
                     <i class="fas fa-shield-alt"></i>
                 </div>
-                <div class="feature-text">Trusted & trained team</div>
+                <div class="feature-text">{{ __('download.feature_team') }}</div>
             </div>
             
             <div class="feature">
                 <div class="feature-icon">
                     <i class="fas fa-credit-card"></i>
                 </div>
-                <div class="feature-text">Secure in-app payment</div>
+                <div class="feature-text">{{ __('download.feature_payment') }}</div>
             </div>
         </div>
         
         <div class="footer-text">
-            © 2024 LUXURIA ELITE PARKING CAR WASHING L.L.C. All rights reserved
+            {{ __('download.footer_rights') }}
         </div>
     </div>
     
     <script>
-        function trackDownload(platform) {
-            // Add loading effect
-            const btn = event.target.closest('.download-btn');
+        function trackDownload(event, platform) {
+            const btn = event.currentTarget;
             const originalText = btn.innerHTML;
+            const redirecting = document.body.dataset.redirecting || 'Redirecting…';
             
-            btn.innerHTML = '<div class="loading"></div> <span>Redirecting...</span>';
+            btn.innerHTML = '<div class="loading"></div> <span>' + redirecting + '</span>';
             btn.style.pointerEvents = 'none';
             
-            // Restore original text after 2 seconds
             setTimeout(() => {
                 btn.innerHTML = originalText;
                 btn.style.pointerEvents = 'auto';
             }, 2000);
             
-            // Track statistics (can add Google Analytics here)
-            console.log(`Download clicked: ${platform}`);
+            console.log('Download clicked: ' + platform);
         }
         
         // Additional effects on load
