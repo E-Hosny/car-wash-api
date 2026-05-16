@@ -91,7 +91,13 @@
                                                 {{ substr($user->name, 0, 1) }}
                                             </div>
                                             <div>
-                                                <div class="fw-bold">{{ $user->name }}</div>
+                                                @if($user->role === 'customer')
+                                                    <a href="{{ route('admin.users.show', $user->id) }}" class="fw-bold text-decoration-none">
+                                                        {{ $user->name }}
+                                                    </a>
+                                                @else
+                                                    <div class="fw-bold">{{ $user->name }}</div>
+                                                @endif
                                                 <small class="text-muted d-md-none">{{ $user->email ?? '-' }}</small>
                                             </div>
                                         </div>
@@ -116,9 +122,11 @@
                                             <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-sm btn-outline-primary" data-bs-toggle="tooltip" title="{{ __('messages.edit') }}">
                                                 <i class="bi bi-pencil"></i>
                                             </a>
-                                            <button class="btn btn-sm btn-outline-info" onclick="viewUserDetails({{ $user->id }})" data-bs-toggle="tooltip" title="{{ __('messages.view_details') }}">
+                                            @if($user->role === 'customer')
+                                            <a href="{{ route('admin.users.show', $user->id) }}" class="btn btn-sm btn-outline-info" data-bs-toggle="tooltip" title="{{ __('messages.view_details') }}">
                                                 <i class="bi bi-eye"></i>
-                                            </button>
+                                            </a>
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>
@@ -154,12 +162,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return new bootstrap.Tooltip(tooltipTriggerEl);
     });
 });
-
-// View user details function
-function viewUserDetails(userId) {
-    // You can implement a modal or redirect to user details page
-    window.location.href = `/admin/users/${userId}`;
-}
 
 // Add loading state to role change forms
 document.addEventListener('DOMContentLoaded', function() {

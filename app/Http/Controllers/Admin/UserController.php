@@ -112,6 +112,31 @@ class UserController extends Controller
         return redirect()->route('admin.users.index')->with('success', 'User created successfully');
     }
 
+    public function show(User $user)
+    {
+        $user->load([
+            'cars.brand',
+            'cars.model',
+            'cars.year',
+            'addresses',
+            'customerOrders' => function ($query) {
+                $query->with([
+                    'car.brand',
+                    'car.model',
+                    'car.year',
+                    'services',
+                    'provider',
+                    'orderCars.car.brand',
+                    'orderCars.car.model',
+                    'orderCars.car.year',
+                    'orderCars.services',
+                ])->latest();
+            },
+        ]);
+
+        return view('admin.users.show', compact('user'));
+    }
+
     public function edit(User $user)
     {
         return view('admin.users.edit', compact('user'));
